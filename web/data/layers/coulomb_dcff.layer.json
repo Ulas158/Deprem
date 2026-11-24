@@ -1,0 +1,63 @@
+{
+  "id": "coulomb_dcff",
+  "label": "Coulomb gerilme değişimi",
+  "description": "124 büyük depremin (M≥6, 1900+) fay elemanlarında oluşturduğu birikimli ΔCFF (bar, μ'=0.0). Pozitif: kırılmaya yaklaşmış; negatif: gerilme gölgesi.",
+  "group": "Gerilme ve ETAS",
+  "order": 20,
+  "data": "coulomb_dcff.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "line",
+    "width": 3,
+    "glow": true,
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "dcff_bar",
+    "type": "interpolate",
+    "stops": [
+      [
+        -1,
+        "#3f7be0"
+      ],
+      [
+        -0.1,
+        "#7fa6e8"
+      ],
+      [
+        0,
+        "#5b6170"
+      ],
+      [
+        0.1,
+        "#ff9a8f"
+      ],
+      [
+        1,
+        "#ff3b30"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "ΔCFF",
+    "unit": "bar",
+    "labels": [
+      "≤-1",
+      "0",
+      "≥+1"
+    ]
+  },
+  "tooltip": {
+    "title": "fault_id",
+    "fields": [
+      {
+        "property": "dcff_bar",
+        "label": "ΔCFF",
+        "unit": "bar",
+        "digits": 2
+      }
+    ]
+  }
+}

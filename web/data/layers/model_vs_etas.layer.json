@@ -1,0 +1,67 @@
+{
+  "id": "model_vs_etas",
+  "label": "Model / ETAS oranı (2025)",
+  "description": "Eğitilen modelin ETAS'a göre oranı (log10). Kırmızı: model ETAS'tan fazla bekliyor.",
+  "group": "Gerilme ve ETAS",
+  "order": 22,
+  "data": "model_vs_etas.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "fill",
+    "opacity": 0.45
+  },
+  "color": {
+    "property": "log10_ratio",
+    "type": "interpolate",
+    "stops": [
+      [
+        -0.5,
+        "#3f7be0"
+      ],
+      [
+        0,
+        "#2a2f3a"
+      ],
+      [
+        0.5,
+        "#ff3b30"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "log10(model/ETAS)",
+    "unit": "",
+    "labels": [
+      "-0.5",
+      "0",
+      "+0.5"
+    ]
+  },
+  "tooltip": {
+    "title": "Hücre",
+    "fields": [
+      {
+        "property": "etas_m4",
+        "label": "ETAS beklenen M≥4",
+        "digits": 2
+      },
+      {
+        "property": "model_m4",
+        "label": "Model beklenen M≥4",
+        "digits": 2
+      },
+      {
+        "property": "observed_m4",
+        "label": "2025 gözlenen M≥4",
+        "digits": 0
+      },
+      {
+        "property": "log10_ratio",
+        "label": "log10(model/ETAS)",
+        "digits": 2
+      }
+    ]
+  }
+}
