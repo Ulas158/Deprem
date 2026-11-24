@@ -217,3 +217,7 @@ def element_seismicity(elements: pd.DataFrame, events: pd.DataFrame, t_ref: pd.T
     with np.errstate(divide="ignore", invalid="ignore"):
         out["seis_m0_release_ratio_10y"] = np.where(acc > 0, m0_10 / acc, np.nan)
     return out
+
+
+# Gaz/sıvı, dış yük ve insan kaynaklı etki parametreleri (bkz. deprem.external.params)
+from .. import external as _external  # noqa: E402,F401

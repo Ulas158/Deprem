@@ -68,8 +68,23 @@ src/deprem/
     base.py              ızgara tahmin arayüzü, referans modeller
     tests.py             CSEP N/L testleri, bilgi kazancı
     latent.py            10 gizli parametre ve en iyileme
+  external/              gaz, sıvı ve dış etkiler (bkz. docs/akiskan_ve_dis_etkiler.md)
+    astro.py             Ay-Güneş konumu, gelgit ve mevsim fazları
+    periodic.py          Schuster testi (gelgit, mevsim)
+    swarms.py            deprem sürüleri, hidrolik yayınım
+    dynamic.py           uzak büyük depremlerin dinamik tetiklemesi
+    sites.py             baraj, maden, jeotermal, petrol/gaz sahaları (yıllarıyla)
+    params.py            35+ yeni eleman parametresi, 8 gizli parametre, veri kaynakları
+    elements.py          her fay elemanına aktarım (istasyonlardan IDW dahil)
+    features.py          hücre × pencere tablosuna yeni özellik grupları
+    layers.py            harita katmanları
+  faults/fill.py         eksik eleman değerlerini fay boyunca doldurma (+ bayrak, belirsizlik)
   plotting.py
 ```
+
+Gaz/sıvı ve dış etkiler için: `python scripts/run_external.py` (rapor:
+[`reports/external_summary.md`](reports/external_summary.md), harita katmanları `web/data/layers/ext_*`).
+Saha listesi `external_data/` altındadır.
 
 ### Değerlendirme ilkeleri
 

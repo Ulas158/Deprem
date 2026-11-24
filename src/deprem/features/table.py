@@ -178,7 +178,8 @@ FEATURES: list[FeatureFn] = list(FEATURE_REGISTRY.values())
 def build_table(catalog: pd.DataFrame, region: Region, cell_deg: float,
                 window_starts: list[pd.Timestamp], window: pd.DateOffset,
                 target_mags, mc: float, faults: pd.DataFrame | None = None,
-                features: list[FeatureFn] | None = None) -> pd.DataFrame:
+                features: list[FeatureFn] | None = None,
+                ctx_extra: dict | None = None) -> pd.DataFrame:
     """Hücre × pencere tablosu: özellikler + etiketler.
 
     ``target_mags`` bir veya birkaç büyüklük eşiğidir (ör. [3, 4, 5]). Her
@@ -194,7 +195,7 @@ def build_table(catalog: pd.DataFrame, region: Region, cell_deg: float,
     cat = catalog.copy()
     cat["cell_id"] = assign_cell(cat, region, cells)
     cat = cat[cat["cell_id"] >= 0]
-    ctx = {"mc": mc, "faults": faults}
+    ctx = {"mc": mc, "faults": faults, **(ctx_extra or {})}
     parts = []
     for t0 in window_starts:
         t1 = t0 + window
@@ -219,3 +220,8 @@ def time_split(table: pd.DataFrame, test_start: pd.Timestamp):
     train = table[table["window_start"] < test_start]
     test = table[table["window_start"] >= test_start]
     return train, test
+
+
+# Gaz/sıvı ve dış etki özellikleri kendilerini yukarıdaki kayda ekler
+# (bkz. deprem.external). ``ctx_extra`` ile uzak depremler, saha listesi vb. verilir.
+from .. import external as _external  # noqa: E402,F401

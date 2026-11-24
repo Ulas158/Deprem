@@ -113,3 +113,7 @@ def fit_latent(loglik_fn: Callable[[dict], float], uses: list[str],
     if val_loglik_fn is not None:
         out.val_loglik = float(val_loglik_fn(vals))
     return out
+
+
+# Akışkan ve dış etki gizli parametreleri (bkz. deprem.external.params)
+from .. import external as _external  # noqa: E402,F401
