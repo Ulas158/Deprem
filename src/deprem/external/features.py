@@ -7,7 +7,7 @@ pencere başlangıcından (t0) önceki veriyi kullanır. ``build_table`` içine
 * ``remote``     USGS küresel büyük deprem listesi (uzak tetikleme için)
 * ``sites``      saha listesi (varsayılan: external_data/insan_kaynakli_sahalar.csv)
 * ``heat_flow``  lat, lon, value sütunlu ısı akısı noktaları (IHFC indirilirse)
-* ``tidal``      False ise yarı günlük gelgit fazı hesaplanmaz (hız için)
+* ``tidal``      True ise Ay+Güneş birleşik gelgit fazı da hesaplanır (yavaş)
 """
 
 from __future__ import annotations
@@ -24,10 +24,10 @@ from .swarms import cluster_stats, link_clusters
 
 
 def _phases(past: pd.DataFrame, ctx: dict) -> pd.DataFrame:
-    cache = ctx.setdefault("_phase_cache", pd.DataFrame(columns=["phase_annual", "phase_fortnight", "phase_semidiurnal"]))
+    cache = ctx.setdefault("_phase_cache", pd.DataFrame())
     missing = past.index.difference(cache.index)
     if len(missing):
-        new = event_phases(past.loc[missing], tidal=ctx.get("tidal", True))
+        new = event_phases(past.loc[missing], tidal=ctx.get("tidal", False))
         cache = new if cache.empty else pd.concat([cache, new])
         ctx["_phase_cache"] = cache
     return cache.loc[past.index]
@@ -39,8 +39,8 @@ def f_periodic(past, cells, t0, ctx):
     w = past[(past["time"] >= t0 - pd.DateOffset(years=10)) & (past["mag"] >= ctx["mc"])]
     if "independent" in w.columns:
         w = w[w["independent"].astype(bool)]
-    cols = {"phase_semidiurnal": "tidal_semidiurnal_log10p",
-            "phase_fortnight": "tidal_fortnight_log10p", "phase_annual": "seasonal_log10p"}
+    cols = {"phase_lunar": "tidal_semidiurnal_log10p", "phase_fortnight": "tidal_fortnight_log10p",
+            "phase_annual": "seasonal_log10p", "phase_hour": "hour_of_day_log10p"}
     if w.empty:
         return pd.DataFrame(index=cells["cell_id"], columns=list(cols.values()), dtype=float)
     ph = _phases(w, ctx)

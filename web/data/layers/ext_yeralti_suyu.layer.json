@@ -1,0 +1,32 @@
+{
+  "data": "ext_yeralti_suyu.geojson",
+  "visible": false,
+  "id": "ext_yeralti_suyu",
+  "label": "Yeraltı suyu kuyuları",
+  "description": "DSİ gözlem kuyuları (izinle)",
+  "group": "Gaz ve sıvılar",
+  "order": 450,
+  "style": {
+    "type": "circle",
+    "radius": 5
+  },
+  "color": {
+    "property": "value",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#3f7be0"
+      ],
+      [
+        1,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Yeraltı suyu kuyuları",
+    "unit": "m"
+  },
+  "note": "Veri henüz bağlanmadı; bkz. docs/akiskan_ve_dis_etkiler.md."
+}

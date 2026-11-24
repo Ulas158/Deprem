@@ -1,0 +1,82 @@
+{
+  "data": "ext_gaz_cikislari.geojson",
+  "visible": false,
+  "group": "Gaz ve sıvılar",
+  "style": {
+    "type": "circle",
+    "radius": 6,
+    "outline": "#0b111a"
+  },
+  "color": {
+    "property": "status",
+    "type": "categorical",
+    "categories": {
+      "aktif": "#35e08a",
+      "pasif": "#ff9f43",
+      "kapali": "#8796ab",
+      "bilinmiyor": "#b18cff",
+      "dogal": "#4fc3f7"
+    },
+    "default": "#8aa0bb"
+  },
+  "legend": {
+    "title": "Gaz çıkışları · durum",
+    "categoryLabels": {
+      "aktif": "Aktif",
+      "pasif": "Pasif / durduruldu",
+      "kapali": "Kapalı",
+      "bilinmiyor": "Durumu bilinmiyor",
+      "dogal": "Doğal"
+    }
+  },
+  "tooltip": {
+    "title": "name",
+    "fields": [
+      {
+        "property": "category",
+        "label": "Tür"
+      },
+      {
+        "property": "status",
+        "label": "Durum"
+      },
+      {
+        "property": "start_year",
+        "label": "Başlangıç yılı",
+        "digits": 0
+      },
+      {
+        "property": "end_year",
+        "label": "Bitiş yılı",
+        "digits": 0
+      },
+      {
+        "property": "fluid_process",
+        "label": "Olası etki"
+      },
+      {
+        "property": "notes",
+        "label": "Not"
+      },
+      {
+        "property": "loc_accuracy_km",
+        "label": "Konum belirsizliği",
+        "unit": "km",
+        "digits": 0
+      },
+      {
+        "property": "verified",
+        "label": "Doğrulandı mı"
+      },
+      {
+        "property": "source",
+        "label": "Kaynak"
+      }
+    ]
+  },
+  "note": "Konumların çoğu yaklaşık ve doğrulanmamıştır; tahmin değildir.",
+  "id": "ext_gaz_cikislari",
+  "label": "Doğal gaz çıkışları",
+  "order": 400,
+  "description": "Deniz tabanı / fay boyu gaz çıkışları (literatür)"
+}

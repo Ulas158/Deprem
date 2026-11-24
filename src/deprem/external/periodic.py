@@ -19,7 +19,8 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .astro import annual_phase, fortnightly_phase, semidiurnal_phase
+from .astro import (annual_phase, fortnightly_phase, local_hour_phase, lunar_semidiurnal_phase,
+                    semidiurnal_phase)
 
 
 def schuster(phase_deg) -> tuple[float, float, int]:
@@ -35,8 +36,20 @@ def schuster(phase_deg) -> tuple[float, float, int]:
 
 
 def event_phases(events: pd.DataFrame, tidal: bool = True) -> pd.DataFrame:
-    """Her olay için gelgit (yarı günlük, 14 günlük) ve yıllık fazlar."""
+    """Her olay için gelgit, yıllık ve günlük (kontrol) fazlar.
+
+    * ``phase_lunar``: yalnızca Ay'ın yarı günlük fazı. Ana gelgit testi budur.
+    * ``phase_semidiurnal``: Ay + Güneş birleşik gelgit eğrisinde faz (Tanaka 2002).
+      Güneş bileşeni tam 12 saatlik olduğundan gece/gündüz algılama farkı
+      (küçük depremlerin gece daha iyi algılanması, gündüz taş ocağı patlamaları)
+      bu fazda **sahte gelgit sinyali** üretir; yalnızca Mc'nin yeterince üstündeki
+      olaylarda kullanılmalıdır.
+    * ``phase_hour``: yerel güneş saati. Gelgitle ilgisi yoktur; katalog kalitesi
+      kontrolüdür. Burada güçlü sinyal varsa birleşik gelgit sonucu güvenilmez.
+    """
     out = pd.DataFrame(index=events.index)
+    out["phase_lunar"] = lunar_semidiurnal_phase(events["time"], events["longitude"].to_numpy())
+    out["phase_hour"] = local_hour_phase(events["time"], events["longitude"].to_numpy())
     out["phase_annual"] = annual_phase(events["time"])
     out["phase_fortnight"] = fortnightly_phase(events["time"])
     if tidal:

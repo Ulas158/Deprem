@@ -90,36 +90,71 @@ def main():
           "[docs/akiskan_ve_dis_etkiler.md](../docs/akiskan_ve_dis_etkiler.md).", ""]
 
     # ------------------------------------------------------------ 1. periyodik yükler
+    PH = [("phase_hour", "saat"), ("phase_lunar", "ay_12sa"), ("phase_semidiurnal", "gelgit_birlesik"),
+          ("phase_fortnight", "gelgit_14g"), ("phase_annual", "mevsim")]
     rows = []
     regions = {"turkiye": TURKEY, **SUBREGIONS}
     for key, reg in regions.items():
         sub = ind[reg.contains(ind)]
-        for mmin in (mc, 4.0):
+        for mmin in (mc, 3.0, 4.0):
             s = sub[sub["mag"] >= mmin]
             r = {"bölge": reg.name, "M≥": mmin, "N": len(s)}
-            for col, name in (("phase_semidiurnal", "gelgit_12sa"), ("phase_fortnight", "gelgit_14g"),
-                              ("phase_annual", "mevsim")):
+            for col, name in PH:
                 lp, mean, n = schuster(s[col])
                 r[f"{name}_log10p"] = round(lp, 2) if np.isfinite(lp) else np.nan
                 r[f"{name}_faz"] = round(mean, 0) if np.isfinite(mean) else np.nan
             rows.append(r)
     per = pd.DataFrame(rows)
     per.to_csv(tab / "external_periodic.csv", index=False)
-    n_tests = per[["gelgit_12sa_log10p", "gelgit_14g_log10p", "mevsim_log10p"]].notna().sum().sum()
+    phys = ["ay_12sa_log10p", "gelgit_14g_log10p", "mevsim_log10p"]
+    n_tests = per[phys].notna().sum().sum()
     thr = np.log10(0.05 / max(n_tests, 1))
+    tr = per[per["bölge"] == TURKEY.name].set_index("M≥")
     md += ["## 1. Gelgit ve mevsim (Schuster testi)", "",
-           "Her olayın gelgit fazı (yarı günlük: en yakın gelgit tepesi 0°, çukurlar ±180°; 14 günlük: "
-           "dolunay/yeni ay 0°) ve yıl içi fazı hesaplandı. Fazlar rastgeleyse p büyüktür. "
-           f"Toplam {n_tests} test yapıldığı için anlamlılık eşiği log10 p < {thr:.1f} alınmalıdır.", "",
+           "Her olay için şu fazlar hesaplandı: **saat** (yerel güneş saati; fiziksel değil, katalog "
+           "kalitesi kontrolü), **ay_12sa** (yalnızca Ay'ın yarı günlük gelgiti; asıl gelgit testi), "
+           "**gelgit_birlesik** (Ay + Güneş gelgit eğrisinde faz, Tanaka 2002), **gelgit_14g** "
+           "(dolunay/yeni ay 0°) ve **mevsim** (1 Ocak 0°). Fazlar rastgeleyse p büyüktür.", "",
+           "### Önemli bulgu: sahte gelgit sinyali", "",
+           f"Küçük depremlerde (M≥{mc:.1f}) günün saatine çok güçlü bir yığılma var "
+           f"(log10 p = {tr.loc[mc, 'saat_log10p']:.0f}); M≥3'te bu kayboluyor "
+           f"(log10 p = {tr.loc[3.0, 'saat_log10p']:.1f}). Bu, gece/gündüz algılama farkından ve/veya "
+           "katalogda kalan taş ocağı patlamalarından kaynaklanır, depremlerin fiziğinden değil. Güneş "
+           "gelgiti tam 12 saatlik olduğundan aynı etki Ay+Güneş birleşik gelgit fazında da "
+           f"görünüyor (M≥{mc:.1f}: log10 p = {tr.loc[mc, 'gelgit_birlesik_log10p']:.0f}). Güneş'ten "
+           "bağımsız olan **Ay gelgiti testinde ise sinyal yok** "
+           f"(M≥{mc:.1f}: {tr.loc[mc, 'ay_12sa_log10p']:.2f}, M≥3: {tr.loc[3.0, 'ay_12sa_log10p']:.2f}, "
+           f"M≥4: {tr.loc[4.0, 'ay_12sa_log10p']:.2f}). Sonuç: Türkiye kataloğunda gelgit etkisine dair "
+           "kanıt bulunamadı; birleşik gelgit fazı küçük depremlerde kullanılmamalı. Modelde gelgit "
+           "özelliği Ay fazından, saat fazı ise ayrı bir kalite kontrol özelliği olarak hesaplanıyor.", "",
+           f"Fiziksel testler (ay_12sa, gelgit_14g, mevsim) toplam {n_tests} kez yapıldığı için "
+           f"anlamlılık eşiği log10 p < {thr:.1f} alınmalıdır (Bonferroni).", "",
            per.to_markdown(index=False), ""]
-    sig = per[(per[["gelgit_12sa_log10p", "gelgit_14g_log10p", "mevsim_log10p"]] < thr).any(axis=1)]
-    md += [f"Eşiği geçen satır sayısı: **{len(sig)}**. "
-           + ("Bunlar ilginç ama doğrulanmış değildir; sonraki dönem verisinde tekrar etmesi gerekir." if len(sig)
-              else "Hiçbir bölgede gelgit veya mevsim etkisi istatistiksel olarak anlamlı değil."), ""]
-    if not sig.empty and (sig["mevsim_log10p"] < thr).any():
-        md += ["Not: Mevsimsel faz, gerçek bir fiziksel etkiden çok katalog tamlığındaki mevsimsel "
-               "değişimden (ör. kış gürültüsü, istasyon arızaları) kaynaklanabilir; Mc'nin mevsime göre "
-               "değişip değişmediği ayrıca kontrol edilmelidir.", ""]
+    sig = per[(per[phys] < thr).any(axis=1)]
+    md += [f"Fiziksel testlerde eşiği geçen satır sayısı: **{len(sig)}**"
+           + (" (" + ", ".join(f"{r['bölge']} M≥{r['M≥']:g}" for _, r in sig.iterrows()) + "). "
+              "Bunlar doğrulanmış değildir; sonraki dönem verisinde tekrar etmesi ve katalog tamlığının "
+              "mevsimsel değişimiyle açıklanamaması gerekir." if len(sig)
+              else ". Hiçbir bölgede gelgit veya mevsim etkisi istatistiksel olarak anlamlı değil."), ""]
+
+    # yıl yıl tutarlılık: gerçek bir mevsim etkisi her yıl benzer fazda görünmeli
+    s3 = ind[ind["mag"] >= 3.0]
+    yr = []
+    for y, g in s3.groupby(s3["time"].dt.year):
+        lp, mean, n = schuster(g["phase_annual"])
+        yr.append({"yıl": int(y), "N": n, "mevsim_log10p": round(lp, 1), "faz": round(mean, 0)})
+    yr = pd.DataFrame(yr)
+    lp_all = schuster(s3["phase_annual"])[0]
+    lp_ex = schuster(s3[s3["time"].dt.year != 2023]["phase_annual"])[0]
+    n_strong = int((yr["mevsim_log10p"] < -2).sum())
+    md += ["### Mevsim sinyali yıl yıl", "",
+           f"Türkiye M≥3 bağımsız olaylarda mevsim testi log10 p = {lp_all:.1f}; 2023 çıkarılınca {lp_ex:.1f}. "
+           f"Ancak sinyal yıllara eşit dağılmıyor: {len(yr)} yılın yalnızca {n_strong} tanesinde log10 p < −2. "
+           "Bu, gerçek bir mevsimsel yükleme etkisinden çok birkaç yıldaki büyük deprem dizilerinin "
+           "artçı ayıklamadan kaçan kısmından ve kataloğun yıllar içinde değişen büyüklük ölçeğinden "
+           "(M≥3 olay sayısı 2008'de ~1270, sonraki yıllarda ~300) kaynaklanıyor olabilir. "
+           "Şimdilik **kanıt sayılmaz**; daha homojen bir katalog ve ETAS tabanlı ayıklamayla yeniden sınanmalı.", "",
+           yr.to_markdown(index=False), ""]
 
     # ------------------------------------------------------------ 2. sürüler
     log.info("kümeleme")
@@ -140,7 +175,7 @@ def main():
                "", "En büyük 15 sürü:", "",
                sw.sort_values("n", ascending=False).head(15)[
                    ["t_start", "n", "duration_days", "lat", "lon", "depth_km", "mag_max", "D_m2_s", "radius_km"]
-               ].round(3).to_markdown(index=False), ""]
+               ].assign(t_start=lambda d: d["t_start"].dt.strftime("%Y-%m-%d")).round(3).to_markdown(index=False), ""]
 
     # ------------------------------------------------------------ 3. uzak tetikleme
     remote = fetch_remote(ROOT / "data/raw/usgs_global_m65.csv")
@@ -150,13 +185,15 @@ def main():
     lat_c = cells.set_index("cell_id")["lat_c"]
     lon_c = cells.set_index("cell_id")["lon_c"]
     rem = remote[remote["time"] >= modern["time"].min()]
-    dyn = remote_triggering(modern[modern["cell_id"] >= 0], rem, lat_c, lon_c, "cell_id")
-    tot = remote_triggering(modern.assign(g=0), rem, pd.Series([39.0], index=[0]),
+    # artçı dizileri önceki 30 günü şişirip β'yı yapay olarak düşürür: bağımsız olaylar kullanılır
+    dyn = remote_triggering(ind[ind["cell_id"] >= 0], rem, lat_c, lon_c, "cell_id")
+    tot = remote_triggering(ind.assign(g=0), rem, pd.Series([39.0], index=[0]),
                             pd.Series([35.0], index=[0]), "g")
     md += ["## 3. Uzak büyük depremlerin dinamik tetiklemesi", "",
            f"{len(rem)} küresel M≥6,5 depremden, Türkiye'ye 1000 km'den uzak ve genlik vekili yeterli "
            f"olanlar ({int(tot['dyn_n_remote'].iloc[0])} olay) için, her birinden sonraki 5 gündeki yerel "
-           "olay sayısı önceki 30 günle karşılaştırıldı (β istatistiği; β > 2 kabaca anlamlı).", "",
+           "bağımsız (artçısı ayıklanmış) olay sayısı önceki 30 günle karşılaştırıldı "
+           "(β istatistiği; β > 2 kabaca anlamlı artış, β < −2 azalma).", "",
            f"* Türkiye geneli: β = **{tot['dyn_beta'].iloc[0]:.2f}** "
            f"(5 gün içinde {int(tot['dyn_n_after'].iloc[0])} olay, toplam {int(tot['dyn_n_total'].iloc[0])})",
            f"* β > 2 olan hücre sayısı (≥20 olaylı hücreler): "
@@ -165,8 +202,8 @@ def main():
 
     # ------------------------------------------------------------ 4. hücre katmanları
     grid = cells.set_index("cell_id")[["lat_c", "lon_c"]].copy()
-    for col, name in (("phase_semidiurnal", "tidal_log10p"), ("phase_fortnight", "fortnight_log10p"),
-                      ("phase_annual", "seasonal_log10p")):
+    for col, name in (("phase_lunar", "tidal_log10p"), ("phase_fortnight", "fortnight_log10p"),
+                      ("phase_annual", "seasonal_log10p"), ("phase_hour", "hour_log10p")):
         g = ind[ind["cell_id"] >= 0].groupby("cell_id")[col].agg(lambda s: schuster(s.to_numpy())[0])
         grid[name] = g
         grid[name.replace("log10p", "neglog10p")] = -g
@@ -189,7 +226,7 @@ def main():
 
     nf = [{"property": "n_independent", "label": "Bağımsız olay", "digits": 0}]
     blues = [[0, "#1b2433"], [1.3, "#3f7be0"], [2, "#8a5cf0"], [3, "#e0497a"], [5, "#ffe680"]]
-    cell_layer("ext_gelgit", "Gelgit duyarlılığı (12 sa)", "Schuster −log10 p, 0,5° hücre",
+    cell_layer("ext_gelgit", "Gelgit duyarlılığı (Ay, 12 sa)", "Schuster −log10 p, 0,5° hücre",
                "tidal_neglog10p", "−log10 p (gelgit)", blues, nf, grid["n_independent"] >= 10,
                "Yüksek değer olayların gelgit fazına yığıldığını gösterir; çoklu test nedeniyle tek başına anlamlı değildir.", 500)
     cell_layer("ext_gelgit14", "Gelgit duyarlılığı (14 gün)", "Kuvvetli/zayıf gelgit fazı",
@@ -198,6 +235,10 @@ def main():
     cell_layer("ext_mevsim", "Mevsimsel duyarlılık", "Yıllık faz Schuster −log10 p",
                "seasonal_neglog10p", "−log10 p (mevsim)", blues, nf, grid["n_independent"] >= 10,
                "Mevsimsel yük (yağış, kar, yeraltı suyu) vekili; katalog tamlığının mevsimsel değişimi de aynı izi bırakabilir.", 520)
+    cell_layer("ext_saat", "Gün içi saat yığılması (kontrol)", "Gece/gündüz algılama farkı veya patlamalar",
+               "hour_neglog10p", "−log10 p (saat)", blues, nf, grid["n_independent"] >= 10,
+               "Fiziksel bir etki değil, katalog kalitesi göstergesidir: yüksek değer taş ocağı patlamaları "
+               "veya gündüz gürültüsü olabilir. Bu hücrelerde gelgit/mevsim sonuçlarına güvenmeyin.", 540)
     cell_layer("ext_uzak_tetikleme", "Uzak deprem tetiklemesi", "Küresel M≥6,5 sonrası 5 gün β",
                "dyn_beta", "β (uzak tetikleme)",
                [[-3, "#3f7be0"], [0, "#1b2433"], [2, "#e0497a"], [4, "#ffe680"]],
@@ -262,7 +303,17 @@ def main():
         from deprem.external.params import PARAMS
         from deprem.faults.fill import fill_missing, fill_summary
         el = el.drop(columns=[c for c in ext.columns if c in el.columns]).join(ext)
-        cols = [n for n, *_ in PARAMS if n != "station_dist_km"] + [
+        # uzak tetikleme β'sı hücre düzeyinde hesaplandı; elemana bulunduğu hücreden aktarılır
+        g = grid.set_index("cell_id")
+        ecell = assign_cell(el.rename(columns={"lat": "latitude", "lon": "longitude"}), TURKEY, cells)
+        ok = (ecell >= 0)
+        beta = np.full(len(el), np.nan)
+        b = g["dyn_beta"].where(g["dyn_n_total"] >= 20)
+        beta[ok] = b.reindex(ecell[ok]).to_numpy()
+        el["dyn_trigger_beta"] = beta
+        # "50 km içinde baraj yok" anlamlı bir boşluktur, doldurulmaz
+        skip = {"station_dist_km", "reservoir_years_since_fill"}
+        cols = [n for n, *_ in PARAMS if n not in skip] + [
             "heat_flow_mw_m2", "vp_vs_ratio", "curie_depth_km", "crustal_thickness_km"]
         el = fill_missing(el, cols)
         el.to_csv(ROOT / "data/processed/fault_elements_external.csv.gz", index=False)

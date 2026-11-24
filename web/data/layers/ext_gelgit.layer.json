@@ -1,0 +1,59 @@
+{
+  "data": "ext_gelgit.geojson",
+  "visible": false,
+  "id": "ext_gelgit",
+  "label": "Gelgit duyarlılığı (Ay, 12 sa)",
+  "description": "Schuster −log10 p, 0,5° hücre",
+  "group": "Dış yükler (gelgit, mevsim, uzak depremler)",
+  "order": 500,
+  "style": {
+    "type": "fill",
+    "opacity": 0.55
+  },
+  "color": {
+    "property": "tidal_neglog10p",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#1b2433"
+      ],
+      [
+        1.3,
+        "#3f7be0"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        3,
+        "#e0497a"
+      ],
+      [
+        5,
+        "#ffe680"
+      ]
+    ],
+    "missing": "rgba(0,0,0,0)"
+  },
+  "legend": {
+    "title": "−log10 p (gelgit)"
+  },
+  "tooltip": {
+    "title": "cell_id",
+    "fields": [
+      {
+        "property": "tidal_neglog10p",
+        "label": "−log10 p (gelgit)",
+        "digits": 2
+      },
+      {
+        "property": "n_independent",
+        "label": "Bağımsız olay",
+        "digits": 0
+      }
+    ]
+  },
+  "note": "Yüksek değer olayların gelgit fazına yığıldığını gösterir; çoklu test nedeniyle tek başına anlamlı değildir."
+}

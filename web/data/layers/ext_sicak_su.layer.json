@@ -1,0 +1,32 @@
+{
+  "data": "ext_sicak_su.geojson",
+  "visible": false,
+  "id": "ext_sicak_su",
+  "label": "Sıcak su kaynakları",
+  "description": "MTA envanteri (elle derlenecek)",
+  "group": "Gaz ve sıvılar",
+  "order": 450,
+  "style": {
+    "type": "circle",
+    "radius": 5
+  },
+  "color": {
+    "property": "value",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#3f7be0"
+      ],
+      [
+        1,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Sıcak su kaynakları",
+    "unit": "°C"
+  },
+  "note": "Veri henüz bağlanmadı; bkz. docs/akiskan_ve_dis_etkiler.md."
+}

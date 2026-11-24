@@ -158,3 +158,23 @@ def annual_phase(times) -> np.ndarray:
     t = pd.DatetimeIndex(pd.to_datetime(times, utc=True))
     doy = (t.dayofyear - 1 + t.hour / 24.0) / np.where(t.is_leap_year, 366.0, 365.0)
     return np.degrees(np.angle(np.exp(2j * np.pi * np.asarray(doy))))
+
+
+def lunar_semidiurnal_phase(times, lon) -> np.ndarray:
+    """Yalnızca Ay'ın yarı günlük (M2 benzeri) fazı [derece]: 2 × yerel Ay saat açısı.
+
+    0° Ay'ın meridyen geçişi (veya karşı geçişi). Güneş bileşenini (S2, tam 12 sa)
+    içermez; bu yüzden gece/gündüz algılama farkından etkilenmez.
+    """
+    jd = julian_day(times)
+    lam, beta, _ = moon_position(jd)
+    ra, _ = _ecl_to_eq(lam, beta, _obliquity(jd))
+    H = _gmst_rad(jd) + np.radians(np.asarray(lon, dtype=float)) - ra
+    return np.degrees(np.angle(np.exp(2j * H)))
+
+
+def local_hour_phase(times, lon) -> np.ndarray:
+    """Yerel güneş saati fazı [derece] (gece yarısı 0°). Algılama/gürültü kontrolü için."""
+    t = pd.DatetimeIndex(pd.to_datetime(times, utc=True))
+    h = (t.hour + t.minute / 60.0 + np.asarray(lon, dtype=float) / 15.0) % 24
+    return np.degrees(np.angle(np.exp(1j * np.radians(np.asarray(h) * 15.0))))

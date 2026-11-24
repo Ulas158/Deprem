@@ -94,14 +94,15 @@ def element_external(elements: pd.DataFrame, events: pd.DataFrame, t_ref: pd.Tim
         # --- gelgit / mevsim (bağımsız olaylar)
         ind = ev[ev["independent"].astype(bool)] if "independent" in ev.columns else ev
         if phases is None:
-            phases = event_phases(ind)
+            phases = event_phases(ind, tidal=False)
         ph = phases.reindex(ind.index)
         ev_xy = _local_xyz(ind["latitude"], ind["longitude"], np.zeros(len(ind)))[:, :2]
         pairs = tree.sparse_distance_matrix(cKDTree(ev_xy), radius_km, output_type="coo_matrix")
         r, c = pairs.row, pairs.col
-        for src, name in (("phase_semidiurnal", "tidal_semidiurnal_log10p"),
+        for src, name in (("phase_lunar", "tidal_semidiurnal_log10p"),
                           ("phase_fortnight", "tidal_fortnight_log10p"),
-                          ("phase_annual", "seasonal_log10p")):
+                          ("phase_annual", "seasonal_log10p"),
+                          ("phase_hour", "hour_of_day_log10p")):
             out[name] = _schuster_by_group(r, ph[src].to_numpy()[c], n_el)
         out["tidal_stress_sensitivity"] = out["tidal_semidiurnal_log10p"]
         # --- sürüler

@@ -83,17 +83,20 @@ def site_layer_specs() -> list[tuple[dict, list[str]]]:
             "legend": {"title": "Durum", "categoryLabels": STATUS_LABELS},
             "tooltip": {"title": "name", "fields": tip},
             "note": "Konumların çoğu yaklaşık ve doğrulanmamıştır; tahmin değildir."}
+    def leg(title):
+        return {"legend": {"title": f"{title} · durum", "categoryLabels": STATUS_LABELS}}
+
     return [
-        ({**base, "id": "ext_barajlar", "label": "Barajlar ve rezervuarlar", "order": 300,
+        ({**base, **leg("Barajlar"), "id": "ext_barajlar", "label": "Barajlar ve rezervuarlar", "order": 300,
           "description": "Su yükü ve gözenek basıncı; dolum yılıyla"}, ["baraj"]),
-        ({**base, "id": "ext_madenler", "label": "Madenler", "order": 310,
+        ({**base, **leg("Madenler"), "id": "ext_madenler", "label": "Madenler", "order": 310,
           "description": "Kömür, metal, bor, çözelti madenciliği; aktif/pasif ve tarihçe"},
          ["maden_komur", "maden_metal", "maden_endustriyel", "maden_cozelti"]),
-        ({**base, "id": "ext_jeotermal", "label": "Jeotermal sahalar", "order": 320,
+        ({**base, **leg("Jeotermal"), "id": "ext_jeotermal", "label": "Jeotermal sahalar", "order": 320,
           "description": "Akışkan çekimi ve geri basma"}, ["jeotermal"]),
-        ({**base, "id": "ext_petrol_gaz", "label": "Petrol, gaz sahaları ve gaz depoları", "order": 330,
+        ({**base, **leg("Petrol/gaz"), "id": "ext_petrol_gaz", "label": "Petrol, gaz sahaları ve gaz depoları", "order": 330,
           "description": "Akışkan çekimi, CO2 ve su enjeksiyonu, döngüsel gaz depolama"},
          ["petrol", "dogalgaz", "gaz_depolama"]),
-        ({**base, "id": "ext_gaz_cikislari", "label": "Doğal gaz çıkışları", "order": 400, "group": GROUP_FLUID,
+        ({**base, **leg("Gaz çıkışları"), "id": "ext_gaz_cikislari", "label": "Doğal gaz çıkışları", "order": 400, "group": GROUP_FLUID,
           "description": "Deniz tabanı / fay boyu gaz çıkışları (literatür)"}, ["dogal_gaz_cikisi"]),
     ]

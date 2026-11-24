@@ -45,7 +45,8 @@ PARAMS = [
     ("swarm_frac_10y", "-", FLUID, "seismicity", "Yakındaki ≥5 olaylı kümelerin sürü oranı (akışkan sürülerini ana şok–artçıdan ayırır)", "Katalog (swarms.py)"),
     ("hydraulic_diffusivity_log10", "log10 m²/s", FLUID, "seismicity", "Sürü göçünden hidrolik yayınım D (r² = 4πDt, Shapiro 1997)", "Katalog (swarms.py)"),
     # ---- dış yükler: katalogdan
-    ("tidal_semidiurnal_log10p", "log10 p", LOADS, "seismicity", "Yarı günlük gelgit fazı Schuster testi (bağımsız olaylar)", "Katalog + gök mekaniği (periodic.py)"),
+    ("tidal_semidiurnal_log10p", "log10 p", LOADS, "seismicity", "Ay'ın yarı günlük gelgit fazı Schuster testi (bağımsız olaylar)", "Katalog + gök mekaniği (periodic.py)"),
+    ("hour_of_day_log10p", "log10 p", LOADS, "seismicity", "Günün saatine yığılma (kontrol: gece/gündüz algılama farkı, taş ocağı patlamaları)", "Katalog"),
     ("tidal_fortnight_log10p", "log10 p", LOADS, "seismicity", "14 günlük (kuvvetli/zayıf gelgit) faz Schuster testi", "Katalog + gök mekaniği"),
     ("seasonal_log10p", "log10 p", LOADS, "seismicity", "Yıllık faz Schuster testi (mevsimsel yük vekili)", "Katalog"),
     ("dyn_trigger_beta", "-", LOADS, "seismicity", "Uzak büyük depremler sonrası 5 gün β istatistiği (dinamik tetikleme)", "Katalog + USGS küresel M≥6,5"),
