@@ -240,3 +240,62 @@ def test_element_seismicity():
     assert np.isnan(out["seis_max_mag"].iloc[1])
     full = ensure_columns(el)
     assert set(REGISTRY) <= set(full.columns)
+
+
+def test_rupture_extent_resets_neighbouring_segments():
+    from deprem.faults.moment import fault_summary
+    # doğu-batı uzanan üç ardışık 50 km'lik segment; M7.5 batı ucunda
+    k = 50 / (111.195 * np.cos(np.radians(40)))
+    segs = [[(30 + i * k, 40.0), (30 + (i + 1) * k, 40.0)] for i in range(3)]
+    faults = add_geometry(pd.DataFrame({
+        "fault_id": ["A", "B", "C"], "coords": segs, "slip_rate_mm_yr": 20.0,
+        "slip_rate_min": 10.0, "slip_rate_max": 25.0, "dip": 90.0,
+        "upper_depth_km": 0.0, "lower_depth_km": 15.0,
+        "length_km": 50.0}))
+    ev = normalize(pd.DataFrame([{"time": "1999-08-17T00:01:39Z", "latitude": 40.0,
+                                   "longitude": 30.1, "mag": 7.5}]))
+    ev["mw_best"] = ev["mag"]
+    fs = fault_summary(faults, ev, pd.Timestamp("1900-01-01", tz="UTC"),
+                       pd.Timestamp("2026-01-01", tz="UTC"))
+    hit = fs.set_index("fault_id")["last_big_event"].notna()
+    # L(7.5) ≈ 90 km → yarısı ≈ 45 km; episantr A içinde, B başına ~42 km: A ve B kırılmış, C (≥100 km) değil
+    assert hit.to_dict() == {"A": True, "B": True, "C": False}
+
+
+def test_coulomb_classic_pattern():
+    pytest.importorskip("cutde")
+    from deprem.faults.coulomb import coulomb_on_receivers, stress_from_sources
+    # sağ yanal düşey K-G fay, 30 km × 15 km, 1 m kayma
+    src = pd.DataFrame([{"x_m": 0, "y_m": 0, "z_m": -7500, "strike": 0, "dip": 90, "rake": 180,
+                         "L_m": 30000, "W_m": 15000, "slip_m": 1.0}])
+    obs = np.array([[0, 25000, -7500], [8000, 0, -7500], [0, -25000, -7500]], float)
+    st = stress_from_sources(obs, src)
+    dcff, _, _ = coulomb_on_receivers(st, np.zeros(3), np.full(3, 90.0), np.full(3, 180.0), 0.4)
+    bar = dcff / 1e5
+    # uçların ötesi yüklenir (öne çekme), yanlar gölgede kalır
+    assert bar[0] > 1 and bar[2] > 1 and bar[1] < -1
+    assert bar[0] == pytest.approx(bar[2], rel=1e-6)
+
+
+def test_element_budget_releases_only_ruptured_part():
+    from deprem.faults.budget import element_budget
+    from deprem.faults.mesh import mesh_fault
+    k = 1 / (111.195 * np.cos(np.radians(39.0)))
+    row = pd.Series({"fault_id": "F", "coords": [(35.0, 39.0), (35.0 + 200 * k, 39.0)], "dip": 90.0,
+                     "upper_depth_km": 0.0, "lower_depth_km": 15.0, "rake": 180.0,
+                     "slip_rate_mm_yr": 20.0, "slip_rate_min": 10.0, "slip_rate_max": 30.0})
+    el = mesh_fault(row, 1.0, 1.0)
+    ev = normalize(pd.DataFrame([{"time": "1950-01-01T00:00:00Z", "latitude": 39.0,
+                                   "longitude": 35.0 + 20 * k, "depth_km": 8.0, "mag": 7.0,
+                                   "horiz_err_km": 2.0, "depth_err_km": 2.0}]))
+    ev["mw_best"] = ev["mag"]
+    res = element_budget(el, ev, pd.Timestamp("1900-01-01", tz="UTC"),
+                         pd.Timestamp("2000-01-01", tz="UTC"))
+    f = res["final"]
+    # toplam boşalım M0'a eşit, birikim 100 yıl × hız
+    assert f["m0_rel"].sum() == pytest.approx(10 ** (1.5 * 7 + 9.1), rel=1e-6)
+    near = el["along_km"] < 30
+    far = el["along_km"] > 120
+    assert f.loc[far, "m0_rel"].sum() == 0
+    assert f.loc[near, "slip_deficit_m"].mean() < f.loc[far, "slip_deficit_m"].mean()
+    assert f.loc[far, "slip_deficit_m"].mean() == pytest.approx(0.020 * 100, rel=0.01)

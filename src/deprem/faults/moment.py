@@ -104,6 +104,38 @@ def zone_budget(faults: pd.DataFrame, events: pd.DataFrame, zones: dict,
     return pd.DataFrame(rows)
 
 
+def rupture_length_km(mw):
+    """Wells & Coppersmith (1994) yüzey kırığı uzunluğu, tüm fay türleri."""
+    return 10 ** (0.69 * np.asarray(mw, dtype=float) - 3.22)
+
+
+def last_rupture_times(big: pd.DataFrame, faults: pd.DataFrame, mw_col: str = "mw_best",
+                       min_dist_km: float = 15.0) -> pd.Series:
+    """Her segment için kırıldığı varsayılan son büyük depremin zamanı.
+
+    Büyük bir deprem tek noktada değil, onlarca-yüzlerce km boyunca kırılır
+    (1999 İzmit ~145 km). Episantr kırığın bir ucunda olabileceği için bir
+    segment, episantra uzaklığı max(min_dist_km, L/2) içindeyse kırılmış
+    sayılır; L, Mw'den Wells & Coppersmith ile bulunur. Bu yaklaşım paralel
+    kolları da kırılmış sayabilir ve uzun bir segmentin yalnızca bir kısmı
+    kırıldığında tümünü sıfırlar; kırık izleri bilinen depremler için
+    ileride tarihsel kırık veritabanı (last_rupture_year) kullanılmalı.
+    """
+    last = pd.Series(pd.NaT, index=faults.index, dtype="datetime64[ns, UTC]")
+    if big.empty:
+        return last
+    lat = big["latitude"].to_numpy()
+    lon = big["longitude"].to_numpy()
+    reach = np.maximum(min_dist_km, rupture_length_km(big[mw_col].to_numpy()) / 2)
+    times = big["time"].reset_index(drop=True)
+    for j, coords in enumerate(faults["coords"]):
+        d = point_to_polyline_km(lat, lon, coords)
+        hit = np.flatnonzero(d <= reach)
+        if hit.size:
+            last.iloc[j] = times.iloc[hit].max()
+    return last
+
+
 def fault_summary(faults: pd.DataFrame, events: pd.DataFrame, start: pd.Timestamp,
                   end: pd.Timestamp, mw_col: str = "mw_best", min_mw: float = 6.0,
                   max_dist_km: float = 15.0) -> pd.DataFrame:
@@ -116,11 +148,10 @@ def fault_summary(faults: pd.DataFrame, events: pd.DataFrame, start: pd.Timestam
     katalog-içi bir göstergedir.
     """
     big = events[(events[mw_col] >= min_mw) & (events["time"] >= start)
-                 & (events["time"] < end)].copy()
-    big["fault_id"] = assign_events_to_faults(big, faults, max_dist_km)
-    last = big.dropna(subset=["fault_id"]).groupby("fault_id")["time"].max()
+                 & (events["time"] < end)]
+    last = last_rupture_times(big, faults, mw_col, max_dist_km)
     out = faults.drop(columns=["coords"]).copy()
-    out["last_big_event"] = out["fault_id"].map(last)
+    out["last_big_event"] = last.to_numpy()
     ref = out["last_big_event"].fillna(start)
     out["years_since_ref"] = (end - ref).dt.days / 365.25
     out["m0_since_ref"] = out["m0_rate_Nm_yr"] * out["years_since_ref"]

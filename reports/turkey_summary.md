@@ -2,39 +2,41 @@
 
 > **Uyarı.** Bu rapordaki hiçbir sayı bir deprem tahmini değildir. Hepsi betimsel istatistik veya ileride ileriye dönük olarak sınanacak hipotez değişkenleridir.
 
-Üretim zamanı: 2026-11-24 19:42 UTC. Katalog bitişi: 2026-11-24.
+Üretim zamanı: 2026-11-24 19:57 UTC. Katalog bitişi: 2026-11-24.
 
 ## 1. Katalog
 
-* Birleşik olay sayısı: **221,236** (emsc: 218,117, usgs: 2,224, afad: 895; tekilleştirme sonrası tutulan kaydın kaynağı)
+* Birleşik olay sayısı: **439,471** (afad: 261,600, emsc: 175,587, usgs: 2,284; tekilleştirme sonrası tutulan kaydın kaynağı)
 * Zaman aralığı: 1904-08-11 – 2026-11-23
-* Birden fazla kaynakta eşleşen olay: 3,517
-* Mw bilgisi olan olay: 1,943
+* Birden fazla kaynakta eşleşen olay: 48,945
+* Mw bilgisi olan olay: 3,417
 
 ## 2. Gutenberg-Richter
 
-Dönem 2008–2026 (18.9 yıl), Türkiye kutusu.
+Dönem 2010–2026 (16.9 yıl), Türkiye kutusu.
 
-* Mc (maks. eğrilik +0,2): 2.2; Mc (iyi-uyum, R=93%): 2.5; kullanılan: **2.5**
-* b = **0.986** ± 0.003 (Shi-Bolt), önyükleme σ = 0.002, N(M≥Mc) = 110,449
-* Yıllık a-değeri = 6.23. GR ekstrapolasyonuyla yılda M≥5: 20.1, M≥6: 2.08, M≥7: 0.215 (artçılar dahil, betimsel)
+* Mc (maks. eğrilik +0,2): 2.2; Mc (iyi-uyum, R=91%): 2.3; kullanılan: **2.3**
+* b = **0.899** ± 0.002 (Shi-Bolt), önyükleme σ = 0.002, N(M≥Mc) = 139,426
+* Yıllık a-değeri = 5.99. GR ekstrapolasyonuyla yılda M≥5: 30.8, M≥6: 3.88, M≥7: 0.489 (artçılar dahil, betimsel)
 
 ![FMD](figures/fmd_turkey.png)
 
 Alt bölgeler:
 
-| bölge                           |     n |   Mc |     b |   σ_b |   yıllık_M≥5_GR |
-|:--------------------------------|------:|-----:|------:|------:|----------------:|
-| Marmara (KAF batı)              |  8709 |  2.2 | 0.867 | 0.008 |            1.36 |
-| KAF orta (Bolu-Erzincan)        |  7488 |  2.2 | 0.782 | 0.007 |            2.05 |
-| Doğu Anadolu Fay Zonu           | 34721 |  2.2 | 0.729 | 0.004 |           12.78 |
-| Batı Anadolu / Ege graben       | 70652 |  2.2 | 0.824 | 0.003 |           14.65 |
-| Doğu Anadolu platosu (Van-Kars) | 22254 |  2.8 | 1.078 | 0.012 |            1.85 |
+| bölge                           |      n |   Mc |     b |   σ_b |   yıllık_M≥5_GR |
+|:--------------------------------|-------:|-----:|------:|------:|----------------:|
+| Marmara (KAF batı)              |  12042 |  2.3 | 1.009 | 0.013 |            0.6  |
+| KAF orta (Bolu-Erzincan)        |  17576 |  2.4 | 1.092 | 0.015 |            0.4  |
+| Doğu Anadolu Fay Zonu           | 100262 |  2   | 0.762 | 0.003 |           12.92 |
+| Batı Anadolu / Ege graben       | 140031 |  2.4 | 1.088 | 0.005 |            3.61 |
+| Doğu Anadolu platosu (Van-Kars) |  40127 |  2.6 | 1.066 | 0.01  |            2.08 |
+
+Not: Doğu Anadolu Fay Zonu'ndaki düşük b büyük ölçüde 2023 Kahramanmaraş dizisinden gelir; büyük bir ana şoktan hemen sonra küçük artçılar kaydedilemez (kısa süreli tamlık kaybı), bu da b'yi yapay olarak düşürür. AFAD verisi ISC üzerinden ~2025 sonuna kadar gelir; 2026 için yalnızca EMSC ve AFAD'ın son iki haftası vardır, bu yüzden 2026 küçük olay sayıları eksiktir.
 
 ## 3. Zaman içinde sismisite
 
-* Gardner-Knopoff ayıklaması sonrası bağımsız olay oranı (M≥Mc): 25%
-* b(t) aralığı: 0.37 – 1.58. Kısa süreli düşüşler çoğunlukla büyük deprem dizilerine (ör. 2011 Van, 2020 Elazığ/Sisam, 2023 Kahramanmaraş) ve ağ değişimlerine denk gelir; tek başına öncül kabul edilmemeli.
+* Gardner-Knopoff ayıklaması sonrası bağımsız olay oranı (M≥Mc): 23%
+* b(t) aralığı: 0.26 – 1.42. Kısa süreli düşüşler çoğunlukla büyük deprem dizilerine (ör. 2011 Van, 2020 Elazığ/Sisam, 2023 Kahramanmaraş) ve ağ değişimlerine denk gelir; tek başına öncül kabul edilmemeli.
 
 ![Büyüklük-zaman](figures/magnitude_time.png)
 
@@ -52,12 +54,12 @@ Zon başına 1900–2026 birikimi ile katalogdaki M≥5 olayların momenti (bağ
 
 | zone                            |   n_faults |   m0_accumulated |   m0_released |   release_ratio |   largest_event_mw |   largest_event_year |
 |:--------------------------------|-----------:|-----------------:|--------------:|----------------:|-------------------:|---------------------:|
-| Marmara (KAF batı)              |         13 |         8.65e+20 |      5.94e+20 |            0.69 |               7.6  |                 1999 |
+| Marmara (KAF batı)              |         13 |         8.65e+20 |      5.91e+20 |            0.68 |               7.6  |                 1999 |
 | KAF orta (Bolu-Erzincan)        |         19 |         1.16e+21 |      9.09e+20 |            0.78 |               7.6  |                 1944 |
-| Doğu Anadolu Fay Zonu           |         28 |         4.78e+20 |      9.67e+20 |            2.02 |               7.8  |                 2023 |
-| Batı Anadolu / Ege graben       |         86 |         5.79e+20 |      5.08e+20 |            0.88 |               7.23 |                 1970 |
-| Doğu Anadolu platosu (Van-Kars) |         81 |         5.71e+20 |      3.44e+20 |            0.6  |               7.3  |                 1976 |
-| Türkiye                         |        384 |         4.5e+21  |      5e+21    |            1.11 |               7.8  |                 1939 |
+| Doğu Anadolu Fay Zonu           |         28 |         4.78e+20 |      9.68e+20 |            2.02 |               7.8  |                 2023 |
+| Batı Anadolu / Ege graben       |         86 |         5.79e+20 |      4.92e+20 |            0.85 |               7.23 |                 1970 |
+| Doğu Anadolu platosu (Van-Kars) |         81 |         5.71e+20 |      3.42e+20 |            0.6  |               7.3  |                 1976 |
+| Türkiye                         |        384 |         4.5e+21  |      4.98e+21 |            1.11 |               7.8  |                 1939 |
 
 ![Moment bütçesi](figures/moment_budget.png)
 
@@ -65,23 +67,23 @@ Zon başına 1900–2026 birikimi ile katalogdaki M≥5 olayların momenti (bağ
 
 Katalog içi biriken momenti en yüksek 15 segment (son M≥6'dan veya 1900'den bu yana; segment düzeyinde atama kabadır):
 
-| fault_id   | slip_type        |   length_km |   slip_rate_mm_yr | last_big_event   |   years_since_ref |   mw_equiv_since_ref |
-|:-----------|:-----------------|------------:|------------------:|:-----------------|------------------:|---------------------:|
-| ME_TRCS996 | Dextral-Normal   |         275 |              21.9 | 1912-09-13       |               114 |                 7.68 |
-| ME_TRCS006 | Dextral          |         301 |              25   | 1953-09-07       |                73 |                 7.6  |
-| ME_TRCS003 | Dextral          |         301 |              22.4 | 1992-03-13       |                35 |                 7.28 |
-| ME_TRCS407 | Reverse          |         724 |               1   | katalogda yok    |               127 |                 7.17 |
-| ME_TRCS129 | Reverse          |         161 |               3.7 | katalogda yok    |               127 |                 7.12 |
-| ME_TRCS390 | Reverse          |         261 |               2.3 | katalogda yok    |               127 |                 7.11 |
-| ME_GRCS699 | Dextral-Reverse  |         178 |               6   | katalogda yok    |               127 |                 7.11 |
-| ME_TRCS056 | Sinistral-Normal |         110 |               6.8 | katalogda yok    |               127 |                 7.08 |
-| ME_TRCS130 | Reverse          |         145 |               3.7 | katalogda yok    |               127 |                 7.06 |
-| ME_TRCS055 | Sinistral        |          63 |               9.9 | katalogda yok    |               127 |                 7.06 |
-| ME_TRCS133 | Reverse          |         186 |               2.5 | katalogda yok    |               127 |                 7.05 |
-| ME_TRCS322 | Normal           |         126 |               5.7 | katalogda yok    |               127 |                 7.02 |
-| ME_TRCS022 | Dextral          |         141 |               6.4 | 1943-06-20       |                83 |                 7.02 |
-| ME_TRCS120 | Sinistral        |         202 |               2.3 | katalogda yok    |               127 |                 6.97 |
-| ME_TRCS023 | Dextral          |          97 |               5.3 | katalogda yok    |               127 |                 6.96 |
+| fault_id   | slip_type       |   length_km |   slip_rate_mm_yr | last_big_event   |   years_since_ref |   mw_equiv_since_ref |
+|:-----------|:----------------|------------:|------------------:|:-----------------|------------------:|---------------------:|
+| ME_TRCS006 | Dextral         |         301 |              25   | 1953-09-07       |                73 |                 7.6  |
+| ME_TRCS996 | Dextral-Normal  |         275 |              21.9 | 1975-03-27       |                52 |                 7.45 |
+| ME_TRCS003 | Dextral         |         301 |              22.4 | 1992-03-13       |                35 |                 7.28 |
+| ME_TRCS407 | Reverse         |         724 |               1   | katalogda yok    |               127 |                 7.17 |
+| ME_TRCS129 | Reverse         |         161 |               3.7 | katalogda yok    |               127 |                 7.12 |
+| ME_TRCS390 | Reverse         |         261 |               2.3 | katalogda yok    |               127 |                 7.11 |
+| ME_GRCS699 | Dextral-Reverse |         178 |               6   | katalogda yok    |               127 |                 7.11 |
+| ME_TRCS130 | Reverse         |         145 |               3.7 | katalogda yok    |               127 |                 7.06 |
+| ME_TRCS133 | Reverse         |         186 |               2.5 | 1905-12-04       |               121 |                 7.04 |
+| ME_TRCS023 | Dextral         |          97 |               5.3 | katalogda yok    |               127 |                 6.96 |
+| ME_TRCS322 | Normal          |         126 |               5.7 | 1928-03-31       |                99 |                 6.95 |
+| ME_TRCS331 | Normal          |         123 |               4.3 | katalogda yok    |               127 |                 6.93 |
+| ME_TRCS033 | Dextral-Normal  |         132 |               3.9 | 1944-10-06       |                82 |                 6.86 |
+| ME_TRCS027 | Dextral         |          98 |               3.6 | katalogda yok    |               127 |                 6.86 |
+| ME_TRCS120 | Sinistral       |         202 |               2.3 | 1939-12-26       |                87 |                 6.86 |
 
 ## 5. Mekânda sismisite
 
@@ -91,18 +93,20 @@ Katalog içi biriken momenti en yüksek 15 segment (son M≥6'dan veya 1900'den 
 
 ![b haritası](figures/b_value_map.png)
 
+Not: b haritası artçı ayıklanmamış katalogla yapıldı; ayıklama küçük olayları orantısız çıkardığı için b'yi yapay olarak düşürüyor. Bazı yüksek-b kümeleri taş ocağı/maden patlamalarından kaynaklanıyor olabilir (EMSC kataloğunda olay türü yok; AFAD/ISC verisi patlamaları ayrı işaretliyor ve onları zaten dışarıda bırakıyoruz).
+
 Düşük b-değerli bölgeler bazı çalışmalarda yüksek diferansiyel gerilmeyle ilişkilendirilmiştir (Schorlemmer vd. 2005). Bu bir hipotezdir; harita bu hipotezi sınamak için girdi olarak tutulur.
 
 ## 6. Referans modeller ve test altyapısı
 
-Eğitim 2008–2020, sınama 2020–2025, M≥4, 0,5° hücre. Bu iki model ileride ETAS ve fay/özellik tabanlı modellerin geçmesi gereken asgari çıtadır.
+Eğitim 2010–2020, sınama 2020–2025, M≥4, 0,5° hücre. Bu iki model ileride ETAS ve fay/özellik tabanlı modellerin geçmesi gereken asgari çıtadır.
 
 | model               |   N_beklenen |   N_gözlenen |   N_testi_q |    logL |   L_testi_γ |
 |:--------------------|-------------:|-------------:|------------:|--------:|------------:|
-| uniform_poisson     |        571.5 |         1254 |           0 | -3235   |           0 |
-| smoothed_seismicity |        571.5 |         1254 |           0 | -3064.2 |           0 |
+| uniform_poisson     |        615.8 |         1434 |           0 | -3795.2 |           0 |
+| smoothed_seismicity |        615.8 |         1434 |           0 | -3731.4 |           0 |
 
-Düzleştirilmiş sismisitenin düzgün modele göre olay başına bilgi kazancı: **0.14** nat (p = 2.1e-05). Her iki model de zamanda sabit olduğundan 2023 Kahramanmaraş dizisini (kümelenme) yakalayamaz; N-testindeki düşük q bu yüzdendir ve ETAS'ın neden gerekli olduğunu gösterir.
+Düzleştirilmiş sismisitenin düzgün modele göre olay başına bilgi kazancı: **0.04** nat (p = 0.14). Her iki model de zamanda sabit olduğundan 2023 Kahramanmaraş dizisini (kümelenme) yakalayamaz; N-testindeki düşük q bu yüzdendir ve ETAS'ın neden gerekli olduğunu gösterir.
 
 ## 7. Fay kabuk elemanları
 
@@ -135,15 +139,15 @@ Kayıtlı 51 parametre (henüz verisi olmayanlar boş alan olarak tanımlı):
 | seis_n_all                | -         | seismicity  | 100%        | Elemana R km içindeki tüm olaylar (referans zamandan önce)                 |
 | seis_n_10y                | -         | seismicity  | 100%        | Son 10 yıldaki olay sayısı (M≥Mc)                                          |
 | seis_n_1y                 | -         | seismicity  | 100%        | Son 1 yıldaki olay sayısı (M≥Mc)                                           |
-| seis_rate_z               | -         | seismicity  | 25%         | Hız değişimi z-değeri: son 1 yıl vs önceki 9 yıl (+ hızlanma, − sessizlik) |
+| seis_rate_z               | -         | seismicity  | 29%         | Hız değişimi z-değeri: son 1 yıl vs önceki 9 yıl (+ hızlanma, − sessizlik) |
 | seis_b_10y                | -         | seismicity  | 1%          | Son 10 yıl b-değeri (Aki-Utsu; n<30 ise boş)                               |
-| seis_max_mag              | -         | seismicity  | 59%         | Görülen en büyük büyüklük                                                  |
+| seis_max_mag              | -         | seismicity  | 66%         | Görülen en büyük büyüklük                                                  |
 | seis_yrs_since_m4         | yıl       | seismicity  | 12%         | Son M≥4'ten bu yana geçen süre                                             |
 | seis_yrs_since_m5         | yıl       | seismicity  | 2%          | Son M≥5'ten bu yana geçen süre                                             |
-| seis_log_m0_10y           | log10 N·m | seismicity  | 35%         | Son 10 yılda boşalan sismik moment                                         |
-| seis_mean_depth           | km        | seismicity  | 59%         | Yakın olayların ortalama derinliği                                         |
-| seis_depth_std            | km        | seismicity  | 44%         | Yakın olayların derinlik yayılımı                                          |
-| seis_frac_dependent       | -         | seismicity  | 59%         | Artçı/öncü (bağımlı) olay oranı: kümelenme/sürü göstergesi                 |
+| seis_log_m0_10y           | log10 N·m | seismicity  | 49%         | Son 10 yılda boşalan sismik moment                                         |
+| seis_mean_depth           | km        | seismicity  | 66%         | Yakın olayların ortalama derinliği                                         |
+| seis_depth_std            | km        | seismicity  | 53%         | Yakın olayların derinlik yayılımı                                          |
+| seis_frac_dependent       | -         | seismicity  | 66%         | Artçı/öncü (bağımlı) olay oranı: kümelenme/sürü göstergesi                 |
 | seis_m0_release_ratio_10y | -         | seismicity  | 100%        | Son 10 yılda boşalan / biriken moment                                      |
 | gnss_strain_rate          | 1/yıl     | placeholder | 0%          | GNSS'ten ikinci değişmez gerinim hızı                                      |
 | gnss_slip_deficit_mm_yr   | mm/yıl    | placeholder | 0%          | Blok modelinden kilitlenme × kayma açığı                                   |
@@ -168,6 +172,6 @@ Kayıtlı 51 parametre (henüz verisi olmayanlar boş alan olarak tanımlı):
 
 `data/processed/feature_table.csv.gz`: 546 hücre × 16 yıl = 8,736 satır, 21 özellik (n_mc_1y, n_mc_5y, n_mc_10y, n_mc_30y, n_m5_all, log_m0_5y, log_m0_30y, max_mag_all, yrs_since_m4, yrs_since_m5, yrs_since_m6, b_10y, fault_dist_km, fault_log_m0_rate, fault_max_slip_mm_yr, fault_n, rate_z_1y, depth_mean_10y, depth_p90_10y, frac_dependent_10y, aftershocks_per_m4_10y).
 
-Pozitif (en az bir olay olan) hücre-yıl sayısı: M≥3: 3,901, M≥4: 991, M≥5: 117, M≥6: 15.
+Pozitif (en az bir olay olan) hücre-yıl sayısı: M≥3: 3,943, M≥4: 988, M≥5: 127, M≥6: 18.
 
 Özellikler yalnızca pencere başlangıcından önceki veriden hesaplanır. Yeni değişkenler `deprem/features/table.py` içindeki `FEATURES` listesine eklenir.

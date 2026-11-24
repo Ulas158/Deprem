@@ -1,0 +1,85 @@
+{
+  "id": "element_params",
+  "label": "Fay elemanı parametreleri",
+  "description": "1 km elemanların parametreleri (3 km parçalara özetlenmiş): kayma hızı, son 10 yıl olay sayısı, b-değeri, hız değişimi (z), en büyük büyüklük, ortalama derinlik.",
+  "group": "Faylar ve enerji",
+  "order": 11,
+  "data": "element_params.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "line",
+    "width": 2.5,
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "seis_n_10y",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#2a2f3a"
+      ],
+      [
+        5,
+        "#3f7be0"
+      ],
+      [
+        50,
+        "#8a5cf0"
+      ],
+      [
+        500,
+        "#ff8c42"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Son 10 yıl olay (5 km içinde)",
+    "unit": "",
+    "labels": [
+      "0",
+      "5",
+      "50",
+      "500+"
+    ]
+  },
+  "tooltip": {
+    "title": "fault_id",
+    "fields": [
+      {
+        "property": "slip_rate_mm_yr",
+        "label": "Kayma hızı",
+        "unit": "mm/yıl",
+        "digits": 1
+      },
+      {
+        "property": "seis_n_10y",
+        "label": "Son 10 yıl olay",
+        "digits": 0
+      },
+      {
+        "property": "seis_b_10y",
+        "label": "b-değeri",
+        "digits": 2
+      },
+      {
+        "property": "seis_rate_z",
+        "label": "Hız değişimi z",
+        "digits": 1
+      },
+      {
+        "property": "seis_max_mag",
+        "label": "En büyük M",
+        "digits": 1
+      },
+      {
+        "property": "seis_mean_depth",
+        "label": "Ort. derinlik",
+        "unit": "km",
+        "digits": 1
+      }
+    ]
+  }
+}
