@@ -24,6 +24,8 @@ export const FAULT_TYPES = [
   { key: 'Oblique', label: 'Verev (karma)', c: '#b18cff' },
 ];
 
+export const MOMENT_STOPS = [[5, '#3f7be0'], [6, '#8a5cf0'], [6.5, '#e0497a'], [7, '#ff8c42'], [7.5, '#ffe680']];
+
 export const SLIP_STOPS = [[0, '#33415a'], [1, '#6f5bd0'], [4, '#e0497a'], [10, '#ff8c42'], [22, '#ffe680']];
 
 export function ageColor(hours) {
@@ -131,8 +133,8 @@ export const OVERLAYS = [
     probe: 'data/moment_deficit.geojson', mapLayers: ['moment-glow', 'moment'],
     setup: (map, data) => {
       map.addSource('moment', { type: 'geojson', data });
-      const v = ['coalesce', ['get', 'mw_equiv'], 0];
-      const col = ['interpolate', ['linear'], v, 5, '#3f7be0', 6, '#8a5cf0', 6.5, '#e0497a', 7, '#ff8c42', 7.5, '#ffe680'];
+      const v = ['coalesce', ['get', 'mw_equiv'], ['get', 'mw_equiv_since_ref'], 0];
+      const col = ['interpolate', ['linear'], v, ...MOMENT_STOPS.flat()];
       map.addLayer({ id: 'moment-glow', type: 'line', source: 'moment', paint: { 'line-color': col, 'line-width': 10, 'line-blur': 8, 'line-opacity': 0.35 } }, 'quakes-glow');
       map.addLayer({ id: 'moment', type: 'line', source: 'moment', paint: { 'line-color': col, 'line-width': 3.2 } }, 'quakes-glow');
     },
