@@ -1,6 +1,6 @@
 // Harita katmanları ve katman kayıt defteri.
-// Yeni bir bilimsel katman (ör. moment açığı, Coulomb gerilme) eklemek için
-// OVERLAYS dizisine bir giriş eklemek yeterlidir; panel ve aç/kapat düğmesi otomatik oluşur.
+// Temel katmanlar (depremler, faylar, şehirler, ızgara). Bilimsel veri katmanları için
+// web/data/layers/ altına bir *.layer.json tanımı eklemek yeterlidir (bkz. custom-layers.js, README).
 
 // ---------- Renk ölçekleri ----------
 export const AGE_STOPS = [
@@ -23,8 +23,6 @@ export const FAULT_TYPES = [
   { key: 'Reverse', label: 'Ters / bindirme', c: '#ff4f8b' },
   { key: 'Oblique', label: 'Verev (karma)', c: '#b18cff' },
 ];
-
-export const MOMENT_STOPS = [[5, '#3f7be0'], [6, '#8a5cf0'], [6.5, '#e0497a'], [7, '#ff8c42'], [7.5, '#ffe680']];
 
 export const SLIP_STOPS = [[0, '#33415a'], [1, '#6f5bd0'], [4, '#e0497a'], [10, '#ff8c42'], [22, '#ffe680']];
 
@@ -112,10 +110,11 @@ export function graticule() {
 // ---------- Katman kayıt defteri ----------
 // id: benzersiz ad · label/desc: panel metni · visible: başlangıç durumu
 // mapLayers: aç/kapat ile görünürlüğü değişen MapLibre katman kimlikleri
-// soon: henüz veri yoksa pasif gösterilir · probe: varsa bu dosya bulunduğunda katman etkinleşir
+// soon: henüz veri yoksa pasif gösterilir · group: paneldeki başlık
+// Bilimsel veri katmanları burada değil, web/data/layers/*.layer.json tanımlarından gelir (custom-layers.js).
 export const OVERLAYS = [
   {
-    id: 'quakes', label: 'Depremler', desc: 'EMSC canlı akışı', visible: true,
+    id: 'quakes', label: 'Depremler', desc: 'EMSC canlı akışı', visible: true, group: 'Temel katmanlar',
     mapLayers: ['quakes-glow', 'quakes'], dom: 'pulses',
   },
   {
@@ -127,31 +126,6 @@ export const OVERLAYS = [
   },
   {
     id: 'grid', label: 'Koordinat ızgarası', desc: '2° aralıklı', visible: true, mapLayers: ['graticule'],
-  },
-  {
-    id: 'moment', label: 'Moment açığı', desc: 'Fay başına birikmiş sismik moment', soon: true,
-    probe: 'data/moment_deficit.geojson', mapLayers: ['moment-glow', 'moment'],
-    setup: (map, data) => {
-      map.addSource('moment', { type: 'geojson', data });
-      const v = ['coalesce', ['get', 'mw_equiv'], ['get', 'mw_equiv_since_ref'], 0];
-      const col = ['interpolate', ['linear'], v, ...MOMENT_STOPS.flat()];
-      map.addLayer({ id: 'moment-glow', type: 'line', source: 'moment', paint: { 'line-color': col, 'line-width': 10, 'line-blur': 8, 'line-opacity': 0.35 } }, 'quakes-glow');
-      map.addLayer({ id: 'moment', type: 'line', source: 'moment', paint: { 'line-color': col, 'line-width': 3.2 } }, 'quakes-glow');
-    },
-  },
-  {
-    id: 'stress', label: 'Coulomb gerilme değişimi', desc: 'Büyük depremler sonrası ΔCFS', soon: true,
-    probe: 'data/coulomb_stress.geojson', mapLayers: ['stress'],
-    setup: (map, data) => {
-      map.addSource('stress', { type: 'geojson', data });
-      map.addLayer({
-        id: 'stress', type: 'fill', source: 'stress',
-        paint: {
-          'fill-color': ['interpolate', ['linear'], ['coalesce', ['get', 'dcfs_bar'], 0], -1, '#3f7be0', 0, 'rgba(0,0,0,0)', 1, '#ff3b30'],
-          'fill-opacity': 0.45,
-        },
-      }, 'faults-glow');
-    },
   },
 ];
 
