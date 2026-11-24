@@ -1,0 +1,29 @@
+{
+  "id": "moment_deficit",
+  "label": "Moment açığı",
+  "description": "Fay başına 1900'den bu yana birikmiş sismik moment",
+  "group": "Fay mekaniği",
+  "order": 10,
+  "data": "data/moment_deficit.geojson",
+  "visible": false,
+  "style": { "type": "line", "width": 3, "glow": true },
+  "color": {
+    "property": ["mw_equiv", "mw_equiv_since_ref"],
+    "type": "interpolate",
+    "stops": [[5, "#3f7be0"], [6, "#8a5cf0"], [6.5, "#e0497a"], [7, "#ff8c42"], [7.5, "#ffe680"]]
+  },
+  "legend": { "title": "Moment açığı · eşdeğer Mw", "labels": ["5", "6.5", "7.5+"] },
+  "tooltip": {
+    "title": "fault_id",
+    "fields": [
+      { "property": "mw_equiv", "label": "Birikmiş moment (Mw eşdeğeri)", "digits": 2 },
+      { "property": "mw_equiv_since_ref", "label": "Birikmiş moment (Mw eşdeğeri)", "digits": 2 },
+      { "property": "m0_since_ref", "label": "M₀", "unit": "N·m" },
+      { "property": "slip_type", "label": "Mekanizma" },
+      { "property": "slip_rate_mm_yr", "label": "Kayma hızı", "unit": "mm/yıl", "digits": 1 },
+      { "property": "length_km", "label": "Uzunluk", "unit": "km", "digits": 0 },
+      { "property": "last_big_event", "label": "Son büyük deprem" }
+    ]
+  },
+  "note": "Katalog içi biriken moment; tahmin değildir. 1900 öncesi depremler hesaba katılmamıştır."
+}
