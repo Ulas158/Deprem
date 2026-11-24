@@ -29,8 +29,10 @@
       "NOAA_NCEI"
     ],
     "scale_mag": 0.3,
-    "scale_horiz_km": 25.0,
-    "scale_time_days": 180.0,
+    "scale_horiz_km": 20.0,
+    "scale_depth_km": 30.0,
+    "scale_time_days": 30.0,
+    "w_floor": 0.001,
     "missing_mag_err": 1.0,
     "incomplete_factor": 0.3,
     "suspect_factor": 0.0,

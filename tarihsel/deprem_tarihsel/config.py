@@ -54,11 +54,14 @@ class Config:
     source_priority: tuple = ("EPICA", "SHARE_CET", "GEM_GHEC", "NOAA_NCEI")
 
     # --- Ağırlık formülü ---------------------------------------------------
-    # w_unc = 1 / (1 + (σM/sM)² + (σloc/sL)² + (σt/sT)²)
-    # Aletsel katalog modülüyle aynı biçim; ölçekler parametrik.
+    # w_unc = max(w_floor, 1 / (1 + (σM/sM)² + (σloc/sL)² + (σz/sZ)² + (σt/sT)²))
+    # Aletsel katalog modülüyle (src/deprem/catalog/weights.py, WeightConfig.scales) aynı
+    # biçim ve ölçekler. Derinlik terimi yalnızca kaynak derinlik belirsizliği verdiyse eklenir.
     scale_mag: float = 0.3
-    scale_horiz_km: float = 25.0
-    scale_time_days: float = 180.0
+    scale_horiz_km: float = 20.0
+    scale_depth_km: float = 30.0
+    scale_time_days: float = 30.0
+    w_floor: float = 1e-3
     # Büyüklüğü olmayan kayıtlarda büyüklük terimi için kullanılan σM.
     missing_mag_err: float = 1.0
     # Tamlık penceresi dışındaki kayıtların çarpanı.

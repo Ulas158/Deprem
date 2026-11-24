@@ -53,7 +53,8 @@ core = load(core_only=True)      # aletsel katalogla ortak sütunlar
 ```
 
 MÖ tarihler `-0281-07-02T12:00:00Z` biçimindedir; pandas ile okurken `format="ISO8601"` verilmelidir
-(`io.load` bunu yapar).
+(`io.load` bunu yapar). Nanosaniye çözünürlüklü araçlar 1677 öncesini taşımadığı için her kayıtta ayrıca
+sayısal `decimal_year` sütunu vardır.
 
 ## Şema
 
@@ -87,7 +88,9 @@ Ağırlıklar elle verilmez; her kaydın kendi belirsizliklerinden hesaplanır. 
 σloc = horiz_err_km (yoksa kaynağa göre atanan: 30-50 km)
 σt   = time_err_s (gün)
 
-w_unc           = 1 / (1 + (σM/0.3)² + (σloc/25 km)² + (σt/180 gün)²)
+σz   = depth_err_km (yalnızca kaynak verdiyse; yoksa bu terim 0)
+
+w_unc           = max(0.001, 1 / (1 + (σM/0.3)² + (σloc/20 km)² + (σz/30 km)² + (σt/30 gün)²))
 w_completeness  = 1, kayıt tamlık penceresindeyse; değilse 0.3
 w_suspect       = 0, konum kuşkuluysa; değilse 1
 training_weight = w_unc · w_completeness · w_suspect   (yinelenen, tercih edilmeyen kayıtlarda 0)
@@ -95,11 +98,13 @@ training_weight = w_unc · w_completeness · w_suspect   (yinelenen, tercih edil
 
 Bileşenler (`w_mag`, `w_loc`, `w_time`, `w_unc`, `w_completeness`, `w_suspect`) ve kullanılan σ değerleri
 (`mag_err_used`, `horiz_err_used`, atanıp atanmadığı `*_assigned`) ayrı sütunlarda saklanır; model başka bir
-birleştirme denemek isterse yeniden hesaplayabilir. Biçim aletsel katalog modülündeki
-`w = 1/(1+Σ(σ/s)²)` ile aynıdır.
+birleştirme denemek isterse yeniden hesaplayabilir. Biçim ve ölçekler aletsel katalog modülündeki
+`w = 1/(1+Σ(σ/s)²)` (`src/deprem/catalog/weights.py`, `WeightConfig.scales`) ile aynıdır; iki katalog
+aynı ağırlık ölçeğindedir. Yalnızca yıl düzeyinde bilinen tarihler zaman teriminden belirgin ceza alır
+(w_time ≈ 0.07); ay düzeyi ≈ 0.92, gün ve daha ince ≈ 1.
 
-Sonuç: tercih edilen tarihsel kayıtların ağırlık ortancası ≈ 0.04, en yükseği ≈ 0.5. İyi belirlenmiş bir
-aletsel kaydın ağırlığı (σM≈0.1, σloc≈5 km varsayımıyla ≈0.87) bunun yaklaşık 20 katıdır. Tarihsel veri böylece etkisini korur ama aletsel veriyi bastırmaz.
+Sonuç: tercih edilen tarihsel kayıtların ağırlık ortancası ≈ 0.02, en yükseği ≈ 0.5. İyi belirlenmiş bir
+aletsel kaydın ağırlığı (σM≈0.1, σloc≈5 km varsayımıyla ≈0.85) bunun yaklaşık 40 katıdır. Tarihsel veri böylece etkisini korur ama aletsel veriyi bastırmaz.
 
 ### Tamlık (Stepp 1972)
 
