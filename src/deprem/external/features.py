@@ -89,7 +89,7 @@ def f_dynamic(past, cells, t0, ctx):
     remote = ctx.get("remote")
     if remote is None:
         remote = ctx["remote"] = _default_remote()
-    names = ["dyn_trigger_beta", "dyn_n_remote"]
+    names = ["dyn_trigger_beta"]
     if remote is None or remote.empty:
         return pd.DataFrame(index=cells["cell_id"], columns=names, dtype=float)
     r = remote[(remote["time"] < t0) & (remote["time"] >= t0 - pd.DateOffset(years=10))]
@@ -97,7 +97,10 @@ def f_dynamic(past, cells, t0, ctx):
     lat_c = cells.set_index("cell_id")["lat_c"]
     lon_c = cells.set_index("cell_id")["lon_c"]
     res = remote_triggering(w, r, lat_c, lon_c, "cell_id")
-    return res.rename(columns={"dyn_beta": "dyn_trigger_beta"})[names]
+    # Uzak deprem sayısı zamanla değişen küresel bir büyüklüktür (yıl etkisi gibi davranır,
+    # sınama dönemine taşınmaz); modele yalnızca yeterli olaya dayanan β girer.
+    beta = res["dyn_beta"].where(res["dyn_n_total"] >= 20)
+    return pd.DataFrame({"dyn_trigger_beta": beta}, index=res.index)
 
 
 @register_feature("human_sites")
