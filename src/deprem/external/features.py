@@ -73,9 +73,22 @@ def f_swarms(past, cells, t0, ctx):
     return out
 
 
+def _default_remote() -> pd.DataFrame | None:
+    """``scripts/run_external.py`` ile indirilen USGS küresel M≥6,5 listesi (varsa)."""
+    from pathlib import Path
+    p = Path(__file__).resolve().parents[3] / "data" / "raw" / "usgs_global_m65.csv"
+    if not p.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(p)
+    df["time"] = pd.to_datetime(df["time"], utc=True, format="ISO8601")
+    return df[["time", "latitude", "longitude", "mag"]]
+
+
 @register_feature("dynamic_triggering")
 def f_dynamic(past, cells, t0, ctx):
     remote = ctx.get("remote")
+    if remote is None:
+        remote = ctx["remote"] = _default_remote()
     names = ["dyn_trigger_beta", "dyn_n_remote"]
     if remote is None or remote.empty:
         return pd.DataFrame(index=cells["cell_id"], columns=names, dtype=float)
