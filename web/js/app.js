@@ -254,12 +254,13 @@ async function loadWindow() {
   const since = Date.now() - state.windowDays * DAY;
   if (since >= state.loadedSince) return render();
   try {
-    const { source, events } = await fetchSince(since);
+    const { source, events, snapshot } = await fetchSince(since);
     state.source = source;
     state.loadedSince = since;
     ingest(events);
     render();
-    if (state.live === 'connecting' || state.live === 'offline') setLive('poll');
+    if (snapshot) setLive('snapshot');
+    else if (state.live === 'connecting' || state.live === 'offline') setLive('poll');
   } catch (err) {
     console.error(err);
     setLive('offline');
@@ -268,7 +269,8 @@ async function loadWindow() {
 
 async function poll() {
   try {
-    const { source, events } = await fetchSince(Date.now() - 3 * HOUR);
+    const { source, events, snapshot } = await fetchSince(Date.now() - 3 * HOUR);
+    if (snapshot) return;
     state.source = source;
     ingest(events, { announce: true });
     if (state.live !== 'live') setLive('poll');
@@ -282,12 +284,13 @@ function setLive(s) {
   state.live = s;
   const el = $('#live');
   el.dataset.state = s;
-  $('#live-text').textContent = { live: 'Canlı', poll: 'Güncel', offline: 'Bağlantı yok', connecting: 'Bağlanıyor' }[s];
+  $('#live-text').textContent = { live: 'Canlı', poll: 'Güncel', offline: 'Bağlantı yok', connecting: 'Bağlanıyor', snapshot: 'Önizleme' }[s];
   el.title = {
     live: 'EMSC canlı akışına bağlı; yeni depremler anında görünür',
     poll: `Canlı akış yok; veriler her ${POLL_MS / 1000} sn'de yenileniyor`,
     offline: 'Veri kaynaklarına ulaşılamıyor; yeniden deneniyor',
     connecting: 'Bağlanıyor…',
+    snapshot: 'Canlı kaynaklara ulaşılamadı; kaydedilmiş anlık görüntü gösteriliyor',
   }[s];
 }
 
@@ -464,7 +467,10 @@ map.on('load', async () => {
 
   connectLive({
     onEvent: (e) => ingest([e], { announce: true }),
-    onState: (s) => setLive(s === 'live' ? 'live' : (state.loadedSince < Infinity ? 'poll' : 'offline')),
+    onState: (s) => {
+      if (state.live === 'snapshot' && s !== 'live') return;
+      setLive(s === 'live' ? 'live' : (state.loadedSince < Infinity ? 'poll' : 'offline'));
+    },
   });
   setInterval(poll, POLL_MS);
   setInterval(render, 30e3); // yaş renkleri ve "önce" süreleri tazelensin

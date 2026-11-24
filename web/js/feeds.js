@@ -75,8 +75,14 @@ export async function fetchSince(sinceMs) {
     return { source: 'EMSC', events: d.features.map(fromEmsc).filter(valid) };
   } catch (err) {
     console.warn('EMSC alınamadı, USGS deneniyor:', err);
-    const d = await getJson(`${USGS_FDSN}?format=geojson&${q}`);
-    return { source: 'USGS', events: d.features.map(fromUsgs).filter(valid) };
+    try {
+      const d = await getJson(`${USGS_FDSN}?format=geojson&${q}`);
+      return { source: 'USGS', events: d.features.map(fromUsgs).filter(valid) };
+    } catch (err2) {
+      // Son çare: sitenin yanında duran anlık görüntü (çevrimdışı/önizleme için isteğe bağlı)
+      const d = await getJson('data/snapshot.json');
+      return { source: 'Anlık görüntü', snapshot: true, events: d.features.map(fromEmsc).filter(valid) };
+    }
   }
 }
 

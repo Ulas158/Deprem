@@ -64,6 +64,8 @@ button { font: inherit; color: inherit; }
 .live[data-state="poll"] i { background: #5aa9ff; }
 .live[data-state="poll"] { color: #8cc4ff; }
 .live[data-state="offline"] i { background: #ff4d4d; }
+.live[data-state="snapshot"] { color: #ffd25a; }
+.live[data-state="snapshot"] i { background: #ffd25a; }
 
 /* ---------- Panel ---------- */
 .panel {
