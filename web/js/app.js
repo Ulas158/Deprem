@@ -1,6 +1,7 @@
 import { fetchSince, connectLive, inRegion } from './feeds.js';
+import { loadCustomLayers } from './custom-layers.js';
 import {
-  baseStyle, addDataLayers, OVERLAYS, AGE_STOPS, DEPTH_STOPS, FAULT_TYPES, SLIP_STOPS, MOMENT_STOPS,
+  baseStyle, addDataLayers, OVERLAYS, AGE_STOPS, DEPTH_STOPS, FAULT_TYPES, SLIP_STOPS,
   quakeColorExpr, faultColorExpr, ageColor, depthColor, faultTypeKey,
 } from './layers.js';
 
@@ -302,27 +303,14 @@ async function loadOverlays() {
   map.getSource('faults').setData(faults);
   OVERLAYS.find((o) => o.id === 'faults').desc = `GEM GAF-DB · ${faults.features.length} segment`;
 
-  // İleride eklenecek bilimsel katmanlar: dosya varsa otomatik etkinleşir
-  for (const o of OVERLAYS.filter((x) => x.probe)) {
-    try {
-      const r = await fetch(o.probe);
-      if (!r.ok) continue;
-      const data = await r.json();
-      // MapLibre vektör karo kodlaması çok büyük tamsayı benzeri değerlerde (ör. 1e18 N·m) bozuluyor;
-      // bu değerleri metne çevirerek koru.
-      for (const f of data.features || []) {
-        for (const [k, v] of Object.entries(f.properties || {})) {
-          if (typeof v === 'number' && Math.abs(v) >= 1e15) f.properties[k] = v.toExponential(3);
-        }
-      }
-      o.setup(map, data);
-      o.soon = false;
-      if (data.metadata?.note) o.desc = data.metadata.note;
-      o.count = data.features?.length;
-      state.visible[o.id] = false;
-      applyVisibility(o);
-    } catch (_) { /* henüz yok */ }
+  // Bilimsel veri katmanları (web/data/layers/*.layer.json)
+  const extra = await loadCustomLayers(map);
+  for (const o of extra) {
+    OVERLAYS.push(o);
+    state.visible[o.id] = o.visible && !o.soon;
+    applyVisibility(o);
   }
+  renderLegend();
   renderLayerList();
 }
 
@@ -334,13 +322,17 @@ function applyVisibility(o) {
 }
 
 function renderLayerList() {
-  $('#layer-list').innerHTML = OVERLAYS.map((o) => `
+  let group = null;
+  $('#layer-list').innerHTML = OVERLAYS.map((o) => {
+    const head = (o.group || 'Temel katmanlar') !== group ? `<h4 class="layer-group">${esc(group = o.group || 'Temel katmanlar')}</h4>` : '';
+    return `${head}
     <label class="layer ${o.soon ? 'soon' : ''}">
-      <input type="checkbox" data-id="${o.id}" ${state.visible[o.id] ? 'checked' : ''} ${o.soon ? 'disabled' : ''}>
+      <input type="checkbox" data-id="${esc(o.id)}" ${state.visible[o.id] ? 'checked' : ''} ${o.soon ? 'disabled' : ''}>
       <span class="sw"></span>
       <span class="txt"><b>${esc(o.label)}</b><span>${esc(o.desc)}</span></span>
-      ${o.soon ? '<span class="tag">yakında</span>' : ''}
-    </label>`).join('');
+      ${o.soon ? '<span class="tag">veri yok</span>' : ''}
+    </label>`;
+  }).join('');
 }
 
 $('#layer-list').addEventListener('change', (ev) => {
@@ -389,13 +381,6 @@ function renderLegend() {
     parts.push(`<div class="lg"><h3>Büyüklük</h3><div class="sizes">${sizes}</div></div>`);
     parts.push(`<div class="lg"><h3>${state.colorMode === 'depth' ? 'Derinlik' : 'Geçen süre'}</h3>${ramp}</div>`);
   }
-  const mo = OVERLAYS.find((o) => o.id === 'moment');
-  if (state.visible.moment && !mo.soon) {
-    parts.push(`<div class="lg"><h3>Moment açığı · eşdeğer Mw</h3>
-      <div class="ramp" style="background:linear-gradient(90deg,${MOMENT_STOPS.map((s) => s[1]).join(',')})"></div>
-      <div class="ramp-lbl"><span>5</span><span>6.5</span><span>7.5+</span></div>
-      <p class="lg-note">Tahmin değildir. 1900 öncesi depremler dahil değildir.</p></div>`);
-  }
   if (state.visible.faults) {
     const body = state.faultMode === 'rate'
       ? `<div class="ramp" style="background:linear-gradient(90deg,${SLIP_STOPS.map((s) => s[1]).join(',')})"></div>
@@ -403,6 +388,7 @@ function renderLegend() {
       : `<div class="keys">${FAULT_TYPES.map((t) => `<span><i style="background:${t.c}"></i>${t.label}</span>`).join('')}</div>`;
     parts.push(`<div class="lg"><h3>Faylar · ${state.faultMode === 'rate' ? 'kayma hızı' : 'mekanizma'}</h3>${body}</div>`);
   }
+  for (const o of OVERLAYS) if (o.legend && state.visible[o.id] && !o.soon) parts.push(o.legend());
   $('#legend').innerHTML = parts.join('');
   $('#legend').style.display = parts.length ? '' : 'none';
 }
@@ -471,24 +457,6 @@ map.on('mousemove', 'faults', (ev) => {
     <dl class="pop-grid"><dt>Tür</dt><dd>${esc(st)}</dd><dt>Kayma hızı</dt><dd>${rate}</dd><dt>Katalog</dt><dd>${esc(p.catalog)}</dd></dl>`).addTo(map);
 });
 map.on('mouseleave', 'faults', () => faultTip.remove());
-
-// Moment açığı katmanı (veri varsa)
-const fmtNum = (x, d = 1) => (x == null || x === 'null' ? '–' : (+x).toLocaleString('tr-TR', { maximumFractionDigits: d }));
-map.on('mousemove', 'moment', (ev) => {
-  const p = ev.features[0].properties;
-  const mw = p.mw_equiv ?? p.mw_equiv_since_ref;
-  faultTip.setLngLat(ev.lngLat).setHTML(`
-    <div class="pop-place" style="margin:0 0 6px">${esc(p.name || p.fault_id || 'Fay segmenti')}</div>
-    <dl class="pop-grid">
-      <dt>Birikmiş moment</dt><dd>Mw ${fmtNum(mw, 2)} eşdeğeri</dd>
-      ${p.m0_since_ref ? `<dt>M₀</dt><dd>${esc(String(p.m0_since_ref).replace('e+', '×10^'))} N·m</dd>` : ''}
-      <dt>Kayma hızı</dt><dd>${fmtNum(p.slip_rate_mm_yr)} mm/yıl</dd>
-      <dt>Uzunluk</dt><dd>${fmtNum(p.length_km, 0)} km</dd>
-      <dt>Son büyük deprem</dt><dd>${p.last_big_event && p.last_big_event !== 'null' ? esc(p.last_big_event) : 'katalogda yok'}</dd>
-    </dl>
-    <p class="lg-note">1900'den bu yana katalog içi hesap; tahmin değildir.</p>`).addTo(map);
-});
-map.on('mouseleave', 'moment', () => faultTip.remove());
 
 // ---------------------------------------------------------------- Başlat
 map.on('load', async () => {
