@@ -68,10 +68,78 @@ def write_report(run):
     for key, rel in ev["reliability"].items():
         df = pd.DataFrame(rel["model"])[["p_mean", "obs_freq", "n"]].round(3)
         md += [f"**{key} (model)**", "", df.to_markdown(index=False), ""]
+    md += _obs_sections(run, model)
     text = "\n".join(md)
     (run.dir / "report.md").write_text(text)
     rep = run.root / "reports" / f"training_{run.cfg['run_name']}.md"
     rep.write_text(text)
+
+
+def _verdict(ig, p):
+    if ig is None or (isinstance(ig, float) and not np.isfinite(ig)):
+        return "değerlendirilemedi"
+    if p is not None and p < 0.05:
+        return "anlamlı iyileşme" if ig > 0 else "anlamlı kötüleşme"
+    return "anlamlı fark yok"
+
+
+def _obs_sections(run, model):
+    path = run.dir / "obs_evaluation.json"
+    if not path.exists():
+        return []
+    from .observations.registry import table as obs_table
+    ev = json.loads(path.read_text())
+    md = ["", "## Yeni gözlemler: jeodezik, sismik ve hipotezler", "",
+          "Her gözlem için literatürdeki fiziksel ilişkiden bir **başlangıç etkisi** (öncül) ve "
+          "belirsizliği tanımlandı; model bunları 2012-2019 depremleriyle eğitip güncelledi. "
+          "Sınama yine modelin görmediği yıllarda, ETAS'a karşıdır.", ""]
+    reg = obs_table()
+    md += ["### Özellik listesi ve durumları", "",
+           reg[["name", "group", "evidence", "horizon", "status", "prior_mean", "prior_sd", "source"]]
+           .rename(columns={"name": "özellik", "group": "grup", "evidence": "kanıt", "horizon": "vade",
+                            "status": "durum", "prior_mean": "başlangıç etkisi", "prior_sd": "belirsizlik",
+                            "source": "kaynak"}).to_markdown(index=False), ""]
+    cov = ev.get("coverage", {}).get("overall")
+    if cov:
+        md += ["Kapsama (hücre-yıllarının kaçında değer var):", "",
+               pd.DataFrame({"özellik": list(cov), "kapsama": [f"%{100 * v:.0f}" for v in cov.values()]})
+               .to_markdown(index=False), ""]
+    pp = model.get("obs_prior_posterior", [])
+    if pp:
+        df = pd.DataFrame(pp)
+        df["oran_etkisi (×)"] = np.exp(df["öğrenilen"]).round(2)
+        md += ["### Başlangıç etkisi → eğitimle öğrenilen etki (yıllık model)", "",
+               "Katsayı: özellik 1 standart sapma arttığında deprem oranının logaritmasındaki değişim. "
+               "Sonsal sd, öncül sd'den çok küçükse veri bu etki hakkında bilgi taşıyor demektir; "
+               "yakınsa sonuç büyük ölçüde başlangıç varsayımıdır.", "",
+               df.round(3).to_markdown(index=False), ""]
+    ab = ev.get("yearly_ablation")
+    if ab:
+        md += ["### Gözlemlerin katkısı (sınama yılları, ETAS'a karşı olay başına bilgi kazancı)", "",
+               "Aynı model gözlemli ve gözlemsiz eğitildi; fark, gözlemlerin katkısıdır.", "",
+               pd.DataFrame(ab).to_markdown(index=False, floatfmt=".4g"), ""]
+        base = ab[0]
+        full = ab[1]
+        for key in [k for k in full if k.endswith("kazanç")]:
+            b, f = base.get(key), full.get(key)
+            if b is not None and f is not None:
+                md.append(f"* **{key.replace(' kazanç', '')}**: gözlemsiz {b:+.3f} → gözlemli {f:+.3f} "
+                          f"({_verdict(f, full.get(key.replace('kazanç', 'p')))} ETAS'a göre)")
+        md.append("")
+    stv = ev.get("shortterm")
+    if stv:
+        md += ["### Zayıf kanıtlı hipotezlerin kısa vadeli testi (iyonosfer, ULF, termal)", "",
+               "2° × 2° kutular, 5 günlük pencereler. Soru: son 10 günde anomali varsa, sonraki 5 günde "
+               "bağımsız (artçı olmayan) deprem olasılığı, depremlerin kendi kümelenmesinden "
+               "beklenenden yüksek mi? Eğitim 2012-2019, sınama 2020-2025. Alarm olasılık kazancı: "
+               "eğitimdeki %90'lık eşiği aşan anomaliden sonraki pencerelerde deprem payı / alarm "
+               "altındaki uzay-zaman payı (1 = şans düzeyi).", ""]
+        for mag, r in stv.items():
+            md += [f"**Hedef {mag}**", "", pd.DataFrame(r["results"]).to_markdown(index=False, floatfmt=".4g"), ""]
+            if r.get("coefs"):
+                md += ["Başlangıç etkisi → öğrenilen:", "",
+                       pd.DataFrame(r["coefs"]).to_markdown(index=False, floatfmt=".3g"), ""]
+    return md
 
 
 def _layer(dir_: Path, id_, label, desc, group, order, geojson, color, legend, tooltip,
@@ -204,3 +272,108 @@ def write_layers(run):
                {"property": "seis_max_mag", "label": "En büyük M", "digits": 1},
                {"property": "seis_mean_depth", "label": "Ort. derinlik", "unit": "km", "digits": 1}]},
            style={"type": "line", "width": 2.5, "opacity": 0.9})
+    if run.obs_enabled():
+        write_obs_layers(run, out)
+
+
+def _points(df, props, lat="lat", lon="lon"):
+    return {"type": "FeatureCollection", "metadata": {"note": NOTE},
+            "features": [{"type": "Feature",
+                          "geometry": {"type": "Point", "coordinates": [round(float(r[lon]), 4), round(float(r[lat]), 4)]},
+                          "properties": {p: _clean(r[p]) for p in props}} for _, r in df.iterrows()]}
+
+
+def write_obs_layers(run, out):
+    """Yeni gözlem katmanları: GPS istasyonları ve gerinim hızı, tekrarlayan depremler, dv/v."""
+    from .observations import gnss, repeaters
+    obs = run.root / "data" / "obs"
+    group = "Jeodezi ve sismik gözlemler"
+    if (obs / "gnss_station_year.csv").exists():
+        sty = pd.read_csv(obs / "gnss_station_year.csv")
+        last = sty.sort_values("year").groupby("site").tail(1).copy()
+        last["v_horiz"] = np.hypot(last["ve"], last["vn"])
+        _layer(out, "gnss_stations", "GPS istasyonları (hız, geçici hareket)",
+               "Nevada Geodetic Lab günlük çözümleri, Avrasya sabit. Renk: son 1 yılda uzun dönem "
+               "hızdan sapmanın gürültüye oranı (z). Her istasyonun verisi olan son yıl.", group, 30,
+               _points(last, ["site", "year", "ve", "vn", "v_horiz", "tr_z", "tr_e", "tr_n"]),
+               {"property": "tr_z", "type": "interpolate",
+                "stops": [[0, "#2a78d6"], [2, "#8a5cf0"], [4, "#ff8c42"], [8, "#ffe680"]]},
+               {"title": "Geçici hareket z", "unit": "", "labels": ["0", "2", "4", "8+"]},
+               {"title": "site", "fields": [
+                   {"property": "year", "label": "Yıl başı", "digits": 0},
+                   {"property": "v_horiz", "label": "Yatay hız", "unit": "mm/yıl", "digits": 1},
+                   {"property": "tr_z", "label": "Geçici z", "digits": 1},
+                   {"property": "tr_e", "label": "Hız sapması D", "unit": "mm/yıl", "digits": 1},
+                   {"property": "tr_n", "label": "Hız sapması K", "unit": "mm/yıl", "digits": 1}]},
+               style={"type": "circle", "radius": 4.5, "outline": "#ffffff", "opacity": 0.9})
+        cells = make_cells(TURKEY, 0.25)
+        sr = gnss.strain_rate_at(cells["lat_c"], cells["lon_c"], last)
+        cells = pd.concat([cells, sr], axis=1).dropna(subset=["strain_2inv"])
+        d = 0.125
+        feats = [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[
+            [round(r.lon_c - d, 3), round(r.lat_c - d, 3)], [round(r.lon_c + d, 3), round(r.lat_c - d, 3)],
+            [round(r.lon_c + d, 3), round(r.lat_c + d, 3)], [round(r.lon_c - d, 3), round(r.lat_c + d, 3)],
+            [round(r.lon_c - d, 3), round(r.lat_c - d, 3)]]]},
+            "properties": {"strain_ns": _clean(r.strain_2inv), "shear_ns": _clean(r.max_shear),
+                           "dilat_ns": _clean(r.dilatation), "n_sta": int(r.n_sta)}} for r in cells.itertuples()]
+        _layer(out, "gnss_strain", "GPS gerinim hızı",
+               "İstasyon hızlarının Gauss ağırlıklı (40 km) gradyanından ikinci değişmez gerinim hızı "
+               "(nanogerinim/yıl). Kabukta enerjinin ne hızla biriktiğini gösterir.", group, 31,
+               {"type": "FeatureCollection", "metadata": {"note": NOTE}, "features": feats},
+               {"property": "strain_ns", "type": "interpolate",
+                "stops": [[0, "#0b1220"], [30, "#1f3b73"], [100, "#3f7be0"], [300, "#e0497a"], [1000, "#ffe680"]]},
+               {"title": "Gerinim hızı", "unit": "nanogerinim/yıl", "labels": ["0", "100", "300", "1000+"]},
+               {"title": "Hücre", "fields": [
+                   {"property": "strain_ns", "label": "Gerinim hızı", "unit": "ns/yıl", "digits": 0},
+                   {"property": "shear_ns", "label": "Makaslama", "unit": "ns/yıl", "digits": 0},
+                   {"property": "dilat_ns", "label": "Hacim değişimi", "unit": "ns/yıl", "digits": 0},
+                   {"property": "n_sta", "label": "İstasyon sayısı", "digits": 0}]},
+               style={"type": "fill", "opacity": 0.45})
+    fam = repeaters.find_families(run.catalog)
+    if not fam.empty:
+        g = fam.groupby("family").agg(lat=("latitude", "mean"), lon=("longitude", "mean"),
+                                      depth_km=("depth_km", "mean"), n=("mag", "size"), mag=("mag", "mean"),
+                                      first=("time", "min"), last=("time", "max"), slip_cm=("slip_cm", "sum"))
+        span = ((g["last"] - g["first"]).dt.days / 365.25).clip(lower=0.5)
+        g["slip_rate_cm_yr"] = g["slip_cm"] / span
+        g["first"], g["last"] = g["first"].dt.year, g["last"].dt.year
+        _layer(out, "repeaters", "Tekrarlayan deprem adayları",
+               "Aynı noktada (≤1 km), benzer büyüklükte ve düzenli aralıklarla tekrarlayan küçük depremler. "
+               "Fayın derindeki sessiz kayma hızını gösterir (Nadeau & Johnson 1998). Katalog konum hatası "
+               "nedeniyle adaydır; dalga biçimi ile doğrulanmamıştır.", group, 32,
+               _points(g.reset_index(), ["family", "n", "mag", "depth_km", "first", "last", "slip_rate_cm_yr"]),
+               {"property": "slip_rate_cm_yr", "type": "interpolate",
+                "stops": [[0, "#2a78d6"], [0.5, "#8a5cf0"], [2, "#ff8c42"], [5, "#ffe680"]]},
+               {"title": "Kayma hızı", "unit": "cm/yıl", "labels": ["0", "0.5", "2", "5+"]},
+               {"title": "family", "fields": [
+                   {"property": "n", "label": "Olay sayısı", "digits": 0},
+                   {"property": "mag", "label": "Ort. büyüklük", "digits": 1},
+                   {"property": "depth_km", "label": "Derinlik", "unit": "km", "digits": 1},
+                   {"property": "first", "label": "İlk", "digits": 0},
+                   {"property": "last", "label": "Son", "digits": 0},
+                   {"property": "slip_rate_cm_yr", "label": "Kayma hızı", "unit": "cm/yıl", "digits": 2}]},
+               style={"type": "circle", "radius": 4, "outline": "#ffffff", "opacity": 0.9})
+    if (obs / "dvv_series.csv.gz").exists():
+        dv = pd.read_csv(obs / "dvv_series.csv.gz", parse_dates=["time"])
+        rows = []
+        for s, g in dv.groupby("sta"):
+            g = g.dropna(subset=["dvv"])
+            if len(g) < 20:
+                continue
+            t1 = g["time"].max()
+            rec = g[g["time"] >= t1 - pd.DateOffset(months=6)]["dvv"].mean()
+            prev = g[(g["time"] < t1 - pd.DateOffset(months=6)) & (g["time"] >= t1 - pd.DateOffset(months=30))]["dvv"].mean()
+            rows.append({"sta": s, "lat": g["lat"].iloc[0], "lon": g["lon"].iloc[0],
+                         "dvv_change_pct": 100 * (rec - prev), "n": len(g), "last": t1.strftime("%Y-%m-%d")})
+        if rows:
+            _layer(out, "dvv_stations", "Sismik hız değişimi (dv/v)",
+                   "Ortam gürültüsünden tek istasyon hız değişimi: son 6 ay − önceki 2 yıl (%). "
+                   "Negatif: kayaç hızı düşmüş (hasar veya akışkan basıncı artışı).", group, 33,
+                   _points(pd.DataFrame(rows), ["sta", "dvv_change_pct", "n", "last"]),
+                   {"property": "dvv_change_pct", "type": "interpolate",
+                    "stops": [[-0.1, "#ff3b30"], [0, "#2a2f3a"], [0.1, "#3f7be0"]]},
+                   {"title": "dv/v değişimi", "unit": "%", "labels": ["-0.1", "0", "+0.1"]},
+                   {"title": "sta", "fields": [
+                       {"property": "dvv_change_pct", "label": "dv/v değişimi", "unit": "%", "digits": 3},
+                       {"property": "last", "label": "Son ölçüm"}]},
+                   style={"type": "circle", "radius": 6, "outline": "#ffffff", "opacity": 0.9})
