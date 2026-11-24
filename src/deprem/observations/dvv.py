@@ -138,8 +138,11 @@ def station_ccfs(sta: str, out_dir: Path, start: pd.Timestamp, end: pd.Timestamp
     path = out_dir / f"ccf_{sta}.npz"
     done = {}
     if path.exists():
-        z = np.load(path, allow_pickle=True)
-        done = {pd.Timestamp(t): {k: z[k][i] for k in ("ZN", "ZE", "NE")} for i, t in enumerate(z["t"])}
+        try:
+            z = np.load(path, allow_pickle=True)
+            done = {pd.Timestamp(t): {k: z[k][i] for k in ("ZN", "ZE", "NE")} for i, t in enumerate(z["t"])}
+        except Exception as e:  # yarıda kesilmiş yazım: baştan başla
+            log.warning("%s bozuk (%s), yeniden hesaplanacak", path.name, e)
     times = [t for t in pd.date_range(start, end, freq=f"{step_days}D") + pd.Timedelta(hours=hour_ut)
              if t not in done]
     for i, t in enumerate(times):
@@ -148,8 +151,10 @@ def station_ccfs(sta: str, out_dir: Path, start: pd.Timestamp, end: pd.Timestamp
             done[t] = _ccf(*p)
         if (i + 1) % 100 == 0 or i == len(times) - 1:
             ts = sorted(done)
-            np.savez_compressed(path, t=np.array([str(x) for x in ts]),
+            tmp = path.with_name(path.stem + ".tmp.npz")
+            np.savez_compressed(tmp, t=np.array([str(x) for x in ts]),
                                 **{k: np.array([done[x][k] for x in ts]) for k in ("ZN", "ZE", "NE")})
+            tmp.replace(path)  # atomik: kesilirse eski dosya sağlam kalır
             log.info("dv/v %s: %d/%d saat işlendi", sta, i + 1, len(times))
     return path
 
