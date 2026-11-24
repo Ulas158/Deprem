@@ -1,0 +1,2237 @@
+{
+  "config": {
+    "lat_min": 34.0,
+    "lat_max": 44.0,
+    "lon_min": 24.0,
+    "lon_max": 46.0,
+    "max_year": 1899,
+    "default_mag_err": {
+      "EPICA": 0.5,
+      "SHARE_CET": 0.5,
+      "GEM_GHEC": 0.4,
+      "NOAA_NCEI": 0.5
+    },
+    "default_horiz_err_km": {
+      "EPICA": 30.0,
+      "SHARE_CET": 50.0,
+      "GEM_GHEC": 30.0,
+      "NOAA_NCEI": 50.0
+    },
+    "ms_to_mw_err": 0.17,
+    "unknown_mag_type_err": 0.3,
+    "dup_max_km": 100.0,
+    "dup_time_slack_days": 15.0,
+    "dup_max_dmag": 1.5,
+    "source_priority": [
+      "EPICA",
+      "SHARE_CET",
+      "GEM_GHEC",
+      "NOAA_NCEI"
+    ],
+    "scale_mag": 0.3,
+    "scale_horiz_km": 25.0,
+    "scale_time_days": 180.0,
+    "missing_mag_err": 1.0,
+    "incomplete_factor": 0.3,
+    "suspect_factor": 0.0,
+    "completeness_mag_bins": [
+      5.5,
+      6.0,
+      6.5,
+      7.0
+    ],
+    "default_completeness": {
+      "5.5": 1880,
+      "6.0": 1850,
+      "6.5": 1700,
+      "7.0": 1500
+    },
+    "stepp_window_years": 25,
+    "stepp_tolerance_sigma": 2.0,
+    "stepp_min_events": 5
+  },
+  "completeness": {
+    "5.5": {
+      "rates": [
+        {
+          "T_years": 25,
+          "start_year": 1875,
+          "n": 66,
+          "rate_per_yr": 2.64
+        },
+        {
+          "T_years": 50,
+          "start_year": 1850,
+          "n": 148,
+          "rate_per_yr": 2.96
+        },
+        {
+          "T_years": 75,
+          "start_year": 1825,
+          "n": 173,
+          "rate_per_yr": 2.30667
+        },
+        {
+          "T_years": 100,
+          "start_year": 1800,
+          "n": 181,
+          "rate_per_yr": 1.81
+        },
+        {
+          "T_years": 125,
+          "start_year": 1775,
+          "n": 199,
+          "rate_per_yr": 1.592
+        },
+        {
+          "T_years": 150,
+          "start_year": 1750,
+          "n": 224,
+          "rate_per_yr": 1.49333
+        },
+        {
+          "T_years": 175,
+          "start_year": 1725,
+          "n": 233,
+          "rate_per_yr": 1.33143
+        },
+        {
+          "T_years": 200,
+          "start_year": 1700,
+          "n": 250,
+          "rate_per_yr": 1.25
+        },
+        {
+          "T_years": 225,
+          "start_year": 1675,
+          "n": 265,
+          "rate_per_yr": 1.17778
+        },
+        {
+          "T_years": 250,
+          "start_year": 1650,
+          "n": 288,
+          "rate_per_yr": 1.152
+        },
+        {
+          "T_years": 275,
+          "start_year": 1625,
+          "n": 297,
+          "rate_per_yr": 1.08
+        },
+        {
+          "T_years": 300,
+          "start_year": 1600,
+          "n": 299,
+          "rate_per_yr": 0.99667
+        },
+        {
+          "T_years": 325,
+          "start_year": 1575,
+          "n": 310,
+          "rate_per_yr": 0.95385
+        },
+        {
+          "T_years": 350,
+          "start_year": 1550,
+          "n": 316,
+          "rate_per_yr": 0.90286
+        },
+        {
+          "T_years": 375,
+          "start_year": 1525,
+          "n": 321,
+          "rate_per_yr": 0.856
+        },
+        {
+          "T_years": 400,
+          "start_year": 1500,
+          "n": 328,
+          "rate_per_yr": 0.82
+        },
+        {
+          "T_years": 425,
+          "start_year": 1475,
+          "n": 335,
+          "rate_per_yr": 0.78824
+        },
+        {
+          "T_years": 450,
+          "start_year": 1450,
+          "n": 337,
+          "rate_per_yr": 0.74889
+        },
+        {
+          "T_years": 475,
+          "start_year": 1425,
+          "n": 339,
+          "rate_per_yr": 0.71368
+        },
+        {
+          "T_years": 500,
+          "start_year": 1400,
+          "n": 345,
+          "rate_per_yr": 0.69
+        },
+        {
+          "T_years": 525,
+          "start_year": 1375,
+          "n": 348,
+          "rate_per_yr": 0.66286
+        },
+        {
+          "T_years": 550,
+          "start_year": 1350,
+          "n": 354,
+          "rate_per_yr": 0.64364
+        },
+        {
+          "T_years": 575,
+          "start_year": 1325,
+          "n": 358,
+          "rate_per_yr": 0.62261
+        },
+        {
+          "T_years": 600,
+          "start_year": 1300,
+          "n": 366,
+          "rate_per_yr": 0.61
+        },
+        {
+          "T_years": 625,
+          "start_year": 1275,
+          "n": 374,
+          "rate_per_yr": 0.5984
+        },
+        {
+          "T_years": 650,
+          "start_year": 1250,
+          "n": 380,
+          "rate_per_yr": 0.58462
+        },
+        {
+          "T_years": 675,
+          "start_year": 1225,
+          "n": 384,
+          "rate_per_yr": 0.56889
+        },
+        {
+          "T_years": 700,
+          "start_year": 1200,
+          "n": 387,
+          "rate_per_yr": 0.55286
+        },
+        {
+          "T_years": 725,
+          "start_year": 1175,
+          "n": 390,
+          "rate_per_yr": 0.53793
+        },
+        {
+          "T_years": 750,
+          "start_year": 1150,
+          "n": 394,
+          "rate_per_yr": 0.52533
+        },
+        {
+          "T_years": 775,
+          "start_year": 1125,
+          "n": 398,
+          "rate_per_yr": 0.51355
+        },
+        {
+          "T_years": 800,
+          "start_year": 1100,
+          "n": 402,
+          "rate_per_yr": 0.5025
+        },
+        {
+          "T_years": 825,
+          "start_year": 1075,
+          "n": 405,
+          "rate_per_yr": 0.49091
+        },
+        {
+          "T_years": 850,
+          "start_year": 1050,
+          "n": 413,
+          "rate_per_yr": 0.48588
+        },
+        {
+          "T_years": 875,
+          "start_year": 1025,
+          "n": 426,
+          "rate_per_yr": 0.48686
+        },
+        {
+          "T_years": 900,
+          "start_year": 1000,
+          "n": 429,
+          "rate_per_yr": 0.47667
+        },
+        {
+          "T_years": 925,
+          "start_year": 975,
+          "n": 430,
+          "rate_per_yr": 0.46486
+        },
+        {
+          "T_years": 950,
+          "start_year": 950,
+          "n": 430,
+          "rate_per_yr": 0.45263
+        },
+        {
+          "T_years": 975,
+          "start_year": 925,
+          "n": 430,
+          "rate_per_yr": 0.44103
+        },
+        {
+          "T_years": 1000,
+          "start_year": 900,
+          "n": 430,
+          "rate_per_yr": 0.43
+        },
+        {
+          "T_years": 1025,
+          "start_year": 875,
+          "n": 430,
+          "rate_per_yr": 0.41951
+        },
+        {
+          "T_years": 1050,
+          "start_year": 850,
+          "n": 432,
+          "rate_per_yr": 0.41143
+        },
+        {
+          "T_years": 1075,
+          "start_year": 825,
+          "n": 432,
+          "rate_per_yr": 0.40186
+        },
+        {
+          "T_years": 1100,
+          "start_year": 800,
+          "n": 432,
+          "rate_per_yr": 0.39273
+        },
+        {
+          "T_years": 1125,
+          "start_year": 775,
+          "n": 432,
+          "rate_per_yr": 0.384
+        },
+        {
+          "T_years": 1150,
+          "start_year": 750,
+          "n": 432,
+          "rate_per_yr": 0.37565
+        },
+        {
+          "T_years": 1175,
+          "start_year": 725,
+          "n": 434,
+          "rate_per_yr": 0.36936
+        },
+        {
+          "T_years": 1200,
+          "start_year": 700,
+          "n": 434,
+          "rate_per_yr": 0.36167
+        },
+        {
+          "T_years": 1225,
+          "start_year": 675,
+          "n": 434,
+          "rate_per_yr": 0.35429
+        },
+        {
+          "T_years": 1250,
+          "start_year": 650,
+          "n": 434,
+          "rate_per_yr": 0.3472
+        },
+        {
+          "T_years": 1275,
+          "start_year": 625,
+          "n": 434,
+          "rate_per_yr": 0.34039
+        },
+        {
+          "T_years": 1300,
+          "start_year": 600,
+          "n": 434,
+          "rate_per_yr": 0.33385
+        },
+        {
+          "T_years": 1325,
+          "start_year": 575,
+          "n": 434,
+          "rate_per_yr": 0.32755
+        },
+        {
+          "T_years": 1350,
+          "start_year": 550,
+          "n": 437,
+          "rate_per_yr": 0.3237
+        },
+        {
+          "T_years": 1375,
+          "start_year": 525,
+          "n": 440,
+          "rate_per_yr": 0.32
+        },
+        {
+          "T_years": 1400,
+          "start_year": 500,
+          "n": 440,
+          "rate_per_yr": 0.31429
+        },
+        {
+          "T_years": 1425,
+          "start_year": 475,
+          "n": 441,
+          "rate_per_yr": 0.30947
+        },
+        {
+          "T_years": 1450,
+          "start_year": 450,
+          "n": 441,
+          "rate_per_yr": 0.30414
+        },
+        {
+          "T_years": 1475,
+          "start_year": 425,
+          "n": 442,
+          "rate_per_yr": 0.29966
+        },
+        {
+          "T_years": 1500,
+          "start_year": 400,
+          "n": 443,
+          "rate_per_yr": 0.29533
+        },
+        {
+          "T_years": 1525,
+          "start_year": 375,
+          "n": 443,
+          "rate_per_yr": 0.29049
+        },
+        {
+          "T_years": 1550,
+          "start_year": 350,
+          "n": 444,
+          "rate_per_yr": 0.28645
+        },
+        {
+          "T_years": 1575,
+          "start_year": 325,
+          "n": 444,
+          "rate_per_yr": 0.2819
+        },
+        {
+          "T_years": 1600,
+          "start_year": 300,
+          "n": 444,
+          "rate_per_yr": 0.2775
+        },
+        {
+          "T_years": 1625,
+          "start_year": 275,
+          "n": 444,
+          "rate_per_yr": 0.27323
+        },
+        {
+          "T_years": 1650,
+          "start_year": 250,
+          "n": 444,
+          "rate_per_yr": 0.26909
+        },
+        {
+          "T_years": 1675,
+          "start_year": 225,
+          "n": 444,
+          "rate_per_yr": 0.26507
+        },
+        {
+          "T_years": 1700,
+          "start_year": 200,
+          "n": 444,
+          "rate_per_yr": 0.26118
+        },
+        {
+          "T_years": 1725,
+          "start_year": 175,
+          "n": 444,
+          "rate_per_yr": 0.25739
+        },
+        {
+          "T_years": 1750,
+          "start_year": 150,
+          "n": 444,
+          "rate_per_yr": 0.25371
+        },
+        {
+          "T_years": 1775,
+          "start_year": 125,
+          "n": 445,
+          "rate_per_yr": 0.2507
+        },
+        {
+          "T_years": 1800,
+          "start_year": 100,
+          "n": 447,
+          "rate_per_yr": 0.24833
+        },
+        {
+          "T_years": 1825,
+          "start_year": 75,
+          "n": 447,
+          "rate_per_yr": 0.24493
+        },
+        {
+          "T_years": 1850,
+          "start_year": 50,
+          "n": 448,
+          "rate_per_yr": 0.24216
+        },
+        {
+          "T_years": 1875,
+          "start_year": 25,
+          "n": 448,
+          "rate_per_yr": 0.23893
+        },
+        {
+          "T_years": 1900,
+          "start_year": 0,
+          "n": 448,
+          "rate_per_yr": 0.23579
+        },
+        {
+          "T_years": 1925,
+          "start_year": -25,
+          "n": 448,
+          "rate_per_yr": 0.23273
+        },
+        {
+          "T_years": 1950,
+          "start_year": -50,
+          "n": 449,
+          "rate_per_yr": 0.23026
+        },
+        {
+          "T_years": 1975,
+          "start_year": -75,
+          "n": 449,
+          "rate_per_yr": 0.22734
+        },
+        {
+          "T_years": 2000,
+          "start_year": -100,
+          "n": 449,
+          "rate_per_yr": 0.2245
+        },
+        {
+          "T_years": 2025,
+          "start_year": -125,
+          "n": 449,
+          "rate_per_yr": 0.22173
+        },
+        {
+          "T_years": 2050,
+          "start_year": -150,
+          "n": 449,
+          "rate_per_yr": 0.21902
+        },
+        {
+          "T_years": 2075,
+          "start_year": -175,
+          "n": 449,
+          "rate_per_yr": 0.21639
+        },
+        {
+          "T_years": 2100,
+          "start_year": -200,
+          "n": 449,
+          "rate_per_yr": 0.21381
+        },
+        {
+          "T_years": 2125,
+          "start_year": -225,
+          "n": 449,
+          "rate_per_yr": 0.21129
+        },
+        {
+          "T_years": 2150,
+          "start_year": -250,
+          "n": 450,
+          "rate_per_yr": 0.2093
+        },
+        {
+          "T_years": 2175,
+          "start_year": -275,
+          "n": 450,
+          "rate_per_yr": 0.2069
+        },
+        {
+          "T_years": 2200,
+          "start_year": -300,
+          "n": 450,
+          "rate_per_yr": 0.20455
+        },
+        {
+          "T_years": 2225,
+          "start_year": -325,
+          "n": 450,
+          "rate_per_yr": 0.20225
+        }
+      ],
+      "start_year": 1825,
+      "method": "stepp",
+      "ref_rate_per_yr": 2.64
+    },
+    "6.0": {
+      "rates": [
+        {
+          "T_years": 25,
+          "start_year": 1875,
+          "n": 37,
+          "rate_per_yr": 1.48
+        },
+        {
+          "T_years": 50,
+          "start_year": 1850,
+          "n": 93,
+          "rate_per_yr": 1.86
+        },
+        {
+          "T_years": 75,
+          "start_year": 1825,
+          "n": 109,
+          "rate_per_yr": 1.45333
+        },
+        {
+          "T_years": 100,
+          "start_year": 1800,
+          "n": 114,
+          "rate_per_yr": 1.14
+        },
+        {
+          "T_years": 125,
+          "start_year": 1775,
+          "n": 130,
+          "rate_per_yr": 1.04
+        },
+        {
+          "T_years": 150,
+          "start_year": 1750,
+          "n": 145,
+          "rate_per_yr": 0.96667
+        },
+        {
+          "T_years": 175,
+          "start_year": 1725,
+          "n": 153,
+          "rate_per_yr": 0.87429
+        },
+        {
+          "T_years": 200,
+          "start_year": 1700,
+          "n": 165,
+          "rate_per_yr": 0.825
+        },
+        {
+          "T_years": 225,
+          "start_year": 1675,
+          "n": 178,
+          "rate_per_yr": 0.79111
+        },
+        {
+          "T_years": 250,
+          "start_year": 1650,
+          "n": 195,
+          "rate_per_yr": 0.78
+        },
+        {
+          "T_years": 275,
+          "start_year": 1625,
+          "n": 202,
+          "rate_per_yr": 0.73455
+        },
+        {
+          "T_years": 300,
+          "start_year": 1600,
+          "n": 203,
+          "rate_per_yr": 0.67667
+        },
+        {
+          "T_years": 325,
+          "start_year": 1575,
+          "n": 211,
+          "rate_per_yr": 0.64923
+        },
+        {
+          "T_years": 350,
+          "start_year": 1550,
+          "n": 214,
+          "rate_per_yr": 0.61143
+        },
+        {
+          "T_years": 375,
+          "start_year": 1525,
+          "n": 216,
+          "rate_per_yr": 0.576
+        },
+        {
+          "T_years": 400,
+          "start_year": 1500,
+          "n": 223,
+          "rate_per_yr": 0.5575
+        },
+        {
+          "T_years": 425,
+          "start_year": 1475,
+          "n": 228,
+          "rate_per_yr": 0.53647
+        },
+        {
+          "T_years": 450,
+          "start_year": 1450,
+          "n": 230,
+          "rate_per_yr": 0.51111
+        },
+        {
+          "T_years": 475,
+          "start_year": 1425,
+          "n": 231,
+          "rate_per_yr": 0.48632
+        },
+        {
+          "T_years": 500,
+          "start_year": 1400,
+          "n": 236,
+          "rate_per_yr": 0.472
+        },
+        {
+          "T_years": 525,
+          "start_year": 1375,
+          "n": 238,
+          "rate_per_yr": 0.45333
+        },
+        {
+          "T_years": 550,
+          "start_year": 1350,
+          "n": 244,
+          "rate_per_yr": 0.44364
+        },
+        {
+          "T_years": 575,
+          "start_year": 1325,
+          "n": 246,
+          "rate_per_yr": 0.42783
+        },
+        {
+          "T_years": 600,
+          "start_year": 1300,
+          "n": 253,
+          "rate_per_yr": 0.42167
+        },
+        {
+          "T_years": 625,
+          "start_year": 1275,
+          "n": 260,
+          "rate_per_yr": 0.416
+        },
+        {
+          "T_years": 650,
+          "start_year": 1250,
+          "n": 266,
+          "rate_per_yr": 0.40923
+        },
+        {
+          "T_years": 675,
+          "start_year": 1225,
+          "n": 269,
+          "rate_per_yr": 0.39852
+        },
+        {
+          "T_years": 700,
+          "start_year": 1200,
+          "n": 272,
+          "rate_per_yr": 0.38857
+        },
+        {
+          "T_years": 725,
+          "start_year": 1175,
+          "n": 275,
+          "rate_per_yr": 0.37931
+        },
+        {
+          "T_years": 750,
+          "start_year": 1150,
+          "n": 279,
+          "rate_per_yr": 0.372
+        },
+        {
+          "T_years": 775,
+          "start_year": 1125,
+          "n": 283,
+          "rate_per_yr": 0.36516
+        },
+        {
+          "T_years": 800,
+          "start_year": 1100,
+          "n": 287,
+          "rate_per_yr": 0.35875
+        },
+        {
+          "T_years": 825,
+          "start_year": 1075,
+          "n": 289,
+          "rate_per_yr": 0.3503
+        },
+        {
+          "T_years": 850,
+          "start_year": 1050,
+          "n": 297,
+          "rate_per_yr": 0.34941
+        },
+        {
+          "T_years": 875,
+          "start_year": 1025,
+          "n": 307,
+          "rate_per_yr": 0.35086
+        },
+        {
+          "T_years": 900,
+          "start_year": 1000,
+          "n": 309,
+          "rate_per_yr": 0.34333
+        },
+        {
+          "T_years": 925,
+          "start_year": 975,
+          "n": 310,
+          "rate_per_yr": 0.33514
+        },
+        {
+          "T_years": 950,
+          "start_year": 950,
+          "n": 310,
+          "rate_per_yr": 0.32632
+        },
+        {
+          "T_years": 975,
+          "start_year": 925,
+          "n": 310,
+          "rate_per_yr": 0.31795
+        },
+        {
+          "T_years": 1000,
+          "start_year": 900,
+          "n": 310,
+          "rate_per_yr": 0.31
+        },
+        {
+          "T_years": 1025,
+          "start_year": 875,
+          "n": 310,
+          "rate_per_yr": 0.30244
+        },
+        {
+          "T_years": 1050,
+          "start_year": 850,
+          "n": 310,
+          "rate_per_yr": 0.29524
+        },
+        {
+          "T_years": 1075,
+          "start_year": 825,
+          "n": 310,
+          "rate_per_yr": 0.28837
+        },
+        {
+          "T_years": 1100,
+          "start_year": 800,
+          "n": 310,
+          "rate_per_yr": 0.28182
+        },
+        {
+          "T_years": 1125,
+          "start_year": 775,
+          "n": 310,
+          "rate_per_yr": 0.27556
+        },
+        {
+          "T_years": 1150,
+          "start_year": 750,
+          "n": 310,
+          "rate_per_yr": 0.26957
+        },
+        {
+          "T_years": 1175,
+          "start_year": 725,
+          "n": 311,
+          "rate_per_yr": 0.26468
+        },
+        {
+          "T_years": 1200,
+          "start_year": 700,
+          "n": 311,
+          "rate_per_yr": 0.25917
+        },
+        {
+          "T_years": 1225,
+          "start_year": 675,
+          "n": 311,
+          "rate_per_yr": 0.25388
+        },
+        {
+          "T_years": 1250,
+          "start_year": 650,
+          "n": 311,
+          "rate_per_yr": 0.2488
+        },
+        {
+          "T_years": 1275,
+          "start_year": 625,
+          "n": 311,
+          "rate_per_yr": 0.24392
+        },
+        {
+          "T_years": 1300,
+          "start_year": 600,
+          "n": 311,
+          "rate_per_yr": 0.23923
+        },
+        {
+          "T_years": 1325,
+          "start_year": 575,
+          "n": 311,
+          "rate_per_yr": 0.23472
+        },
+        {
+          "T_years": 1350,
+          "start_year": 550,
+          "n": 314,
+          "rate_per_yr": 0.23259
+        },
+        {
+          "T_years": 1375,
+          "start_year": 525,
+          "n": 317,
+          "rate_per_yr": 0.23055
+        },
+        {
+          "T_years": 1400,
+          "start_year": 500,
+          "n": 317,
+          "rate_per_yr": 0.22643
+        },
+        {
+          "T_years": 1425,
+          "start_year": 475,
+          "n": 318,
+          "rate_per_yr": 0.22316
+        },
+        {
+          "T_years": 1450,
+          "start_year": 450,
+          "n": 318,
+          "rate_per_yr": 0.21931
+        },
+        {
+          "T_years": 1475,
+          "start_year": 425,
+          "n": 319,
+          "rate_per_yr": 0.21627
+        },
+        {
+          "T_years": 1500,
+          "start_year": 400,
+          "n": 320,
+          "rate_per_yr": 0.21333
+        },
+        {
+          "T_years": 1525,
+          "start_year": 375,
+          "n": 320,
+          "rate_per_yr": 0.20984
+        },
+        {
+          "T_years": 1550,
+          "start_year": 350,
+          "n": 321,
+          "rate_per_yr": 0.2071
+        },
+        {
+          "T_years": 1575,
+          "start_year": 325,
+          "n": 321,
+          "rate_per_yr": 0.20381
+        },
+        {
+          "T_years": 1600,
+          "start_year": 300,
+          "n": 321,
+          "rate_per_yr": 0.20062
+        },
+        {
+          "T_years": 1625,
+          "start_year": 275,
+          "n": 321,
+          "rate_per_yr": 0.19754
+        },
+        {
+          "T_years": 1650,
+          "start_year": 250,
+          "n": 321,
+          "rate_per_yr": 0.19455
+        },
+        {
+          "T_years": 1675,
+          "start_year": 225,
+          "n": 321,
+          "rate_per_yr": 0.19164
+        },
+        {
+          "T_years": 1700,
+          "start_year": 200,
+          "n": 321,
+          "rate_per_yr": 0.18882
+        },
+        {
+          "T_years": 1725,
+          "start_year": 175,
+          "n": 321,
+          "rate_per_yr": 0.18609
+        },
+        {
+          "T_years": 1750,
+          "start_year": 150,
+          "n": 321,
+          "rate_per_yr": 0.18343
+        },
+        {
+          "T_years": 1775,
+          "start_year": 125,
+          "n": 322,
+          "rate_per_yr": 0.18141
+        },
+        {
+          "T_years": 1800,
+          "start_year": 100,
+          "n": 324,
+          "rate_per_yr": 0.18
+        },
+        {
+          "T_years": 1825,
+          "start_year": 75,
+          "n": 324,
+          "rate_per_yr": 0.17753
+        },
+        {
+          "T_years": 1850,
+          "start_year": 50,
+          "n": 325,
+          "rate_per_yr": 0.17568
+        },
+        {
+          "T_years": 1875,
+          "start_year": 25,
+          "n": 325,
+          "rate_per_yr": 0.17333
+        },
+        {
+          "T_years": 1900,
+          "start_year": 0,
+          "n": 325,
+          "rate_per_yr": 0.17105
+        },
+        {
+          "T_years": 1925,
+          "start_year": -25,
+          "n": 325,
+          "rate_per_yr": 0.16883
+        },
+        {
+          "T_years": 1950,
+          "start_year": -50,
+          "n": 325,
+          "rate_per_yr": 0.16667
+        },
+        {
+          "T_years": 1975,
+          "start_year": -75,
+          "n": 325,
+          "rate_per_yr": 0.16456
+        },
+        {
+          "T_years": 2000,
+          "start_year": -100,
+          "n": 325,
+          "rate_per_yr": 0.1625
+        },
+        {
+          "T_years": 2025,
+          "start_year": -125,
+          "n": 325,
+          "rate_per_yr": 0.16049
+        },
+        {
+          "T_years": 2050,
+          "start_year": -150,
+          "n": 325,
+          "rate_per_yr": 0.15854
+        },
+        {
+          "T_years": 2075,
+          "start_year": -175,
+          "n": 325,
+          "rate_per_yr": 0.15663
+        },
+        {
+          "T_years": 2100,
+          "start_year": -200,
+          "n": 325,
+          "rate_per_yr": 0.15476
+        },
+        {
+          "T_years": 2125,
+          "start_year": -225,
+          "n": 325,
+          "rate_per_yr": 0.15294
+        },
+        {
+          "T_years": 2150,
+          "start_year": -250,
+          "n": 326,
+          "rate_per_yr": 0.15163
+        },
+        {
+          "T_years": 2175,
+          "start_year": -275,
+          "n": 326,
+          "rate_per_yr": 0.14989
+        },
+        {
+          "T_years": 2200,
+          "start_year": -300,
+          "n": 326,
+          "rate_per_yr": 0.14818
+        },
+        {
+          "T_years": 2225,
+          "start_year": -325,
+          "n": 326,
+          "rate_per_yr": 0.14652
+        }
+      ],
+      "start_year": 1825,
+      "method": "stepp",
+      "ref_rate_per_yr": 1.48
+    },
+    "6.5": {
+      "rates": [
+        {
+          "T_years": 25,
+          "start_year": 1875,
+          "n": 15,
+          "rate_per_yr": 0.6
+        },
+        {
+          "T_years": 50,
+          "start_year": 1850,
+          "n": 41,
+          "rate_per_yr": 0.82
+        },
+        {
+          "T_years": 75,
+          "start_year": 1825,
+          "n": 47,
+          "rate_per_yr": 0.62667
+        },
+        {
+          "T_years": 100,
+          "start_year": 1800,
+          "n": 49,
+          "rate_per_yr": 0.49
+        },
+        {
+          "T_years": 125,
+          "start_year": 1775,
+          "n": 57,
+          "rate_per_yr": 0.456
+        },
+        {
+          "T_years": 150,
+          "start_year": 1750,
+          "n": 68,
+          "rate_per_yr": 0.45333
+        },
+        {
+          "T_years": 175,
+          "start_year": 1725,
+          "n": 72,
+          "rate_per_yr": 0.41143
+        },
+        {
+          "T_years": 200,
+          "start_year": 1700,
+          "n": 76,
+          "rate_per_yr": 0.38
+        },
+        {
+          "T_years": 225,
+          "start_year": 1675,
+          "n": 82,
+          "rate_per_yr": 0.36444
+        },
+        {
+          "T_years": 250,
+          "start_year": 1650,
+          "n": 93,
+          "rate_per_yr": 0.372
+        },
+        {
+          "T_years": 275,
+          "start_year": 1625,
+          "n": 96,
+          "rate_per_yr": 0.34909
+        },
+        {
+          "T_years": 300,
+          "start_year": 1600,
+          "n": 97,
+          "rate_per_yr": 0.32333
+        },
+        {
+          "T_years": 325,
+          "start_year": 1575,
+          "n": 100,
+          "rate_per_yr": 0.30769
+        },
+        {
+          "T_years": 350,
+          "start_year": 1550,
+          "n": 101,
+          "rate_per_yr": 0.28857
+        },
+        {
+          "T_years": 375,
+          "start_year": 1525,
+          "n": 102,
+          "rate_per_yr": 0.272
+        },
+        {
+          "T_years": 400,
+          "start_year": 1500,
+          "n": 106,
+          "rate_per_yr": 0.265
+        },
+        {
+          "T_years": 425,
+          "start_year": 1475,
+          "n": 110,
+          "rate_per_yr": 0.25882
+        },
+        {
+          "T_years": 450,
+          "start_year": 1450,
+          "n": 111,
+          "rate_per_yr": 0.24667
+        },
+        {
+          "T_years": 475,
+          "start_year": 1425,
+          "n": 111,
+          "rate_per_yr": 0.23368
+        },
+        {
+          "T_years": 500,
+          "start_year": 1400,
+          "n": 114,
+          "rate_per_yr": 0.228
+        },
+        {
+          "T_years": 525,
+          "start_year": 1375,
+          "n": 116,
+          "rate_per_yr": 0.22095
+        },
+        {
+          "T_years": 550,
+          "start_year": 1350,
+          "n": 121,
+          "rate_per_yr": 0.22
+        },
+        {
+          "T_years": 575,
+          "start_year": 1325,
+          "n": 123,
+          "rate_per_yr": 0.21391
+        },
+        {
+          "T_years": 600,
+          "start_year": 1300,
+          "n": 126,
+          "rate_per_yr": 0.21
+        },
+        {
+          "T_years": 625,
+          "start_year": 1275,
+          "n": 130,
+          "rate_per_yr": 0.208
+        },
+        {
+          "T_years": 650,
+          "start_year": 1250,
+          "n": 132,
+          "rate_per_yr": 0.20308
+        },
+        {
+          "T_years": 675,
+          "start_year": 1225,
+          "n": 133,
+          "rate_per_yr": 0.19704
+        },
+        {
+          "T_years": 700,
+          "start_year": 1200,
+          "n": 136,
+          "rate_per_yr": 0.19429
+        },
+        {
+          "T_years": 725,
+          "start_year": 1175,
+          "n": 137,
+          "rate_per_yr": 0.18897
+        },
+        {
+          "T_years": 750,
+          "start_year": 1150,
+          "n": 139,
+          "rate_per_yr": 0.18533
+        },
+        {
+          "T_years": 775,
+          "start_year": 1125,
+          "n": 140,
+          "rate_per_yr": 0.18065
+        },
+        {
+          "T_years": 800,
+          "start_year": 1100,
+          "n": 142,
+          "rate_per_yr": 0.1775
+        },
+        {
+          "T_years": 825,
+          "start_year": 1075,
+          "n": 142,
+          "rate_per_yr": 0.17212
+        },
+        {
+          "T_years": 850,
+          "start_year": 1050,
+          "n": 147,
+          "rate_per_yr": 0.17294
+        },
+        {
+          "T_years": 875,
+          "start_year": 1025,
+          "n": 151,
+          "rate_per_yr": 0.17257
+        },
+        {
+          "T_years": 900,
+          "start_year": 1000,
+          "n": 151,
+          "rate_per_yr": 0.16778
+        },
+        {
+          "T_years": 925,
+          "start_year": 975,
+          "n": 152,
+          "rate_per_yr": 0.16432
+        },
+        {
+          "T_years": 950,
+          "start_year": 950,
+          "n": 152,
+          "rate_per_yr": 0.16
+        },
+        {
+          "T_years": 975,
+          "start_year": 925,
+          "n": 152,
+          "rate_per_yr": 0.1559
+        },
+        {
+          "T_years": 1000,
+          "start_year": 900,
+          "n": 152,
+          "rate_per_yr": 0.152
+        },
+        {
+          "T_years": 1025,
+          "start_year": 875,
+          "n": 152,
+          "rate_per_yr": 0.14829
+        },
+        {
+          "T_years": 1050,
+          "start_year": 850,
+          "n": 152,
+          "rate_per_yr": 0.14476
+        },
+        {
+          "T_years": 1075,
+          "start_year": 825,
+          "n": 152,
+          "rate_per_yr": 0.1414
+        },
+        {
+          "T_years": 1100,
+          "start_year": 800,
+          "n": 152,
+          "rate_per_yr": 0.13818
+        },
+        {
+          "T_years": 1125,
+          "start_year": 775,
+          "n": 152,
+          "rate_per_yr": 0.13511
+        },
+        {
+          "T_years": 1150,
+          "start_year": 750,
+          "n": 152,
+          "rate_per_yr": 0.13217
+        },
+        {
+          "T_years": 1175,
+          "start_year": 725,
+          "n": 153,
+          "rate_per_yr": 0.13021
+        },
+        {
+          "T_years": 1200,
+          "start_year": 700,
+          "n": 153,
+          "rate_per_yr": 0.1275
+        },
+        {
+          "T_years": 1225,
+          "start_year": 675,
+          "n": 153,
+          "rate_per_yr": 0.1249
+        },
+        {
+          "T_years": 1250,
+          "start_year": 650,
+          "n": 153,
+          "rate_per_yr": 0.1224
+        },
+        {
+          "T_years": 1275,
+          "start_year": 625,
+          "n": 153,
+          "rate_per_yr": 0.12
+        },
+        {
+          "T_years": 1300,
+          "start_year": 600,
+          "n": 153,
+          "rate_per_yr": 0.11769
+        },
+        {
+          "T_years": 1325,
+          "start_year": 575,
+          "n": 153,
+          "rate_per_yr": 0.11547
+        },
+        {
+          "T_years": 1350,
+          "start_year": 550,
+          "n": 156,
+          "rate_per_yr": 0.11556
+        },
+        {
+          "T_years": 1375,
+          "start_year": 525,
+          "n": 159,
+          "rate_per_yr": 0.11564
+        },
+        {
+          "T_years": 1400,
+          "start_year": 500,
+          "n": 159,
+          "rate_per_yr": 0.11357
+        },
+        {
+          "T_years": 1425,
+          "start_year": 475,
+          "n": 160,
+          "rate_per_yr": 0.11228
+        },
+        {
+          "T_years": 1450,
+          "start_year": 450,
+          "n": 160,
+          "rate_per_yr": 0.11034
+        },
+        {
+          "T_years": 1475,
+          "start_year": 425,
+          "n": 161,
+          "rate_per_yr": 0.10915
+        },
+        {
+          "T_years": 1500,
+          "start_year": 400,
+          "n": 162,
+          "rate_per_yr": 0.108
+        },
+        {
+          "T_years": 1525,
+          "start_year": 375,
+          "n": 162,
+          "rate_per_yr": 0.10623
+        },
+        {
+          "T_years": 1550,
+          "start_year": 350,
+          "n": 162,
+          "rate_per_yr": 0.10452
+        },
+        {
+          "T_years": 1575,
+          "start_year": 325,
+          "n": 162,
+          "rate_per_yr": 0.10286
+        },
+        {
+          "T_years": 1600,
+          "start_year": 300,
+          "n": 162,
+          "rate_per_yr": 0.10125
+        },
+        {
+          "T_years": 1625,
+          "start_year": 275,
+          "n": 162,
+          "rate_per_yr": 0.09969
+        },
+        {
+          "T_years": 1650,
+          "start_year": 250,
+          "n": 162,
+          "rate_per_yr": 0.09818
+        },
+        {
+          "T_years": 1675,
+          "start_year": 225,
+          "n": 162,
+          "rate_per_yr": 0.09672
+        },
+        {
+          "T_years": 1700,
+          "start_year": 200,
+          "n": 162,
+          "rate_per_yr": 0.09529
+        },
+        {
+          "T_years": 1725,
+          "start_year": 175,
+          "n": 162,
+          "rate_per_yr": 0.09391
+        },
+        {
+          "T_years": 1750,
+          "start_year": 150,
+          "n": 162,
+          "rate_per_yr": 0.09257
+        },
+        {
+          "T_years": 1775,
+          "start_year": 125,
+          "n": 163,
+          "rate_per_yr": 0.09183
+        },
+        {
+          "T_years": 1800,
+          "start_year": 100,
+          "n": 165,
+          "rate_per_yr": 0.09167
+        },
+        {
+          "T_years": 1825,
+          "start_year": 75,
+          "n": 165,
+          "rate_per_yr": 0.09041
+        },
+        {
+          "T_years": 1850,
+          "start_year": 50,
+          "n": 166,
+          "rate_per_yr": 0.08973
+        },
+        {
+          "T_years": 1875,
+          "start_year": 25,
+          "n": 166,
+          "rate_per_yr": 0.08853
+        },
+        {
+          "T_years": 1900,
+          "start_year": 0,
+          "n": 166,
+          "rate_per_yr": 0.08737
+        },
+        {
+          "T_years": 1925,
+          "start_year": -25,
+          "n": 166,
+          "rate_per_yr": 0.08623
+        },
+        {
+          "T_years": 1950,
+          "start_year": -50,
+          "n": 166,
+          "rate_per_yr": 0.08513
+        },
+        {
+          "T_years": 1975,
+          "start_year": -75,
+          "n": 166,
+          "rate_per_yr": 0.08405
+        },
+        {
+          "T_years": 2000,
+          "start_year": -100,
+          "n": 166,
+          "rate_per_yr": 0.083
+        },
+        {
+          "T_years": 2025,
+          "start_year": -125,
+          "n": 166,
+          "rate_per_yr": 0.08198
+        },
+        {
+          "T_years": 2050,
+          "start_year": -150,
+          "n": 166,
+          "rate_per_yr": 0.08098
+        },
+        {
+          "T_years": 2075,
+          "start_year": -175,
+          "n": 166,
+          "rate_per_yr": 0.08
+        },
+        {
+          "T_years": 2100,
+          "start_year": -200,
+          "n": 166,
+          "rate_per_yr": 0.07905
+        },
+        {
+          "T_years": 2125,
+          "start_year": -225,
+          "n": 166,
+          "rate_per_yr": 0.07812
+        },
+        {
+          "T_years": 2150,
+          "start_year": -250,
+          "n": 167,
+          "rate_per_yr": 0.07767
+        },
+        {
+          "T_years": 2175,
+          "start_year": -275,
+          "n": 167,
+          "rate_per_yr": 0.07678
+        },
+        {
+          "T_years": 2200,
+          "start_year": -300,
+          "n": 167,
+          "rate_per_yr": 0.07591
+        },
+        {
+          "T_years": 2225,
+          "start_year": -325,
+          "n": 167,
+          "rate_per_yr": 0.07506
+        }
+      ],
+      "start_year": 1800,
+      "method": "stepp",
+      "ref_rate_per_yr": 0.6
+    },
+    "7.0": {
+      "rates": [
+        {
+          "T_years": 25,
+          "start_year": 1875,
+          "n": 4,
+          "rate_per_yr": 0.16
+        },
+        {
+          "T_years": 50,
+          "start_year": 1850,
+          "n": 14,
+          "rate_per_yr": 0.28
+        },
+        {
+          "T_years": 75,
+          "start_year": 1825,
+          "n": 17,
+          "rate_per_yr": 0.22667
+        },
+        {
+          "T_years": 100,
+          "start_year": 1800,
+          "n": 19,
+          "rate_per_yr": 0.19
+        },
+        {
+          "T_years": 125,
+          "start_year": 1775,
+          "n": 21,
+          "rate_per_yr": 0.168
+        },
+        {
+          "T_years": 150,
+          "start_year": 1750,
+          "n": 23,
+          "rate_per_yr": 0.15333
+        },
+        {
+          "T_years": 175,
+          "start_year": 1725,
+          "n": 25,
+          "rate_per_yr": 0.14286
+        },
+        {
+          "T_years": 200,
+          "start_year": 1700,
+          "n": 25,
+          "rate_per_yr": 0.125
+        },
+        {
+          "T_years": 225,
+          "start_year": 1675,
+          "n": 28,
+          "rate_per_yr": 0.12444
+        },
+        {
+          "T_years": 250,
+          "start_year": 1650,
+          "n": 31,
+          "rate_per_yr": 0.124
+        },
+        {
+          "T_years": 275,
+          "start_year": 1625,
+          "n": 33,
+          "rate_per_yr": 0.12
+        },
+        {
+          "T_years": 300,
+          "start_year": 1600,
+          "n": 34,
+          "rate_per_yr": 0.11333
+        },
+        {
+          "T_years": 325,
+          "start_year": 1575,
+          "n": 35,
+          "rate_per_yr": 0.10769
+        },
+        {
+          "T_years": 350,
+          "start_year": 1550,
+          "n": 35,
+          "rate_per_yr": 0.1
+        },
+        {
+          "T_years": 375,
+          "start_year": 1525,
+          "n": 35,
+          "rate_per_yr": 0.09333
+        },
+        {
+          "T_years": 400,
+          "start_year": 1500,
+          "n": 38,
+          "rate_per_yr": 0.095
+        },
+        {
+          "T_years": 425,
+          "start_year": 1475,
+          "n": 39,
+          "rate_per_yr": 0.09176
+        },
+        {
+          "T_years": 450,
+          "start_year": 1450,
+          "n": 40,
+          "rate_per_yr": 0.08889
+        },
+        {
+          "T_years": 475,
+          "start_year": 1425,
+          "n": 40,
+          "rate_per_yr": 0.08421
+        },
+        {
+          "T_years": 500,
+          "start_year": 1400,
+          "n": 42,
+          "rate_per_yr": 0.084
+        },
+        {
+          "T_years": 525,
+          "start_year": 1375,
+          "n": 42,
+          "rate_per_yr": 0.08
+        },
+        {
+          "T_years": 550,
+          "start_year": 1350,
+          "n": 44,
+          "rate_per_yr": 0.08
+        },
+        {
+          "T_years": 575,
+          "start_year": 1325,
+          "n": 44,
+          "rate_per_yr": 0.07652
+        },
+        {
+          "T_years": 600,
+          "start_year": 1300,
+          "n": 46,
+          "rate_per_yr": 0.07667
+        },
+        {
+          "T_years": 625,
+          "start_year": 1275,
+          "n": 47,
+          "rate_per_yr": 0.0752
+        },
+        {
+          "T_years": 650,
+          "start_year": 1250,
+          "n": 47,
+          "rate_per_yr": 0.07231
+        },
+        {
+          "T_years": 675,
+          "start_year": 1225,
+          "n": 47,
+          "rate_per_yr": 0.06963
+        },
+        {
+          "T_years": 700,
+          "start_year": 1200,
+          "n": 48,
+          "rate_per_yr": 0.06857
+        },
+        {
+          "T_years": 725,
+          "start_year": 1175,
+          "n": 48,
+          "rate_per_yr": 0.06621
+        },
+        {
+          "T_years": 750,
+          "start_year": 1150,
+          "n": 50,
+          "rate_per_yr": 0.06667
+        },
+        {
+          "T_years": 775,
+          "start_year": 1125,
+          "n": 50,
+          "rate_per_yr": 0.06452
+        },
+        {
+          "T_years": 800,
+          "start_year": 1100,
+          "n": 51,
+          "rate_per_yr": 0.06375
+        },
+        {
+          "T_years": 825,
+          "start_year": 1075,
+          "n": 51,
+          "rate_per_yr": 0.06182
+        },
+        {
+          "T_years": 850,
+          "start_year": 1050,
+          "n": 53,
+          "rate_per_yr": 0.06235
+        },
+        {
+          "T_years": 875,
+          "start_year": 1025,
+          "n": 54,
+          "rate_per_yr": 0.06171
+        },
+        {
+          "T_years": 900,
+          "start_year": 1000,
+          "n": 54,
+          "rate_per_yr": 0.06
+        },
+        {
+          "T_years": 925,
+          "start_year": 975,
+          "n": 55,
+          "rate_per_yr": 0.05946
+        },
+        {
+          "T_years": 950,
+          "start_year": 950,
+          "n": 55,
+          "rate_per_yr": 0.05789
+        },
+        {
+          "T_years": 975,
+          "start_year": 925,
+          "n": 55,
+          "rate_per_yr": 0.05641
+        },
+        {
+          "T_years": 1000,
+          "start_year": 900,
+          "n": 55,
+          "rate_per_yr": 0.055
+        },
+        {
+          "T_years": 1025,
+          "start_year": 875,
+          "n": 55,
+          "rate_per_yr": 0.05366
+        },
+        {
+          "T_years": 1050,
+          "start_year": 850,
+          "n": 55,
+          "rate_per_yr": 0.05238
+        },
+        {
+          "T_years": 1075,
+          "start_year": 825,
+          "n": 55,
+          "rate_per_yr": 0.05116
+        },
+        {
+          "T_years": 1100,
+          "start_year": 800,
+          "n": 55,
+          "rate_per_yr": 0.05
+        },
+        {
+          "T_years": 1125,
+          "start_year": 775,
+          "n": 55,
+          "rate_per_yr": 0.04889
+        },
+        {
+          "T_years": 1150,
+          "start_year": 750,
+          "n": 55,
+          "rate_per_yr": 0.04783
+        },
+        {
+          "T_years": 1175,
+          "start_year": 725,
+          "n": 56,
+          "rate_per_yr": 0.04766
+        },
+        {
+          "T_years": 1200,
+          "start_year": 700,
+          "n": 56,
+          "rate_per_yr": 0.04667
+        },
+        {
+          "T_years": 1225,
+          "start_year": 675,
+          "n": 56,
+          "rate_per_yr": 0.04571
+        },
+        {
+          "T_years": 1250,
+          "start_year": 650,
+          "n": 56,
+          "rate_per_yr": 0.0448
+        },
+        {
+          "T_years": 1275,
+          "start_year": 625,
+          "n": 56,
+          "rate_per_yr": 0.04392
+        },
+        {
+          "T_years": 1300,
+          "start_year": 600,
+          "n": 56,
+          "rate_per_yr": 0.04308
+        },
+        {
+          "T_years": 1325,
+          "start_year": 575,
+          "n": 56,
+          "rate_per_yr": 0.04226
+        },
+        {
+          "T_years": 1350,
+          "start_year": 550,
+          "n": 59,
+          "rate_per_yr": 0.0437
+        },
+        {
+          "T_years": 1375,
+          "start_year": 525,
+          "n": 61,
+          "rate_per_yr": 0.04436
+        },
+        {
+          "T_years": 1400,
+          "start_year": 500,
+          "n": 61,
+          "rate_per_yr": 0.04357
+        },
+        {
+          "T_years": 1425,
+          "start_year": 475,
+          "n": 62,
+          "rate_per_yr": 0.04351
+        },
+        {
+          "T_years": 1450,
+          "start_year": 450,
+          "n": 62,
+          "rate_per_yr": 0.04276
+        },
+        {
+          "T_years": 1475,
+          "start_year": 425,
+          "n": 63,
+          "rate_per_yr": 0.04271
+        },
+        {
+          "T_years": 1500,
+          "start_year": 400,
+          "n": 63,
+          "rate_per_yr": 0.042
+        },
+        {
+          "T_years": 1525,
+          "start_year": 375,
+          "n": 63,
+          "rate_per_yr": 0.04131
+        },
+        {
+          "T_years": 1550,
+          "start_year": 350,
+          "n": 63,
+          "rate_per_yr": 0.04065
+        },
+        {
+          "T_years": 1575,
+          "start_year": 325,
+          "n": 63,
+          "rate_per_yr": 0.04
+        },
+        {
+          "T_years": 1600,
+          "start_year": 300,
+          "n": 63,
+          "rate_per_yr": 0.03938
+        },
+        {
+          "T_years": 1625,
+          "start_year": 275,
+          "n": 63,
+          "rate_per_yr": 0.03877
+        },
+        {
+          "T_years": 1650,
+          "start_year": 250,
+          "n": 63,
+          "rate_per_yr": 0.03818
+        },
+        {
+          "T_years": 1675,
+          "start_year": 225,
+          "n": 63,
+          "rate_per_yr": 0.03761
+        },
+        {
+          "T_years": 1700,
+          "start_year": 200,
+          "n": 63,
+          "rate_per_yr": 0.03706
+        },
+        {
+          "T_years": 1725,
+          "start_year": 175,
+          "n": 63,
+          "rate_per_yr": 0.03652
+        },
+        {
+          "T_years": 1750,
+          "start_year": 150,
+          "n": 63,
+          "rate_per_yr": 0.036
+        },
+        {
+          "T_years": 1775,
+          "start_year": 125,
+          "n": 64,
+          "rate_per_yr": 0.03606
+        },
+        {
+          "T_years": 1800,
+          "start_year": 100,
+          "n": 66,
+          "rate_per_yr": 0.03667
+        },
+        {
+          "T_years": 1825,
+          "start_year": 75,
+          "n": 66,
+          "rate_per_yr": 0.03616
+        },
+        {
+          "T_years": 1850,
+          "start_year": 50,
+          "n": 66,
+          "rate_per_yr": 0.03568
+        },
+        {
+          "T_years": 1875,
+          "start_year": 25,
+          "n": 66,
+          "rate_per_yr": 0.0352
+        },
+        {
+          "T_years": 1900,
+          "start_year": 0,
+          "n": 66,
+          "rate_per_yr": 0.03474
+        },
+        {
+          "T_years": 1925,
+          "start_year": -25,
+          "n": 66,
+          "rate_per_yr": 0.03429
+        },
+        {
+          "T_years": 1950,
+          "start_year": -50,
+          "n": 66,
+          "rate_per_yr": 0.03385
+        },
+        {
+          "T_years": 1975,
+          "start_year": -75,
+          "n": 66,
+          "rate_per_yr": 0.03342
+        },
+        {
+          "T_years": 2000,
+          "start_year": -100,
+          "n": 66,
+          "rate_per_yr": 0.033
+        },
+        {
+          "T_years": 2025,
+          "start_year": -125,
+          "n": 66,
+          "rate_per_yr": 0.03259
+        },
+        {
+          "T_years": 2050,
+          "start_year": -150,
+          "n": 66,
+          "rate_per_yr": 0.0322
+        },
+        {
+          "T_years": 2075,
+          "start_year": -175,
+          "n": 66,
+          "rate_per_yr": 0.03181
+        },
+        {
+          "T_years": 2100,
+          "start_year": -200,
+          "n": 66,
+          "rate_per_yr": 0.03143
+        },
+        {
+          "T_years": 2125,
+          "start_year": -225,
+          "n": 66,
+          "rate_per_yr": 0.03106
+        },
+        {
+          "T_years": 2150,
+          "start_year": -250,
+          "n": 67,
+          "rate_per_yr": 0.03116
+        },
+        {
+          "T_years": 2175,
+          "start_year": -275,
+          "n": 67,
+          "rate_per_yr": 0.0308
+        },
+        {
+          "T_years": 2200,
+          "start_year": -300,
+          "n": 67,
+          "rate_per_yr": 0.03045
+        },
+        {
+          "T_years": 2225,
+          "start_year": -325,
+          "n": 67,
+          "rate_per_yr": 0.03011
+        }
+      ],
+      "start_year": 1800,
+      "method": "stepp",
+      "ref_rate_per_yr": 0.28
+    }
+  },
+  "counts": {
+    "all_records": 1069,
+    "events": 897,
+    "by_agency_all": {
+      "EPICA": 450,
+      "NOAA_NCEI": 319,
+      "SHARE_CET": 241,
+      "GEM_GHEC": 59
+    },
+    "by_agency_preferred": {
+      "EPICA": 449,
+      "SHARE_CET": 238,
+      "NOAA_NCEI": 197,
+      "GEM_GHEC": 13
+    },
+    "events_mag_ge_6": 327,
+    "events_mag_ge_7": 68
+  }
+}
