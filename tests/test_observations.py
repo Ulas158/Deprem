@@ -133,3 +133,31 @@ def test_eventwalk_model_equals_etas_when_eta_zero():
     assert np.allclose(d["time_ll_model"], d["time_ll_etas"]) and np.allclose(d["space_ll_model"], d["space_ll_etas"])
     s = summarize(d)
     assert s["toplam kazanç"] == 0
+
+
+def test_longwalk_compensator_and_weighted_background():
+    from deprem.forecast.base import ForecastGrid
+    from deprem.forecast.etas import _omori_integral
+    from deprem import longwalk as L
+    e = L.WETAS(m0=4.0)
+    tr = pd.DataFrame({"time": pd.to_datetime(["2000-01-01", "2001-01-01"], utc=True),
+                       "latitude": [39.0, 40.0], "longitude": [35.0, 30.0], "mag": [4.5, 4.5],
+                       "depth_km": 10.0, "weight": [1.0, 0.0]})
+    e._background(tr)
+    from deprem.forecast.etas import _xy_km
+    x0, y0 = _xy_km([39.0], [35.0])
+    x1, y1 = _xy_km([40.0], [30.0])
+    # ağırlığı 0 olan olay arka plana katkı vermez
+    assert e._u(x0, y0)[0] > 1e3 * e._u(x1, y1)[0]
+    e.params = {"mu": 0.01, "K": 0.05, "alpha": 1.0, "c": 0.01, "p": 1.2, "D": 2.0, "q": 1.7, "gamma": 0.8}
+    grid = ForecastGrid(TURKEY, 0.5, np.array([4.0, 10.0]))
+    n = (grid.lat_edges.size - 1) * (grid.lon_edges.size - 1)
+    U = L.background_share(e, grid)
+    assert abs(U.sum() - 1) < 1e-9
+    s0, s1 = pd.Timestamp("2000-01-01", tz="UTC"), pd.Timestamp("2001-01-01", tz="UTC")
+    par = tr.iloc[[0]].assign(time=pd.Timestamp("2000-06-01", tz="UTC"))
+    comp = L.compensator(e, par, s0, s1, U, grid, n)
+    T = 366.0
+    tp = (par["time"].iloc[0] - s0).days
+    expect = 0.05 * np.exp(0.5) * _omori_integral(T - tp, 0.01, 1.2)
+    assert abs(comp.sum() - (0.01 * T + expect)) < 1e-6

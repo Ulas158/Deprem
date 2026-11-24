@@ -481,3 +481,55 @@ def write_obs_layers(run, out):
                        {"property": "dvv_change_pct", "label": "dv/v değişimi", "unit": "%", "digits": 3},
                        {"property": "last", "label": "Son ölçüm"}]},
                    style={"type": "circle", "radius": 6, "outline": "#ffffff", "opacity": 0.9})
+
+
+# ------------------------------------------------------------------ uzun yürüyüş
+def write_long_report(run, root):
+    """En eski veriden bugüne deprem deprem ileri eğitimin raporu."""
+    res = json.loads((run.dir / "longwalk.json").read_text())
+    lw = run.cfg["longwalk"]
+    L = [f"# Uzun ileri eğitim: {run.cfg['run_name']}", "", f"> {NOTE}", ""]
+    L += ["## Ne yapıldı", "",
+          "Model, elimizdeki en eski kayıtlardan başlayarak bugüne kadar **yıl yıl ve deprem deprem** "
+          "ilerledi. Her yılın başında yalnız o güne kadarki verilerle ETAS ve model yeniden eğitildi; "
+          "o yıl içindeki her deprem gerçekleşmeden önce zamanı, yeri ve büyüklüğü için olasılık verildi, "
+          "deprem gelince puanlandı ve geçmişe eklendi.", "",
+          "* 1700-1899 arası tarihsel depremler (EPICA, SHARE, GEM, NOAA) zaman çizelgesine, daha eskileri "
+          "(MÖ 2000'den beri) yalnız \"nerede deprem olur\" haritasına düşük ağırlıkla girdi.",
+          "* Katalog her dönemde farklı büyüklükten itibaren eksiksiz olduğu için üç koşu var: "
+          + ", ".join(f"M≥{s['m0']:g} ({s['score_from']}-{s['score_to']}, eğitim {s['fit_start']}'ten)"
+                      for s in lw["runs"]) + ".",
+          "* Eski yıllar eğitimde daha az ağırlık aldı (o yılların konum/büyüklük hataları büyük).",
+          f"* **Güven aralıkları eski kayıtların belirsizliğini içerir:** katalog {lw.get('replicates', 10)} kez "
+          "yeniden örneklendi; her depremin tarihi, yeri ve büyüklüğü kendi hatası kadar rastgele kaydırıldı ve "
+          "yürüyüş her seferinde baştan yapıldı. Aralıklar bu örnekler ve ay blokları üzerinden bootstrap ile "
+          "hesaplandı, bu yüzden eski dönemlerde daha geniştir.",
+          "* GPS, iyonosfer gibi gözlemlerin olmadığı yıllarda bu özellikler \"eksik\" olarak işaretlendi.", ""]
+    L += ["## Sonuç: ETAS'a karşı olay başına bilgi kazancı", "",
+          "Pozitif = model ETAS'tan iyi. Aralık sıfırı içeriyorsa fark anlamlı değil. "
+          "\"Toplam kazanç\" en iyi tahmin katalogundan, \"katalog örnekleri ortalaması\" hatalarla "
+          "kaydırılmış kataloglardan gelir; kaydırma gerçek hatanın üstüne ek gürültü kattığından örnekler "
+          "biraz kötümserdir, aralık bu duyarlılığı gösterir. "
+          "\"Yalnız örnekleme GA\" katalog belirsizliği olmadan çıkan aralıktır; aradaki fark "
+          "eski kayıtların belirsizliğinden gelir.", ""]
+    cols = ["eşik", "dönem", "olay", "toplam kazanç", "katalog örnekleri ortalaması", "toplam %95 GA",
+            "yalnız örnekleme GA",
+            "katalog belirsizliğinin payı", "zaman kazanç", "zaman %95 GA", "konum kazanç", "konum %95 GA",
+            "en olası %5 hücrede (ETAS)", "en olası %5 hücrede (model)",
+            "yıllık sayı aralığı tuttu (ETAS)", "yıllık sayı aralığı tuttu (model)"]
+    rows = [{c: r.get(c, "") for c in cols} for r in res["runs"]]
+    if rows:
+        L += [_fmt_table(rows), ""]
+    if res.get("forecast_next"):
+        L += ["## Gelecek yıl için model çıktısı (%95 aralık)", "",
+              "Bu bir deprem tahmini değildir; modelin Türkiye geneli için yıllık beklenen sayıları ve "
+              "olasılıklarıdır. Aralıklar benzetim ve katalog belirsizliğini birlikte içerir.", "",
+              _fmt_table(res["forecast_next"]), ""]
+    if res.get("by_year"):
+        by = pd.DataFrame(res["by_year"])
+        L += ["## Yıl yıl beklenen ve gerçekleşen sayılar", ""]
+        for eş, g in by.groupby("eşik", sort=False):
+            L += [f"### {eş}", "", g.drop(columns="eşik").to_markdown(index=False), ""]
+    out = Path(root) / "reports" / f"training_{run.cfg['run_name']}.md"
+    out.write_text("\n".join(L))
+    return out

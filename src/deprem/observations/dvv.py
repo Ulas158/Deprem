@@ -140,7 +140,7 @@ def station_ccfs(sta: str, out_dir: Path, start: pd.Timestamp, end: pd.Timestamp
     if path.exists():
         try:
             z = np.load(path, allow_pickle=True)
-            done = {pd.Timestamp(t): {k: z[k][i] for k in ("ZN", "ZE", "NE")} for i, t in enumerate(z["t"])}
+            done = {pd.Timestamp(str(t)): {k: z[k][i] for k in ("ZN", "ZE", "NE")} for i, t in enumerate(z["t"])}
         except Exception as e:  # yarıda kesilmiş yazım: baştan başla
             log.warning("%s bozuk (%s), yeniden hesaplanacak", path.name, e)
     times = [t for t in pd.date_range(start, end, freq=f"{step_days}D") + pd.Timedelta(hours=hour_ut)
