@@ -5,3 +5,5 @@ __pycache__/
 .venv/
 # Ham ve işlenmiş veri depoya girmez; scripts/ ile yeniden üretilir
 /data/
+/runs/
+web/data/layers/index.json

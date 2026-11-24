@@ -1,0 +1,76 @@
+{
+  "id": "etas_rate",
+  "label": "ETAS beklenen M≥4 (2025)",
+  "description": "2025 yılı için ETAS'ın 1 Ocak itibarıyla beklediği M≥4 sayısı (0,5° hücre). Sınama dönemi: model bu yılı eğitimde görmedi.",
+  "group": "Gerilme ve ETAS",
+  "order": 21,
+  "data": "etas_rate.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "fill",
+    "opacity": 0.45
+  },
+  "color": {
+    "property": "etas_m4",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#0b1220"
+      ],
+      [
+        0.1,
+        "#1f3b73"
+      ],
+      [
+        0.5,
+        "#3f7be0"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        10,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Beklenen M≥4",
+    "unit": "olay/yıl",
+    "labels": [
+      "0",
+      "0.5",
+      "2",
+      "10+"
+    ]
+  },
+  "tooltip": {
+    "title": "Hücre",
+    "fields": [
+      {
+        "property": "etas_m4",
+        "label": "ETAS beklenen M≥4",
+        "digits": 2
+      },
+      {
+        "property": "model_m4",
+        "label": "Model beklenen M≥4",
+        "digits": 2
+      },
+      {
+        "property": "observed_m4",
+        "label": "2025 gözlenen M≥4",
+        "digits": 0
+      },
+      {
+        "property": "log10_ratio",
+        "label": "log10(model/ETAS)",
+        "digits": 2
+      }
+    ]
+  }
+}

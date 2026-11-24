@@ -1,0 +1,75 @@
+{
+  "id": "slip_deficit",
+  "label": "Kayma açığı (1 km eleman)",
+  "description": "Her 1 km fay elemanının 1900'den bu yana biriktirip depremle boşaltmadığı kayma (m), 3 km parçalara ve derinliğe göre ortalanmış.",
+  "group": "Faylar ve enerji",
+  "order": 10,
+  "data": "slip_deficit.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "line",
+    "width": 3,
+    "glow": true,
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "slip_deficit_m",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#2a78d6"
+      ],
+      [
+        0.5,
+        "#8a5cf0"
+      ],
+      [
+        1.0,
+        "#e0497a"
+      ],
+      [
+        2.0,
+        "#ff8c42"
+      ],
+      [
+        3.0,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Kayma açığı",
+    "unit": "m",
+    "labels": [
+      "0",
+      "1",
+      "2",
+      "3+"
+    ]
+  },
+  "tooltip": {
+    "title": "fault_id",
+    "fields": [
+      {
+        "property": "slip_deficit_m",
+        "label": "Kayma açığı",
+        "unit": "m",
+        "digits": 2
+      },
+      {
+        "property": "last_release_year",
+        "label": "Son boşalım",
+        "digits": 0
+      },
+      {
+        "property": "slip_rate_mm_yr",
+        "label": "Kayma hızı",
+        "unit": "mm/yıl",
+        "digits": 1
+      }
+    ]
+  }
+}

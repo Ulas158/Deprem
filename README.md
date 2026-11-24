@@ -28,6 +28,28 @@ pytest
 Ham ve işlenmiş veri `data/` altına yazılır ve depoya girmez (yeniden
 üretilebilir). Rapor: [`reports/turkey_summary.md`](reports/turkey_summary.md).
 
+### Model eğitimi (tek komut)
+
+```bash
+python scripts/fetch_catalogs.py                                   # katalog (önbellekli)
+python scripts/train.py --config configs/train_default.toml        # tüm aşamalar
+python scripts/train.py --force fit evaluate report                # yalnızca seçilen aşamalar
+```
+
+Aşamalar sırayla `etas → etas_fc → coulomb → budget → features → fit → evaluate → report`.
+Her aşama çıktısını `runs/<run_name>/` altına yazar ve `status.json`'a işler; komut
+yeniden çalıştırıldığında tamamlanan aşamalar atlanır (kaldığı yerden devam). Yapılandırma
+`runs/<run_name>/config.toml` olarak kopyalanır. Rapor `reports/training_<run_name>.md`,
+harita katmanları `web/data/layers/` altına yazılır.
+
+Model: `λ(hücre, yıl) = Λ_ETAS · exp(β0 + Σ β_k z_k)`. Özellikler (sismisite, fay, Coulomb
+ΔCFF, eleman kayma açığı) yalnızca pencere başından önceki veriden hesaplanır. Katsayılar
+Gauss öncüllü Poisson olabilirliğiyle eğitim yıllarında öğrenilir, efektif sürtünme μ'
+eğitimin son iki yılında doğrulamayla seçilir. Başarı, eğitimde görülmemiş sınama
+yıllarında ETAS'a karşı M3/M4/M5/M6 eşiklerinde ayrı ayrı ölçülür.
+
+Yeni bir deneme için yapılandırmayı kopyalayıp `run_name`'i değiştirin.
+
 ### Veri kaynakları
 
 | Kaynak | Kapsam | Not |
