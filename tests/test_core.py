@@ -240,3 +240,23 @@ def test_element_seismicity():
     assert np.isnan(out["seis_max_mag"].iloc[1])
     full = ensure_columns(el)
     assert set(REGISTRY) <= set(full.columns)
+
+
+def test_rupture_extent_resets_neighbouring_segments():
+    from deprem.faults.moment import fault_summary
+    # doğu-batı uzanan üç ardışık 50 km'lik segment; M7.5 batı ucunda
+    k = 50 / (111.195 * np.cos(np.radians(40)))
+    segs = [[(30 + i * k, 40.0), (30 + (i + 1) * k, 40.0)] for i in range(3)]
+    faults = add_geometry(pd.DataFrame({
+        "fault_id": ["A", "B", "C"], "coords": segs, "slip_rate_mm_yr": 20.0,
+        "slip_rate_min": 10.0, "slip_rate_max": 25.0, "dip": 90.0,
+        "upper_depth_km": 0.0, "lower_depth_km": 15.0,
+        "length_km": 50.0}))
+    ev = normalize(pd.DataFrame([{"time": "1999-08-17T00:01:39Z", "latitude": 40.0,
+                                   "longitude": 30.1, "mag": 7.5}]))
+    ev["mw_best"] = ev["mag"]
+    fs = fault_summary(faults, ev, pd.Timestamp("1900-01-01", tz="UTC"),
+                       pd.Timestamp("2026-01-01", tz="UTC"))
+    hit = fs.set_index("fault_id")["last_big_event"].notna()
+    # L(7.5) ≈ 90 km → yarısı ≈ 45 km; episantr A içinde, B başına ~42 km: A ve B kırılmış, C (≥100 km) değil
+    assert hit.to_dict() == {"A": True, "B": True, "C": False}

@@ -47,7 +47,7 @@ def ts(s):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--modern-start", default="2008-01-01",
+    ap.add_argument("--modern-start", default="2010-01-01",
                     help="Küçük depremler için homojen dönem başlangıcı")
     ap.add_argument("--end", default=None)
     args = ap.parse_args()
@@ -106,14 +106,20 @@ def main():
         sub = modern[reg.contains(modern)]
         if len(sub) < 100:
             continue
-        mc_s = mc_maxc(sub["mag"])
+        # MAXC karışık/ardışık-dizi kataloglarında Mc'yi düşük tahmin eder; GFT ile üstten sınırla
+        mc_s = float(np.nanmax([mc_maxc(sub["mag"]), mc_gft(sub["mag"], level=90)[0]]))
         f_s = fit_gr(sub["mag"], years_modern, mc=mc_s, n_boot=100)
         rows.append({"bölge": reg.name, "n": len(sub), "Mc": round(mc_s, 1),
                      "b": round(f_s.b, 3), "σ_b": round(f_s.sigma_b, 3),
                      "yıllık_M≥5_GR": round(f_s.annual_rate(5), 2)})
     sub_df = pd.DataFrame(rows)
     sub_df.to_csv(tab_dir / "subregion_gr.csv", index=False)
-    md += ["Alt bölgeler:", "", sub_df.to_markdown(index=False), ""]
+    md += ["Alt bölgeler:", "", sub_df.to_markdown(index=False), "",
+           "Not: Doğu Anadolu Fay Zonu'ndaki düşük b büyük ölçüde 2023 Kahramanmaraş "
+           "dizisinden gelir; büyük bir ana şoktan hemen sonra küçük artçılar kaydedilemez "
+           "(kısa süreli tamlık kaybı), bu da b'yi yapay olarak düşürür. AFAD verisi ISC "
+           "üzerinden ~2025 sonuna kadar gelir; 2026 için yalnızca EMSC ve AFAD'ın son iki "
+           "haftası vardır, bu yüzden 2026 küçük olay sayıları eksiktir.", ""]
 
     # ---------------------------------------------------------------- zaman
     P.magnitude_time(cat[cat["time"] >= ts("1990-01-01")], fig_dir / "magnitude_time.png",
@@ -201,7 +207,7 @@ def main():
            "hipotezi sınamak için girdi olarak tutulur.", ""]
 
     # ---------------------------------------------------------------- referans modeller
-    fit_start, fit_end, test_end = ts("2008-01-01"), ts("2020-01-01"), ts("2025-01-01")
+    fit_start, fit_end, test_end = ts("2010-01-01"), ts("2020-01-01"), ts("2025-01-01")
     grid = ForecastGrid(TURKEY, 0.5, np.array([4.0, 4.5, 5.0, 5.5, 6.0, 10.0]))
     models = {m.name: m.fit(cat, fit_start, fit_end) for m in
               (UniformPoisson(4.0, fit.b), SmoothedSeismicity(4.0, fit.b, bandwidth_km=30))}
