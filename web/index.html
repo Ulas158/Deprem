@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Deprem Canlı Harita</title>
+  <meta name="description" content="Türkiye ve çevresindeki depremlerin anlık haritası: EMSC canlı akışı, aktif fay hatları ve zaman çizelgesi.">
+  <meta name="theme-color" content="#06090f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='none' stroke='%23ff5a3c' stroke-width='2' opacity='.5'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23ff5a3c'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div id="map" aria-label="Deprem haritası"></div>
+
+  <header class="brand glass">
+    <div class="brand-mark" aria-hidden="true"><span></span></div>
+    <div>
+      <h1>Deprem <em>canlı</em></h1>
+      <p>Türkiye ve çevresi · anlık sismisite</p>
+    </div>
+    <div class="live" id="live" data-state="connecting" title="Canlı bağlantı durumu">
+      <i></i><span id="live-text">Bağlanıyor</span>
+    </div>
+  </header>
+
+  <aside class="panel glass" id="panel">
+    <button class="panel-toggle" id="panel-toggle" aria-label="Paneli aç/kapat"><span></span></button>
+
+    <section class="stats">
+      <div class="stat"><b id="st-count">–</b><span id="st-count-label">deprem</span></div>
+      <div class="stat"><b id="st-max">–</b><span>en büyük</span></div>
+      <div class="stat"><b id="st-last">–</b><span>son deprem</span></div>
+    </section>
+
+    <section class="controls">
+      <div class="row">
+        <label>Zaman aralığı</label>
+        <div class="seg" id="seg-window">
+          <button data-v="1">24 saat</button>
+          <button data-v="7" class="on">7 gün</button>
+          <button data-v="30">30 gün</button>
+        </div>
+      </div>
+      <div class="row">
+        <label for="minmag">En küçük büyüklük <output id="minmag-out">M 0.0+</output></label>
+        <input type="range" id="minmag" min="0" max="6" step="0.5" value="0">
+      </div>
+      <div class="row">
+        <label>Renklendirme</label>
+        <div class="seg" id="seg-color">
+          <button data-v="age" class="on">Zaman</button>
+          <button data-v="depth">Derinlik</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Fay rengi</label>
+        <div class="seg" id="seg-fault">
+          <button data-v="type" class="on">Mekanizma</button>
+          <button data-v="rate">Kayma hızı</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="layers">
+      <h2>Katmanlar</h2>
+      <div id="layer-list"></div>
+    </section>
+
+    <section class="events">
+      <h2>Son depremler <small id="ev-count"></small></h2>
+      <ol id="event-list"></ol>
+    </section>
+
+    <footer class="credits">
+      Veri: <a href="https://www.seismicportal.eu" target="_blank" rel="noopener">EMSC</a> (AFAD, KOERI dahil),
+      yedek <a href="https://earthquake.usgs.gov" target="_blank" rel="noopener">USGS</a> ·
+      Faylar: <a href="https://github.com/GEMScienceTools/gem-global-active-faults" target="_blank" rel="noopener">GEM GAF-DB</a> (CC BY-SA 4.0) ·
+      Harita: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a>.
+      <br>Bu harita deprem <strong>tahmini yapmaz</strong>; yalnızca kaydedilmiş depremleri gösterir.
+    </footer>
+  </aside>
+
+  <div class="legend glass" id="legend"></div>
+
+  <div class="timeline glass">
+    <div class="tl-head"><span>Zaman çizelgesi</span><span id="tl-range"></span></div>
+    <svg id="timeline" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
