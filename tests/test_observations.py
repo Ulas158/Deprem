@@ -109,3 +109,27 @@ def test_dvv_stretching_recovers_velocity_change():
     est, cc = dvv.stretching(ref, cur, lag)
     assert abs(est - true) < 5e-4
     assert cc > 0.95
+
+
+def test_eventwalk_model_equals_etas_when_eta_zero():
+    from deprem.forecast.base import ForecastGrid
+    from deprem.forecast.etas import ETAS
+    from deprem.forecast.eventwalk import score_year, summarize
+    rng = np.random.default_rng(6)
+    n = 400
+    t = pd.Timestamp("2010-01-01", tz="UTC") + pd.to_timedelta(np.sort(rng.uniform(0, 6 * 365, n)), unit="D")
+    cat = pd.DataFrame({"time": t, "latitude": rng.uniform(37, 41, n), "longitude": rng.uniform(28, 40, n),
+                        "mag": 3.5 + rng.exponential(0.43, n), "depth_km": 10.0})
+    e = ETAS(m0=3.5)
+    train = cat[cat["time"] < pd.Timestamp("2015-01-01", tz="UTC")]
+    e._background(train)
+    e.params = {"mu": 0.15, "K": 0.02, "alpha": 1.5, "c": 0.01, "p": 1.1, "D": 2.0, "q": 1.7, "gamma": 0.8}
+    e.b = 1.0
+    grid = ForecastGrid(TURKEY, 0.5, np.array([3.5, 10.0]))
+    n_cells = (grid.lat_edges.size - 1) * (grid.lon_edges.size - 1)
+    d = score_year(e, cat, pd.Timestamp("2015-01-01", tz="UTC"), pd.Timestamp("2016-01-01", tz="UTC"),
+                   grid, np.zeros(n_cells), 3.5)
+    assert len(d) > 20
+    assert np.allclose(d["time_ll_model"], d["time_ll_etas"]) and np.allclose(d["space_ll_model"], d["space_ll_etas"])
+    s = summarize(d)
+    assert s["toplam kazanç"] == 0

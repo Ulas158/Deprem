@@ -1,7 +1,7 @@
 {
   "id": "coulomb_dcff",
   "label": "Coulomb gerilme değişimi",
-  "description": "124 büyük depremin (M≥6, 1900+) fay elemanlarında oluşturduğu birikimli ΔCFF (bar, μ'=0.0). Pozitif: kırılmaya yaklaşmış; negatif: gerilme gölgesi.",
+  "description": "124 büyük depremin (M≥6, 1900+) fay elemanlarında oluşturduğu birikimli ΔCFF (bar, μ'=0.8). Pozitif: kırılmaya yaklaşmış; negatif: gerilme gölgesi.",
   "group": "Gerilme ve ETAS",
   "order": 20,
   "data": "coulomb_dcff.geojson",

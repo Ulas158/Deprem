@@ -29,7 +29,9 @@ def write_report(run):
     md = [f"# Eğitim raporu: {run.cfg['run_name']}", "",
           f"> {NOTE} Sonuçlar, modelin eğitimde hiç görmediği {run.test_years[0]}–"
           f"{run.test_years[-1]} yıllarında, kabul görmüş referans model ETAS'a karşı ölçülmüştür.", "",
-          "## Sade dille özet", ""]
+          ] + _headline(run) + ["## Tek sınama dönemi özeti (ikincil değerlendirme)", "",
+          f"Model {run.train_years[0]}–{run.train_years[-1]} ile bir kez eğitilip "
+          f"{run.test_years[0]}–{run.test_years[-1]} tek blok olarak sınandı:", ""]
     for r in rows:
         ig = r["bilgi_kazancı_olay_başına"]
         p = r["p_değeri"]
@@ -68,6 +70,8 @@ def write_report(run):
     for key, rel in ev["reliability"].items():
         df = pd.DataFrame(rel["model"])[["p_mean", "obs_freq", "n"]].round(3)
         md += [f"**{key} (model)**", "", df.to_markdown(index=False), ""]
+    md += _eventwalk_section(run)
+    md += _walkforward_section(run)
     md += _obs_sections(run, model)
     text = "\n".join(md)
     (run.dir / "report.md").write_text(text)
@@ -81,6 +85,106 @@ def _verdict(ig, p):
     if p is not None and p < 0.05:
         return "anlamlı iyileşme" if ig > 0 else "anlamlı kötüleşme"
     return "anlamlı fark yok"
+
+
+def _headline(run):
+    """Raporun başı: ana (ileriye kayan) değerlendirmelerin sade sonucu."""
+    md = []
+    wf_p, ev_p = run.dir / "walkforward.json", run.dir / "eventwalk.json"
+    if not (wf_p.exists() or ev_p.exists()):
+        return md
+    md += ["## Ana sonuç (sade dille)", ""]
+    if ev_p.exists():
+        ev = json.loads(ev_p.read_text())
+        for r in ev["summary"]:
+            md.append(f"* **Deprem deprem, {r['hedef']}** ({r['olay']} olay): bir sonraki depremin "
+                      f"zamanı ve yeri için model ETAS'a göre olay başına {r['toplam kazanç']:+.3f} "
+                      f"(%95 GA {r['toplam %95 GA']}). "
+                      + ("ETAS'tan **daha iyi**." if r["toplam %95 GA"].startswith("[") and
+                         float(r["toplam %95 GA"][1:].split(",")[0]) > 0 else
+                         "ETAS'tan **daha kötü**." if float(r["toplam %95 GA"].split(",")[1][:-1]) < 0
+                         else "ETAS'tan anlamlı farkı yok."))
+    if wf_p.exists():
+        wf = json.loads(wf_p.read_text())
+        for r in wf["summary"]:
+            if r["model"] != "model (tüm özellikler)":
+                continue
+            lo, hi = (float(v) for v in r["%95 GA (yıl bootstrap)"].strip("[]").split(","))
+            verdict = ("ETAS'tan **daha iyi**" if lo > 0 else "ETAS'tan **daha kötü**" if hi < 0
+                       else "ETAS'tan anlamlı farkı yok")
+            md.append(f"* **Yıl yıl, {r['eşik']}**: ortalama kazanç {r['ortalama kazanç']:+.3f} "
+                      f"(%95 GA {r['%95 GA (yıl bootstrap)']}), ETAS'ı {r['ETAS\'ı geçtiği yıl']} yılda geçti: {verdict}.")
+    md += ["", "Ana değerlendirme ileriye kayan değerlendirmedir: model her adımda yalnız o ana kadarki "
+           "veriyle eğitilir ve bir sonrakini tahmin eder. Aşağıdaki tek dönemlik sınama ikincildir; "
+           "iki değerlendirme çelişirse ileriye kayan sonuç esas alınmalıdır.", ""]
+    return md
+
+
+def _eventwalk_section(run):
+    path = run.dir / "eventwalk.json"
+    if not path.exists():
+        return []
+    ev = json.loads(path.read_text())
+    md = ["", "## Ana değerlendirme: deprem deprem ileri tahmin", "",
+          "Her depremden hemen önce, o ana kadarki tüm geçmişle bir sonraki depremin **ne zaman**, "
+          "**nerede** ve **hangi büyüklükte** olacağına olasılık verildi; deprem gelince puanlandı ve "
+          "geçmişe eklendi. Koşullu yoğunluk her olayda güncellendi; model ve ETAS parametreleri "
+          "yılda bir, yalnız o yıldan önceki veriyle yeniden eğitildi.", "",
+          "* **Zaman kazancı:** bekleme süresini ETAS'tan ne kadar iyi bildi (olay başına log-olabilirlik farkı).",
+          "* **Konum kazancı:** depremin olduğu yere ETAS'tan ne kadar yüksek olasılık verdi.",
+          "* **En olası %5 hücrede:** deprem, o an en yüksek olasılık verilen hücrelerin %5'inden "
+          "birinde mi oldu (0,5° hücre).",
+          "* **Büyüklük:** her iki model de aynı Gutenberg-Richter dağılımını kullanıyor; büyüklük "
+          "henüz tahmin edilebilir değil, puan yalnız bilgi amaçlı.",
+          "* Köşeli parantez: aylık blok bootstrap ile %95 güven aralığı; sıfırı içeriyorsa fark şans olabilir.", "",
+          pd.DataFrame(ev["summary"]).to_markdown(index=False), "",
+          "### Yıl yıl", "",
+          pd.DataFrame(ev["by_year"])[["hedef", "yıl", "olay", "zaman kazancı", "zaman %95 GA", "konum kazancı",
+                                       "konum %95 GA", "toplam kazanç", "toplam %95 GA",
+                                       "en olası %5 hücrede (ETAS)", "en olası %5 hücrede (model)"]]
+          .to_markdown(index=False), ""]
+    big = ev.get("large_events") or []
+    if big:
+        df = pd.DataFrame(big)
+        df["zaman (model−ETAS)"] = (df["time_ll_model"] - df["time_ll_etas"]).round(2)
+        df["konum (model−ETAS)"] = (df["space_ll_model"] - df["space_ll_etas"]).round(2)
+        df["hücre sırası ETAS"] = (100 * df["cell_rank_etas"]).round(1).astype(str) + "%"
+        df["hücre sırası model"] = (100 * df["cell_rank_model"]).round(1).astype(str) + "%"
+        md += ["### M≥5,5 depremler tek tek", "",
+               "Hücre sırası: depremin olduğu hücre, o an en olası hücrelerin yüzde kaçlık diliminde "
+               "(küçük = iyi tahmin).", "",
+               df[["time", "lat", "lon", "mag", "zaman (model−ETAS)", "konum (model−ETAS)",
+                   "hücre sırası ETAS", "hücre sırası model"]].round(3).to_markdown(index=False), ""]
+    return md
+
+
+def _walkforward_section(run):
+    path = run.dir / "walkforward.json"
+    if not path.exists():
+        return []
+    wf = json.loads(path.read_text())
+    md = ["", "## Ana değerlendirme: yıl yıl ileriye doğru eğitim", "",
+          f"Geçmişten başlayarak her yıl için: ETAS ve model **yalnız o yıldan önceki** verilerle "
+          f"eğitildi, o yıl tahmin edildi, gerçekle karşılaştırıldı, sonra o yıl eğitime eklendi "
+          f"({wf['first_year']}'den bugüne). Kazanç: olay başına bilgi kazancı (ETAS'a göre; "
+          "0 = ETAS kadar iyi, pozitif = daha iyi). Köşeli parantez: %95 güven aralığı. Aralık "
+          "sıfırı içeriyorsa fark şans eseri olabilir. **Konum kazancı**: modelin toplam sayısı ETAS'a "
+          "eşitlenince kalan fark, yani yalnız depremlerin *nerede* olacağını ne kadar iyi bildiği; "
+          "toplam kazanç ise *kaç* deprem olacağını da içerir.", "",
+          "### Özet (tüm adımlar birlikte)", "",
+          pd.DataFrame(wf["summary"]).to_markdown(index=False), "", "### Yıl yıl", ""]
+    st = pd.DataFrame(wf["steps"])
+    for mg in run.mags:
+        key = f"M≥{mg:g}"
+        cols = ["yıl", "eğitim_yılları"] + [c for c in st.columns if c.startswith(key + " ")]
+        if len(cols) > 2:
+            md += [f"**{key}**", "", st[cols].to_markdown(index=False), ""]
+    cp = pd.DataFrame(wf.get("coef_path", []))
+    if not cp.empty:
+        last = cp[cp["yıl"] == cp["yıl"].max()]
+        md += ["### Gözlem katsayılarının yıllar içinde öğrenilmesi (son adım, %95 aralık)", "",
+               last.to_markdown(index=False), ""]
+    return md
 
 
 def _obs_sections(run, model):
