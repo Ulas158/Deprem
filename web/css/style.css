@@ -238,3 +238,5 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
   .panel > section { padding: 10px 14px; }
   .maplibregl-ctrl-bottom-right { bottom: 140px; }
 }
+
+.lg-note { margin: 6px 0 0; font-size: 10px; line-height: 1.4; color: var(--faint); max-width: 220px; }

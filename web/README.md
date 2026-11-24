@@ -58,7 +58,10 @@ python3 web/tools/build_data.py gem_active_faults_harmonized.geojson ne_10m_admi
 `probe` alanı olan katmanlar, dosya `data/` altında bulunduğu anda kendiliğinden etkinleşir:
 
 - **`data/moment_deficit.geojson`** — fay başına moment açığı. LineString özellikleri;
-  renk `mw_equiv` (birikmiş momentin eşdeğer Mw değeri) alanından gelir. İsteğe bağlı: `moment_deficit_nm`, `name`.
+  renk `mw_equiv` ya da `mw_equiv_since_ref` (birikmiş momentin eşdeğer Mw değeri) alanından gelir.
+  Üzerine gelince `fault_id`/`name`, `slip_rate_mm_yr`, `length_km`, `m0_since_ref`, `last_big_event` gösterilir;
+  dosyanın `metadata.note` metni katman açıklaması olarak kullanılır. 1e15'ten büyük sayılar metne çevrilerek
+  yüklenir (MapLibre karo kodlaması bu büyüklükteki değerlerde katmanı çizmiyor).
 - **`data/coulomb_stress.geojson`** — Coulomb gerilme değişimi. Polygon özellikleri; renk `dcfs_bar` alanından gelir.
 
 Python analiz hattı bu dosyaları yazdığında harita onları ek kod gerektirmeden gösterir.
