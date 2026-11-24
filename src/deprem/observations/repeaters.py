@@ -42,41 +42,50 @@ def nj_slip_cm(mw):
 
 def find_families(cat: pd.DataFrame, radius_km: float = 1.0, dmag: float = 0.3,
                   min_mag: float = 1.5, max_mag: float = 4.5, min_events: int = 3,
-                  min_gap_days: float = 30.0, max_cv: float = 1.0) -> pd.DataFrame:
+                  min_gap_days: float = 30.0, max_cv: float = 1.0, max_family: int = 30) -> pd.DataFrame:
     ev = cat[(cat["mag"] >= min_mag) & (cat["mag"] <= max_mag) & cat["depth_km"].notna()].copy()
     ev = ev.sort_values("time").reset_index(drop=True)
     if len(ev) < min_events:
         return pd.DataFrame()
-    xyz = _xyz(ev["latitude"], ev["longitude"], ev["depth_km"])
-    pairs = cKDTree(xyz).query_pairs(radius_km, output_type="ndarray")
+    # AFAD derinliklerinin çoğu sabit (ör. 7 km) olduğundan yalnız yatay uzaklık kullanılır;
+    # derinlik ayrıca 5 km içinde olmalı.
+    xyz = _xyz(ev["latitude"], ev["longitude"], np.zeros(len(ev)))
+    pairs = cKDTree(xyz[:, :2]).query_pairs(radius_km, output_type="ndarray")
+    dz = np.abs(ev["depth_km"].to_numpy()[pairs[:, 0]] - ev["depth_km"].to_numpy()[pairs[:, 1]])
+    pairs = pairs[dz <= 5.0]
     m = ev["mag"].to_numpy()
     t = ev["time"].astype("int64").to_numpy() / 86400e9
-    ok = (np.abs(m[pairs[:, 0]] - m[pairs[:, 1]]) <= dmag) & (np.abs(t[pairs[:, 0]] - t[pairs[:, 1]]) >= min_gap_days)
+    ok = np.abs(m[pairs[:, 0]] - m[pairs[:, 1]]) <= dmag
     pairs = pairs[ok]
-    # birleşim-bul (union-find)
-    parent = np.arange(len(ev))
-
-    def find(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-    for a, b in pairs:
-        ra, rb = find(a), find(b)
-        if ra != rb:
-            parent[ra] = rb
-    roots = np.array([find(i) for i in range(len(ev))])
-    ev["family"] = roots
-    sizes = ev.groupby("family").size()
-    ev = ev[ev["family"].isin(sizes[sizes >= min_events].index)]
-    keep = []
-    for fam, g in ev.groupby("family"):
-        dt = np.diff(np.sort(g["time"].astype("int64").to_numpy() / 86400e9))
-        if len(dt) < 2 or dt.min() < min_gap_days * 0.5:
+    # Zincirleme birleşme yerine tohum tabanlı aileler: her aile bir tohum olayın 1 km
+    # içindeki benzer büyüklükteki olaylardır (aile çapı ≤ 2 km). Tohumun komşusu çok
+    # fazlaysa orası bir sürü/kümedir; katalogdan tekrarlayan ayırt edilemez, atlanır.
+    n = len(ev)
+    nb = [[] for _ in range(n)]
+    for a_, b_ in pairs:
+        nb[a_].append(b_)
+        nb[b_].append(a_)
+    deg = np.array([len(x) for x in nb])
+    used = np.zeros(n, bool)
+    fam_id = np.full(n, -1)
+    fid = 0
+    for i in np.argsort(-deg):
+        if used[i] or deg[i] + 1 < min_events or deg[i] + 1 > max_family:
             continue
-        cv = dt.std() / dt.mean()
-        if cv <= max_cv:
-            keep.append(fam)
+        mem = [i] + [j for j in nb[i] if not used[j]]
+        if len(mem) < min_events:
+            continue
+        tt = np.sort(t[mem])
+        dt = np.diff(tt)
+        if dt.min() < min_gap_days:
+            continue  # aynı dizi içinde çok yakın olaylar: artçı/sürü
+        if dt.std() / dt.mean() > max_cv:
+            continue
+        used[mem] = True
+        fam_id[mem] = fid
+        fid += 1
+    ev["family"] = fam_id
+    keep = list(range(fid))
     ev = ev[ev["family"].isin(keep)].copy()
     mw = ev["mw_best"] if "mw_best" in ev else ev["mag"]
     ev["slip_cm"] = nj_slip_cm(mw)
