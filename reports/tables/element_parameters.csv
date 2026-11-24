@@ -1,0 +1,52 @@
+name,unit,group,status,description,source
+lon,°,geometri,geometry,Eleman merkezi boylamı,mesh.py
+lat,°,geometri,geometry,Eleman merkezi enlemi,mesh.py
+depth_km,km,geometri,geometry,Eleman merkezi derinliği,mesh.py
+strike,°,geometri,geometry,Yerel doğrultu (kuzeyden saat yönü),mesh.py
+dip,°,geometri,geometry,Eğim,mesh.py
+area_km2,km²,geometri,geometry,Eleman alanı,mesh.py
+along_km,km,geometri,geometry,Segment başından doğrultu boyunca uzaklık,mesh.py
+along_frac,-,geometri,geometry,Segment boyunca göreli konum (0-1),mesh.py
+end_dist_km,km,geometri,geometry,En yakın segment ucuna uzaklık (kırılma durma/başlama bölgeleri),mesh.py
+down_dip_km,km,geometri,geometry,Fay düzleminde üst kenardan aşağı uzaklık,mesh.py
+depth_rel,-,geometri,geometry,"Sismojenik zon içindeki göreli derinlik (0 üst, 1 alt)",mesh.py
+strike_bend_deg,°,geometri,geometry,Komşu elemana göre doğrultu değişimi (bükülme/büklüm),mesh.py
+fault_len_km,km,geometri,geometry,Ait olduğu segmentin uzunluğu,mesh.py
+rake,°,fay,fault_db,Kayma açısı (mekanizma türü),GEM GAF / EMME
+slip_rate_mm_yr,mm/yıl,fay,fault_db,Uzun dönem kayma hızı (en iyi tahmin),GEM GAF / EMME
+slip_rate_min,mm/yıl,fay,fault_db,Kayma hızı alt sınırı,GEM GAF / EMME
+slip_rate_max,mm/yıl,fay,fault_db,Kayma hızı üst sınırı,GEM GAF / EMME
+upper_depth_km,km,fay,fault_db,Sismojenik zon üst sınırı,GEM GAF / EMME
+lower_depth_km,km,fay,fault_db,Sismojenik zon alt sınırı (kilitli derinlik),GEM GAF / EMME
+m0_rate_Nm_yr,N·m/yıl,fay,fault_db,Moment birikim hızı = μ·A·v,GEM GAF / EMME
+seis_n_all,-,sismisite,seismicity,Elemana R km içindeki tüm olaylar (referans zamandan önce),birleşik katalog
+seis_n_10y,-,sismisite,seismicity,Son 10 yıldaki olay sayısı (M≥Mc),birleşik katalog
+seis_n_1y,-,sismisite,seismicity,Son 1 yıldaki olay sayısı (M≥Mc),birleşik katalog
+seis_rate_z,-,sismisite,seismicity,"Hız değişimi z-değeri: son 1 yıl vs önceki 9 yıl (+ hızlanma, − sessizlik)",birleşik katalog
+seis_b_10y,-,sismisite,seismicity,Son 10 yıl b-değeri (Aki-Utsu; n<30 ise boş),birleşik katalog
+seis_max_mag,-,sismisite,seismicity,Görülen en büyük büyüklük,birleşik katalog
+seis_yrs_since_m4,yıl,sismisite,seismicity,Son M≥4'ten bu yana geçen süre,birleşik katalog
+seis_yrs_since_m5,yıl,sismisite,seismicity,Son M≥5'ten bu yana geçen süre,birleşik katalog
+seis_log_m0_10y,log10 N·m,sismisite,seismicity,Son 10 yılda boşalan sismik moment,birleşik katalog
+seis_mean_depth,km,sismisite,seismicity,Yakın olayların ortalama derinliği,birleşik katalog
+seis_depth_std,km,sismisite,seismicity,Yakın olayların derinlik yayılımı,birleşik katalog
+seis_frac_dependent,-,sismisite,seismicity,Artçı/öncü (bağımlı) olay oranı: kümelenme/sürü göstergesi,birleşik katalog
+seis_m0_release_ratio_10y,-,sismisite,seismicity,Son 10 yılda boşalan / biriken moment,birleşik katalog
+gnss_strain_rate,1/yıl,henüz veri yok,placeholder,GNSS'ten ikinci değişmez gerinim hızı,Kreemer vd. 2014 GSRM; Aktuğ vd.
+gnss_slip_deficit_mm_yr,mm/yıl,henüz veri yok,placeholder,Blok modelinden kilitlenme × kayma açığı,Reilinger vd. 2006; Ergintav vd.
+locking_ratio,-,henüz veri yok,placeholder,"Jeodezik kilitlenme oranı (0 krip, 1 tam kilitli)",GNSS/InSAR ters çözüm
+creep_rate_mm_yr,mm/yıl,henüz veri yok,placeholder,Gözlenen aseismik krip hızı,"İsmetpaşa, Destek vb. gözlemleri"
+insar_los_rate_mm_yr,mm/yıl,henüz veri yok,placeholder,InSAR görüş doğrultusu hız alanı,Sentinel-1 / COMET-LiCSAR
+heat_flow_mw_m2,mW/m²,henüz veri yok,placeholder,Yüzey ısı akısı,Global Heat Flow Database
+curie_depth_km,km,henüz veri yok,placeholder,Curie nokta derinliği (termal yapı),Manyetik anomali ters çözümleri
+crustal_thickness_km,km,henüz veri yok,placeholder,Kabuk kalınlığı (Moho),CRUST1.0 / alıcı fonksiyonları
+vp_vs_ratio,-,henüz veri yok,placeholder,Vp/Vs oranı (akışkan/doygunluk göstergesi),Yerel tomografi
+lithology_class,kategori,henüz veri yok,placeholder,Fay boyunca kayaç türü,MTA 1:500k jeoloji haritası
+geothermal_proximity_km,km,henüz veri yok,placeholder,En yakın jeotermal alana uzaklık,MTA jeotermal envanteri
+friction_a_minus_b,-,henüz veri yok,placeholder,Hız-durum sürtünme (a−b) tahmini (litolojiye dayalı),Laboratuvar derlemeleri
+tidal_stress_sensitivity,-,henüz veri yok,placeholder,Gelgit gerilmesi fazı ile olay zamanlaması korelasyonu,Katalogdan türetilecek
+coulomb_dcff_bar,bar,henüz veri yok,placeholder,Geçmiş depremlerden birikimli Coulomb gerilme değişimi,Sonraki PR (Okada)
+coulomb_dcff_last_bar,bar,henüz veri yok,placeholder,Son büyük depremden kaynaklı ΔCFF,Sonraki PR (Okada)
+last_rupture_year,yıl,henüz veri yok,placeholder,Elemanın bilinen son yüzey kırığı yılı (tarihsel dahil),Tarihsel katalog thread'i
+paleo_recurrence_yr,yıl,henüz veri yok,placeholder,Paleosismolojik yinelenme aralığı,MTA hendek çalışmaları
+fluid_pressure_index,-,henüz veri yok,placeholder,"Akışkan basıncı göstergesi (b, Vp/Vs, jeotermalden birleşik)",Türetilecek
