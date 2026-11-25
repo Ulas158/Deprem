@@ -6,6 +6,8 @@
 
 ## Ne kaydediliyor?
 
+Aynı düzenle Marmara için de kayıt tutulur (`forecasts/marmara/`).
+
 Her gün 21:17 UTC'de (Türkiye saatiyle 00:17) GitHub Actions
 (`.github/workflows/ege_canli.yml`) ertesi UTC günü için Ege / Batı Anadolu kutusundaki
 (enlem 36,5-40 K, boylam 25,5-30,5 D) 70 hücrenin her biri için beklenen deprem sayısını
@@ -41,7 +43,7 @@ artçıları sayılmaz; bu iki model için aynı olduğundan karşılaştırmay�
 
 ```bash
 python scripts/fetch_catalogs.py --end <tarih> --afad-days <2026-11-26'dan beri gün>
-python scripts/ege_canli.py degerlendir --yaz
+python scripts/ege_canli.py degerlendir --bolge ege --yaz
 ```
 
 - En erken 2027-05-26 (6 ay), asıl değerlendirme 2027-11-26 (12 ay).

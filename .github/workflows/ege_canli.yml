@@ -1,4 +1,5 @@
-# Ege canlı tahmin kaydı (ön kayıt: docs/onkayit/2026-11-25_ege_ustunluk.md, bölüm 8).
+# Ege ve Marmara canlı tahmin kaydı (ön kayıtlar: docs/onkayit/2026-11-25_ege_ustunluk.md
+# bölüm 8 ve docs/onkayit/2026-11-25_marmara_canli.md).
 # Her gün ertesi UTC günü için ETAS ve model tahminlerini yazar ve
 # "ege-canli-kayit" dalına commit'ler. Commit zamanı, tahminin pencere başlamadan
 # önce verildiğinin kanıtıdır. Geçmiş tahmin dosyaları hiçbir zaman değiştirilmez.
@@ -31,6 +32,8 @@ jobs:
           if git ls-remote --exit-code --heads origin ege-canli-kayit; then
             git fetch origin ege-canli-kayit
             git checkout ege-canli-kayit
+            # main'deki kod değişikliklerini al; kayıt dosyalarında kayıt dalı kazanır
+            git merge --no-edit -X ours origin/main
           else
             git checkout -b ege-canli-kayit
           fi
@@ -45,7 +48,7 @@ jobs:
         run: python scripts/ege_canli.py tahmin
       - name: Kaydet
         run: |
-          git add forecasts/ege
+          git add forecasts
           if git diff --cached --quiet; then echo "değişiklik yok"; exit 0; fi
-          git commit -m "Ege canlı tahmin: $(date -u -d tomorrow +%Y-%m-%d)"
+          git commit -m "Ege + Marmara canlı tahmin: $(date -u -d tomorrow +%Y-%m-%d)"
           for i in 1 2 3 4; do git push origin ege-canli-kayit && break; sleep $((i*15)); done
