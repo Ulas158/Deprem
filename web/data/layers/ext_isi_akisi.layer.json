@@ -1,0 +1,32 @@
+{
+  "data": "ext_isi_akisi.geojson",
+  "visible": false,
+  "id": "ext_isi_akisi",
+  "label": "Isı akısı",
+  "description": "IHFC Küresel Isı Akısı Veritabanı",
+  "group": "Gaz ve sıvılar",
+  "order": 450,
+  "style": {
+    "type": "circle",
+    "radius": 5
+  },
+  "color": {
+    "property": "value",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#3f7be0"
+      ],
+      [
+        1,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Isı akısı",
+    "unit": "mW/m²"
+  },
+  "note": "Veri henüz bağlanmadı; bkz. docs/akiskan_ve_dis_etkiler.md."
+}

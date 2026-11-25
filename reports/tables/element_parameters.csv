@@ -44,9 +44,47 @@ vp_vs_ratio,-,henüz veri yok,placeholder,Vp/Vs oranı (akışkan/doygunluk gös
 lithology_class,kategori,henüz veri yok,placeholder,Fay boyunca kayaç türü,MTA 1:500k jeoloji haritası
 geothermal_proximity_km,km,henüz veri yok,placeholder,En yakın jeotermal alana uzaklık,MTA jeotermal envanteri
 friction_a_minus_b,-,henüz veri yok,placeholder,Hız-durum sürtünme (a−b) tahmini (litolojiye dayalı),Laboratuvar derlemeleri
-tidal_stress_sensitivity,-,henüz veri yok,placeholder,Gelgit gerilmesi fazı ile olay zamanlaması korelasyonu,Katalogdan türetilecek
+tidal_stress_sensitivity,log10 p,dış yükler,seismicity,Gelgit duyarlılığı (= tidal_semidiurnal_log10p; geriye uyumluluk),Katalog + gök mekaniği
 coulomb_dcff_bar,bar,henüz veri yok,placeholder,Geçmiş depremlerden birikimli Coulomb gerilme değişimi,Sonraki PR (Okada)
 coulomb_dcff_last_bar,bar,henüz veri yok,placeholder,Son büyük depremden kaynaklı ΔCFF,Sonraki PR (Okada)
 last_rupture_year,yıl,henüz veri yok,placeholder,Elemanın bilinen son yüzey kırığı yılı (tarihsel dahil),Tarihsel katalog thread'i
 paleo_recurrence_yr,yıl,henüz veri yok,placeholder,Paleosismolojik yinelenme aralığı,MTA hendek çalışmaları
 fluid_pressure_index,-,henüz veri yok,placeholder,"Akışkan basıncı göstergesi (b, Vp/Vs, jeotermalden birleşik)",Türetilecek
+radon_bq_m3,Bq/m³,akışkan ve gaz,placeholder,Toprak gazı / kaynak suyu radon (²²²Rn) derişimi,AFAD/KOERI/üniversite istasyonları (izinle)
+radon_anomaly_z,-,akışkan ve gaz,placeholder,Radonun mevsim ve meteoroloji etkisi çıkarılmış anomali z-değeri,Türetilecek
+co2_flux_g_m2_d,g/m²/gün,akışkan ve gaz,placeholder,Toprak CO2 akısı (fay boyunca derin kaynaklı gaz),Saha ölçümleri / literatür
+he3_he4_rc_ra,R/Ra,akışkan ve gaz,placeholder,³He/⁴He oranı: manto kaynaklı akışkanın fay boyunca yükselmesi,Literatür (ör. Güleç vd. 2002; Mutlu vd. 2008)
+ch4_h2_ppm,ppm,akışkan ve gaz,placeholder,Toprak gazında CH4 / H2,Saha ölçümleri
+groundwater_level_m,m,akışkan ve gaz,placeholder,Yeraltı suyu seviyesi (kuyu),DSİ gözlem kuyuları (izinle)
+groundwater_anomaly_z,-,akışkan ve gaz,placeholder,Yeraltı suyu seviyesinde yağış/pompaj dışı anomali,Türetilecek
+spring_temp_c,°C,akışkan ve gaz,placeholder,Sıcak su kaynağı sıcaklığı,MTA jeotermal envanteri (elle)
+spring_chem_anomaly_z,-,akışkan ve gaz,placeholder,"Kaynak suyu kimyası (Cl, Na, B, iletkenlik) anomalisi",Saha ölçümleri / literatür
+thermal_spring_dist_km,km,akışkan ve gaz,placeholder,En yakın sıcak su kaynağına uzaklık,MTA envanteri (elle)
+pore_pressure_lambda,-,akışkan ve gaz,placeholder,Gözenek basıncı / litostatik basınç (λ) yerel tahmini; ölçüm yoksa gizli parametre 'pore_pressure_ratio' kullanılır,Kuyu ölçümleri / Vp/Vs / ters çözüm
+station_dist_km,km,akışkan ve gaz,external,Gaz/su verisi aktarılan en yakın istasyona uzaklık (aktarımın güvenilirliği),Ölçüm istasyonları dosyası
+swarm_n_10y,-,akışkan ve gaz,seismicity,Son 10 yılda yakında başlayan deprem sürüsü sayısı,Katalog (swarms.py)
+swarm_frac_10y,-,akışkan ve gaz,seismicity,Yakındaki ≥5 olaylı kümelerin sürü oranı (akışkan sürülerini ana şok–artçıdan ayırır),Katalog (swarms.py)
+hydraulic_diffusivity_log10,log10 m²/s,akışkan ve gaz,seismicity,"Sürü göçünden hidrolik yayınım D (r² = 4πDt, Shapiro 1997)",Katalog (swarms.py)
+tidal_semidiurnal_log10p,log10 p,dış yükler,seismicity,Yarı günlük gelgit fazı Schuster testi (bağımsız olaylar),Katalog + gök mekaniği (periodic.py)
+tidal_fortnight_log10p,log10 p,dış yükler,seismicity,14 günlük (kuvvetli/zayıf gelgit) faz Schuster testi,Katalog + gök mekaniği
+seasonal_log10p,log10 p,dış yükler,seismicity,Yıllık faz Schuster testi (mevsimsel yük vekili),Katalog
+dyn_trigger_beta,-,dış yükler,seismicity,Uzak büyük depremler sonrası 5 gün β istatistiği (dinamik tetikleme),"Katalog + USGS küresel M≥6,5"
+hydro_load_amp_kpa,kPa,dış yükler,placeholder,Yıllık hidrolojik yük genliği (GRACE eşdeğer su kalınlığı),NASA GRACE/GRACE-FO (Earthdata hesabı)
+snow_load_amp_kpa,kPa,dış yükler,placeholder,Kar yükü yıllık genliği,ERA5-Land (Copernicus hesabı)
+precip_anomaly_z,-,dış yükler,placeholder,"Yağış anomalisi (yağışla tetiklenen sismisite, Hainzl vd. 2006)",ERA5 / MGM
+atm_pressure_amp_hpa,hPa,dış yükler,placeholder,Atmosfer basıncı değişim genliği,ERA5
+lake_level_change_m,m,dış yükler,placeholder,Doğal göl/rezervuar seviye değişimi,"DSİ / uydu altimetrisi (DAHITI, Hydroweb)"
+slow_slip_rate_mm_yr,mm/yıl,dış yükler,placeholder,Yavaş kayma / geçici aseismik kayma hızı,GNSS zaman serileri (Nevada Geodetic Lab)
+tec_anomaly_z,-,diğer öncü adayları,placeholder,İyonosfer toplam elektron içeriği (TEC) anomalisi,IGS GNSS TEC haritaları
+geomagnetic_anomaly_z,-,diğer öncü adayları,placeholder,Yerel manyetik alan / ULF anomalisi,INTERMAGNET / yerel istasyonlar
+thermal_ir_anomaly_z,-,diğer öncü adayları,placeholder,Uydu termal kızılötesi (yüzey sıcaklığı) anomalisi,MODIS / Sentinel-3
+site_reservoir_dist_km,km,insan kaynaklı,external,En yakın faal baraj rezervuarına uzaklık,external_data/insan_kaynakli_sahalar.csv
+reservoir_years_since_fill,yıl,insan kaynaklı,external,50 km içindeki en yakın barajın dolumundan bu yana geçen süre,Aynı
+site_mining_dist_km,km,insan kaynaklı,external,En yakın faal madene uzaklık,Aynı
+site_geothermal_dist_km,km,insan kaynaklı,external,En yakın faal jeotermal sahaya uzaklık,Aynı + WRI GPPD
+site_hydrocarbon_dist_km,km,insan kaynaklı,external,En yakın petrol/gaz sahası veya gaz deposuna uzaklık,Aynı
+site_injection_dist_km,km,insan kaynaklı,external,En yakın akışkan enjeksiyonu yapılan sahaya uzaklık,Aynı
+site_gas_seep_dist_km,km,insan kaynaklı,external,En yakın bilinen doğal gaz çıkışına uzaklık,Aynı (Géli vd. 2018)
+injection_volume_m3_yr,m³/yıl,insan kaynaklı,placeholder,Yakındaki toplam akışkan enjeksiyon hacmi,Şirket/EPDK/MAPEG verisi (izinle)
+extraction_volume_m3_yr,m³/yıl,insan kaynaklı,placeholder,Yakındaki akışkan/kütle çekimi,Şirket/MAPEG verisi (izinle)
+reservoir_level_rate_m_month,m/ay,insan kaynaklı,placeholder,Rezervuar seviye değişim hızı,DSİ (izinle) / uydu altimetrisi

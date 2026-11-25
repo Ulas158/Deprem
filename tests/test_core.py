@@ -188,7 +188,7 @@ def test_uncertainty_weights():
 def test_latent_fit_recovers_mix_and_validates():
     from deprem.forecast.latent import LATENT, fit_latent
     from deprem.forecast.tests import poisson_loglik
-    assert len(LATENT) == 10
+    assert len(LATENT) >= 10  # deprem.external yeni gizli parametreler ekler
     rng = np.random.default_rng(0)
     n = 400
     a = rng.dirichlet(np.ones(n))  # "fay moment" uzamsal yoğunluğu

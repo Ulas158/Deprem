@@ -1,0 +1,60 @@
+{
+  "data": "ext_uzak_tetikleme.geojson",
+  "visible": false,
+  "id": "ext_uzak_tetikleme",
+  "label": "Uzak deprem tetiklemesi",
+  "description": "Küresel M≥6,5 sonrası 5 gün β",
+  "group": "Dış yükler (gelgit, mevsim, uzak depremler)",
+  "order": 530,
+  "style": {
+    "type": "fill",
+    "opacity": 0.55
+  },
+  "color": {
+    "property": "dyn_beta",
+    "type": "interpolate",
+    "stops": [
+      [
+        -3,
+        "#3f7be0"
+      ],
+      [
+        0,
+        "#1b2433"
+      ],
+      [
+        2,
+        "#e0497a"
+      ],
+      [
+        4,
+        "#ffe680"
+      ]
+    ],
+    "missing": "rgba(0,0,0,0)"
+  },
+  "legend": {
+    "title": "β (uzak tetikleme)"
+  },
+  "tooltip": {
+    "title": "cell_id",
+    "fields": [
+      {
+        "property": "dyn_beta",
+        "label": "β (uzak tetikleme)",
+        "digits": 2
+      },
+      {
+        "property": "dyn_n_total",
+        "label": "Pencerelerdeki olay",
+        "digits": 0
+      },
+      {
+        "property": "dyn_n_remote",
+        "label": "Kullanılan uzak deprem",
+        "digits": 0
+      }
+    ]
+  },
+  "note": "β > 2 kabaca anlamlı artış; jeotermal ve akışkanca zengin bölgelerde beklenir."
+}

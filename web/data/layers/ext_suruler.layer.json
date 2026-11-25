@@ -1,0 +1,102 @@
+{
+  "data": "ext_suruler.geojson",
+  "visible": false,
+  "id": "ext_suruler",
+  "label": "Deprem sürüleri (akışkan göçü)",
+  "group": "Gaz ve sıvılar",
+  "order": 410,
+  "description": "Katalogdan bulunan sürüler; renk hidrolik yayınım",
+  "style": {
+    "type": "circle",
+    "outline": "#0b111a",
+    "opacity": 0.85
+  },
+  "color": {
+    "property": "log10_D",
+    "type": "interpolate",
+    "missing": "#8796ab",
+    "stops": [
+      [
+        -2,
+        "#3f7be0"
+      ],
+      [
+        -1,
+        "#8a5cf0"
+      ],
+      [
+        0,
+        "#e0497a"
+      ],
+      [
+        1,
+        "#ff8c42"
+      ],
+      [
+        2,
+        "#ffe680"
+      ]
+    ]
+  },
+  "size": {
+    "property": "n",
+    "stops": [
+      [
+        5,
+        4
+      ],
+      [
+        50,
+        9
+      ],
+      [
+        500,
+        16
+      ]
+    ]
+  },
+  "legend": {
+    "title": "log10 D",
+    "unit": "m²/s"
+  },
+  "tooltip": {
+    "title": "t_start",
+    "fields": [
+      {
+        "property": "n",
+        "label": "Olay sayısı",
+        "digits": 0
+      },
+      {
+        "property": "duration_days",
+        "label": "Süre",
+        "unit": "gün",
+        "digits": 1
+      },
+      {
+        "property": "mag_max",
+        "label": "En büyük",
+        "digits": 1
+      },
+      {
+        "property": "depth_km",
+        "label": "Ortalama derinlik",
+        "unit": "km",
+        "digits": 1
+      },
+      {
+        "property": "D_m2_s",
+        "label": "Hidrolik yayınım",
+        "unit": "m²/s",
+        "digits": 3
+      },
+      {
+        "property": "radius_km",
+        "label": "Yayılım yarıçapı",
+        "unit": "km",
+        "digits": 1
+      }
+    ]
+  },
+  "note": "Sürü sınıflaması basit bir kurala dayanır; D konum hatalarına duyarlıdır."
+}

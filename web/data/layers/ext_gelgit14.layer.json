@@ -1,0 +1,59 @@
+{
+  "data": "ext_gelgit14.geojson",
+  "visible": false,
+  "id": "ext_gelgit14",
+  "label": "Gelgit duyarlılığı (14 gün)",
+  "description": "Kuvvetli/zayıf gelgit fazı",
+  "group": "Dış yükler (gelgit, mevsim, uzak depremler)",
+  "order": 510,
+  "style": {
+    "type": "fill",
+    "opacity": 0.55
+  },
+  "color": {
+    "property": "fortnight_neglog10p",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#1b2433"
+      ],
+      [
+        1.3,
+        "#3f7be0"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        3,
+        "#e0497a"
+      ],
+      [
+        5,
+        "#ffe680"
+      ]
+    ],
+    "missing": "rgba(0,0,0,0)"
+  },
+  "legend": {
+    "title": "−log10 p (14 g)"
+  },
+  "tooltip": {
+    "title": "cell_id",
+    "fields": [
+      {
+        "property": "fortnight_neglog10p",
+        "label": "−log10 p (14 g)",
+        "digits": 2
+      },
+      {
+        "property": "n_independent",
+        "label": "Bağımsız olay",
+        "digits": 0
+      }
+    ]
+  },
+  "note": "Dolunay/yeni ay dönemine yığılma testi; tahmin değildir."
+}

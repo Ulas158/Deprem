@@ -1,0 +1,48 @@
+# Türkiye olasılıksal sismisite modeli: varsayılan eğitim yapılandırması.
+# Çalıştırma:  python scripts/train.py --config configs/train_default.toml
+# Aynı run_name ile yeniden çalıştırınca tamamlanmış aşamalar atlanır
+# (--force <aşama> veya --force all ile yeniden hesaplanır).
+#
+# HİÇBİR ÇIKTI DEPREM TAHMİNİ DEĞİLDİR: sonuçlar, zamana göre ayrılmış
+# sınama döneminde referans modele (ETAS) karşı ölçülen hipotez testleridir.
+
+run_name = "turkey_base"
+seed = 0
+out_dir = "runs"
+
+[data]
+catalog = "data/processed/turkey_catalog.csv.gz"
+faults = "data/ext/gem_active_faults_harmonized.geojson"
+cell_deg = 0.5
+mc = 2.5                # özelliklerde kullanılan tamlık büyüklüğü
+
+[split]
+first_train_year = 2012 # özellikler için en az 2 yıllık geçmiş (AFAD 2010+)
+first_test_year = 2020  # bu yıldan itibaren hiçbir şey eğitimde kullanılmaz
+last_test_year = 2025   # 2026 henüz tamamlanmadı
+window_years = 1
+
+[etas]
+m0 = 3.5
+fit_start = "2010-01-01"   # fit_end = first_test_year başı
+bandwidth_km = 15.0
+r_max_km = 300.0
+dt_max_days = 3650.0
+n_sim = 200
+
+[coulomb]
+min_mw = 6.0
+source_since = "1900-01-01"
+mu_eff_grid = [0.0, 0.4, 0.8]  # gizli parametre: eğitim olabilirliğine göre seçilir
+receiver_strike_step = 2       # her 2 doğrultu elemanından biri, orta derinlik satırı
+
+[model]
+train_mag = 3.0           # küçük depremlerle kalibrasyon
+eval_mags = [3.0, 4.0, 5.0, 6.0]
+prior_sd = 0.5            # özellik katsayıları için Gauss öncül (ridge)
+use_uncertainty_weights = true
+features = ["counts", "moment_release", "time_since", "b_value", "faults", "rate_change", "depth", "clustering"]
+
+[map]
+write_layers = false
+layer_dir = "web/data/layers"

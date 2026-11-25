@@ -1,0 +1,59 @@
+{
+  "data": "ext_mevsim.geojson",
+  "visible": false,
+  "id": "ext_mevsim",
+  "label": "Mevsimsel duyarlılık",
+  "description": "Yıllık faz Schuster −log10 p",
+  "group": "Dış yükler (gelgit, mevsim, uzak depremler)",
+  "order": 520,
+  "style": {
+    "type": "fill",
+    "opacity": 0.55
+  },
+  "color": {
+    "property": "seasonal_neglog10p",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#1b2433"
+      ],
+      [
+        1.3,
+        "#3f7be0"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        3,
+        "#e0497a"
+      ],
+      [
+        5,
+        "#ffe680"
+      ]
+    ],
+    "missing": "rgba(0,0,0,0)"
+  },
+  "legend": {
+    "title": "−log10 p (mevsim)"
+  },
+  "tooltip": {
+    "title": "cell_id",
+    "fields": [
+      {
+        "property": "seasonal_neglog10p",
+        "label": "−log10 p (mevsim)",
+        "digits": 2
+      },
+      {
+        "property": "n_independent",
+        "label": "Bağımsız olay",
+        "digits": 0
+      }
+    ]
+  },
+  "note": "Mevsimsel yük (yağış, kar, yeraltı suyu) vekili; katalog tamlığının mevsimsel değişimi de aynı izi bırakabilir."
+}

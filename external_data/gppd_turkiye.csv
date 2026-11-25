@@ -1,0 +1,88 @@
+name,gppd_idnr,capacity_mw,latitude,longitude,primary_fuel,commissioning_year,source,url
+Afşin Elbistan Termik Santrali,WRI1018701,2795.0,38.3537,36.981,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/afsin-elbistan-b-termik-santrali.html
+Aksa Antalya Doğalgaz Santrali,WRI1018754,1150.0,37.1203,30.6016,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/aksa-antalya-dogalgaz-santrali.html
+Alaşehir,WRI1018958,45.0,38.4002,28.4311,Geothermal,2015.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/zorlu-alasehir-jeotermal-enerji-santrali.html
+Altınkaya Dam,WRI1018914,700.0,41.3668,35.7244,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Ambarlı A Doğalgaz Santrali,WRI1018760,816.0,40.9793,28.6994,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Ambarlı B Doğalgaz Santrali,WRI1018752,1351.0,40.9834,28.6921,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Aslantaş Dam,WRI1018915,138.0,40.9368,36.6491,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Atatürk Dam,WRI1018917,2400.0,37.4825,38.3186,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Bandirma 2 Doğalgaz Santrali,WRI1018764,607.0,40.3083,27.7687,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Bandırma Doğalgaz Santrali,WRI1018755,931.0,40.3786,27.9116,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/bandirma-dogalgaz-termik-santrali.html
+Batman Dam,WRI1018918,198.0,38.1602,41.2026,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Baymina Ankara Doğalgaz Santrali,WRI1018761,798.0,39.7773,32.4022,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/baymina-ankara-dogalgaz-santrali.html
+Berke Dam,WRI1018919,510.0,37.3731,36.4615,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Birecik Dam,WRI1018921,672.0,37.0542,37.8901,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Bolu Göynük power station,WRI1018719,270.0,40.2514,30.8129,Coal,2015.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Borçka Dam,WRI1018922,300.0,41.3507,41.6834,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Bosen Bursa Doğalgaz Santrali,WRI1018770,264.0,40.2377,28.9534,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Boyabat Dam,WRI1018923,513.0,41.3391,35.0033,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Bursa Doğalgaz Santrali,WRI1018751,1432.0,40.2952,29.0736,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/bursa-dogalgaz-santrali.html
+Bursa Doğalgaz Termik Santrali,WRI1018766,486.0,40.2394,28.9518,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/bursa-dogalgaz-termik-santrali.html
+Cenal power station,WRI1075555,1320.0,40.4167,27.3183,Coal,2017.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Cengiz Enerji Samsun,WRI1018759,849.0,41.2393,36.4799,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/cengiz-enerji-samsun.html
+Deniz,WRI1018962,24.0,37.8592,27.6145,Geothermal,2012.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/deniz-jeotermal-enerji-santrali.html
+Deriner Dam,WRI1018926,670.0,41.1696,41.8697,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Devecikonağı Dam,WRI1018927,29.0,39.8756,28.5754,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Dicle Dam,WRI1018928,110.0,38.348,40.0197,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Dora 3,WRI1018960,34.0,37.857,28.0716,Geothermal,2013.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/dora-3-jeotermal-enerji-santrali.html
+Dora 4,WRI1018967,17.0,37.8578,28.0921,Geothermal,,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/dora-4-jeotermal-enerji-santrali.html
+Efeler,WRI1018954,114.0,37.8656,27.6474,Geothermal,,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/efeler-jeotermal-enerji-santrali.html
+Enka Adapazarı Doğalgaz Santrali,WRI1018762,770.0,40.866,30.3873,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Enka Gebze Doğalgaz Santrali,WRI1018749,1595.0,40.7638,30.393,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/enka-gebze-dogalgaz-santrali.html
+Enka İzmir Doğalgaz Santrali,WRI1018750,1520.0,38.7467,26.9563,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/enka-izmir-dogalgaz-santrali.html
+Erzin Doğalgaz Santrali,WRI1018756,904.0,36.9271,36.0534,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/erzin-dogalgaz-santrali.html
+EÜAS Ambarlı FO Sant. Istanbul,WRI1018692,630.0,40.9787,28.6993,Oil,,Enerji Atlasi,http://www.enerjiatlasi.com/cesitli/
+EÜAS Hopa Termik Sant. Artvin,WRI1018693,50.0,41.4193,41.4393,Oil,,Enerji Atlasi,http://www.enerjiatlasi.com/cesitli/
+Galip Hoca Germencik,WRI1018957,47.0,37.8845,27.6304,Geothermal,2009.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/germencik-jeotermal-santrali.html
+Gezende Dam,WRI1018929,159.0,36.5285,33.1943,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Gökçekaya Dam,WRI1018930,278.0,40.0332,31.016,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Gümüşköy,WRI1018969,13.0,37.8534,27.4658,Geothermal,,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/gumuskoy-jeotermal-enerji-santrali.html
+Hamitabat Termik Santrali,WRI1018753,1156.0,41.4827,27.3366,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+Hasan Uğurlu Dam,WRI1018932,500.0,40.9367,36.6493,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Hirfanlı Dam,WRI1018933,128.0,39.2731,33.5184,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Ilısu Dam,WRI1018934,1200.0,37.5302,41.8529,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Kangal power station,WRI1018712,537.0,39.0774,37.2958,Coal,1993.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Karakaya Dam,WRI1018937,1800.0,38.2264,39.1353,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Karkamış Dam,WRI1018938,192.0,36.8697,38.0307,Hydro,2000.0,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Keban Dam,WRI1018939,1330.0,38.8055,38.7591,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Kemerköy power station,WRI1018708,630.0,37.0354,27.9011,Coal,1994.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Kizildere 2,WRI1018955,80.0,37.9499,28.8354,Geothermal,2013.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/zorlu-enerji-kizildere-2-jeotermal-enerji-santrali.html
+Kütahya,WRI1018724,50.0,41.51,31.9,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/karabuk-demir-celik-termik-santrali.html
+Kılıçkaya Dam,WRI1018941,124.0,40.242,38.1859,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Kızıldere (Zorlu),WRI1018968,15.0,37.9499,28.8354,Geothermal,,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/kizildere-zorlu-jes.html
+Menzelet Dam,WRI1018946,248.0,37.6766,36.8505,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Muratlı Dam,WRI1018947,115.0,41.4683,41.7137,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+OMV Samsun Doğalgaz Santrali,WRI1018757,887.0,41.24,36.4767,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/omv-samsun-dogalgaz-santrali.html
+Obruk Dam,WRI1018948,202.0,40.7702,34.7913,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Orhaneli power station,WRI1018721,210.0,39.9502,28.8709,Coal,1992.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Oymapinar Dam,WRI1018949,540.0,36.9086,31.5316,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Pamukören,WRI1018956,68.0,37.9171,28.5297,Geothermal,2014.0,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/pamukoren-jeotermal-enerji-santrali.html
+Pamukören 2,WRI1018966,23.0,37.9171,28.5297,Geothermal,,Enerji Atlasi,http://www.enerjiatlasi.com/jeotermal/pamukoren-2-jes.html
+Polat power station,WRI1018725,51.0,39.616,29.4429,Coal,2013.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Samsun1-2,WRI1018699,162.6,41.2408,36.457,Oil,,Enerji Atlasi,http://www.enerjiatlasi.com/cesitli/
+Sarıyar Dam,WRI1018952,160.0,40.04,31.4144,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Seyitömer power station,WRI1018711,600.0,39.5736,29.8822,Coal,1978.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Sir,WRI1018953,284.0,37.5009,36.5967,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Soma power station,WRI1018707,990.0,39.1953,27.6357,Coal,1986.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Tunçbilek Kütahya power station,WRI1018715,365.0,39.6285,29.4623,Coal,1975.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Turcas Denizli Doğalgaz S.,WRI1018763,775.0,37.8504,29.4152,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/turcas-denizli-dogalgaz.html
+Unimar Marmara Ereğlisi Doğalgaz Kombine Çevrim Santrali,WRI1018768,478.0,41.0072,27.9736,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/marmaraereglisi-dogalgaz-santrali.html
+Yatağan power station,WRI1018709,630.0,37.3317,28.1017,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Yeniköy power station,WRI1018713,420.0,37.1405,27.8719,Coal,1986.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Yunus Emre Termik Santrali,WRI1018723,145.0,39.9839,31.6349,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/yunus-emre-termik-santrali.html
+Zonguldak Eren (ZETES),WRI1018702,2090.0,41.5035,31.8875,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/zonguldak-eren-zetes-termik-santrali.html
+Çan-1 power station,WRI1018717,320.0,40.0232,26.9768,Coal,2003.0,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Çatalan Dam,WRI1018925,169.0,37.0368,35.3414,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+Çatalağzı-B power station,WRI1018718,314.0,41.5174,31.9002,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Çayırhan power station,WRI1018710,620.0,40.097,31.6954,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+Çolakoğlu Termik Santrali,WRI1018722,190.0,39.6289,29.4629,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/colakoglu-termik-santrali.html
+Özlüce Dam,WRI1018950,170.0,39.1278,40.0855,Hydro,,Enerji Atlasi,http://www.enerjiatlasi.com/hidroelektrik/
+İsken Sugözü power station,WRI1018704,1210.0,36.8346,35.8801,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+İskenderun Atlas Termik Santrali,WRI1018705,1200.0,36.6904,36.2084,Coal,,Enerji Atlasi,http://www.enerjiatlasi.com/komur/iskenderun-atlas-termik-santrali.html
+İzdemir Enerji power station,WRI1018716,350.0,38.7417,26.9294,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+İzmit İpekkağıt Termik Santrali,WRI1018813,16.0,40.7882,30.026,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/
+İÇDAŞ Bekirli-2 power station,WRI1018706,1200.0,40.3991,27.05,Coal,,GCPT,https://endcoal.org/global-coal-plant-tracker/
+İÇDAŞ Biga Termik Santrali,WRI1018714,1200.0,40.0224,26.9777,Coal,,Enerji Atlasi,http://www.icdasenerji.com/pages/1/1/f/tr-TR/icdas_Biga_Termik_Santrali.aspx
+İç Anadolu Doğalgaz Kombine Çevrim Santrali,WRI1018765,560.0,39.7575,33.448,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/ic-anadolu-dogalgaz-santrali.html
+Şanlıurfa OSB Enerji Santrali,WRI1018779,146.0,37.1103,38.652,Gas,,Enerji Atlasi,http://www.enerjiatlasi.com/dogalgaz/sanliurfa-osb-enerji-santrali.html

@@ -1,0 +1,79 @@
+id,name,category,lat,lon,loc_accuracy_km,start_year,end_year,status,fluid_process,notes,source,verified
+dam_keban,Keban Barajı,baraj,38.8055,38.7591,2,1974,,aktif,su yükü + gözenek basıncı,Fırat; büyük rezervuar,WRI GPPD (konum); su tutma yılı genel bilgi,hayir
+dam_karakaya,Karakaya Barajı,baraj,38.2264,39.1353,2,1987,,aktif,su yükü + gözenek basıncı,Fırat; Doğu Anadolu Fayı'na yakın,WRI GPPD (konum); su tutma yılı genel bilgi,hayir
+dam_ataturk,Atatürk Barajı,baraj,37.4825,38.3186,2,1990,,aktif,su yükü + gözenek basıncı,Türkiye'nin en büyük rezervuarı; rezervuar kaynaklı sismisite tartışılmıştır,WRI GPPD (konum); su tutma yılı genel bilgi,hayir
+dam_birecik,Birecik Barajı,baraj,37.0542,37.8901,2,2000,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_karkamis,Karkamış Barajı,baraj,36.8697,38.0307,2,1999,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_ilisu,Ilısu Barajı,baraj,37.5302,41.8529,2,2019,,aktif,su yükü + gözenek basıncı,Dicle; su tutma 2019,WRI GPPD (konum); su tutma yılı genel bilgi,hayir
+dam_altinkaya,Altınkaya Barajı,baraj,41.3668,35.7244,2,1988,,aktif,su yükü + gözenek basıncı,Kızılırmak,WRI GPPD,hayir
+dam_hasanugurlu,Hasan Uğurlu Barajı,baraj,40.9367,36.6493,2,1980,,aktif,su yükü + gözenek basıncı,Yeşilırmak,WRI GPPD,hayir
+dam_sariyar,Sarıyar Barajı,baraj,40.0400,31.4144,2,1956,,aktif,su yükü + gözenek basıncı,Sakarya,WRI GPPD,hayir
+dam_gokcekaya,Gökçekaya Barajı,baraj,40.0332,31.0160,2,1972,,aktif,su yükü + gözenek basıncı,Sakarya,WRI GPPD,hayir
+dam_hirfanli,Hirfanlı Barajı,baraj,39.2731,33.5184,2,1959,,aktif,su yükü + gözenek basıncı,Kızılırmak,WRI GPPD,hayir
+dam_oymapinar,Oymapınar Barajı,baraj,36.9086,31.5316,2,1984,,aktif,su yükü + gözenek basıncı,Manavgat; karstik,WRI GPPD,hayir
+dam_menzelet,Menzelet Barajı,baraj,37.6766,36.8505,2,1989,,aktif,su yükü + gözenek basıncı,Ceyhan; 2023 Kahramanmaraş depremlerine yakın,WRI GPPD,hayir
+dam_sir,Sır Barajı,baraj,37.5009,36.5967,2,1991,,aktif,su yükü + gözenek basıncı,Ceyhan,WRI GPPD,hayir
+dam_berke,Berke Barajı,baraj,37.3731,36.4615,2,2001,,aktif,su yükü + gözenek basıncı,Ceyhan,WRI GPPD,hayir
+dam_deriner,Deriner Barajı,baraj,41.1696,41.8697,2,2012,,aktif,su yükü + gözenek basıncı,Çoruh,WRI GPPD,hayir
+dam_borcka,Borçka Barajı,baraj,41.3507,41.6834,2,2006,,aktif,su yükü + gözenek basıncı,Çoruh,WRI GPPD,hayir
+dam_muratli,Muratlı Barajı,baraj,41.4683,41.7137,2,2005,,aktif,su yükü + gözenek basıncı,Çoruh,WRI GPPD,hayir
+dam_boyabat,Boyabat Barajı,baraj,41.3391,35.0033,2,2012,,aktif,su yükü + gözenek basıncı,Kızılırmak; Kuzey Anadolu Fayı'na yakın,WRI GPPD,hayir
+dam_batman,Batman Barajı,baraj,38.1602,41.2026,2,1998,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_dicle,Dicle Barajı,baraj,38.3480,40.0197,2,1997,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_kilickaya,Kılıçkaya Barajı,baraj,40.2420,38.1859,2,1989,,aktif,su yükü + gözenek basıncı,Kelkit; Kuzey Anadolu Fayı'na yakın,WRI GPPD,hayir
+dam_ozluce,Özlüce Barajı,baraj,39.1278,40.0855,2,,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_obruk,Obruk Barajı,baraj,40.7702,34.7913,2,,,aktif,su yükü + gözenek basıncı,Kızılırmak,WRI GPPD,hayir
+dam_catalan,Çatalan Barajı,baraj,37.0368,35.3414,2,1996,,aktif,su yükü + gözenek basıncı,Seyhan,WRI GPPD,hayir
+dam_gezende,Gezende Barajı,baraj,36.5285,33.1943,2,1990,,aktif,su yükü + gözenek basıncı,Ermenek çayı,WRI GPPD,hayir
+dam_aslantas,Aslantaş Barajı (Osmaniye),baraj,37.28,36.27,8,1984,,aktif,su yükü + gözenek basıncı,GPPD konumu hatalı (Yeşilırmak'ı gösteriyor); yaklaşık konum,genel bilgi,hayir
+dam_devecikonagi,Devecikonağı Barajı,baraj,39.8756,28.5754,2,,,aktif,su yükü + gözenek basıncı,,WRI GPPD,hayir
+dam_yusufeli,Yusufeli Barajı,baraj,40.81,41.53,8,2021,,aktif,su yükü + gözenek basıncı,Çoruh; Türkiye'nin en yüksek barajı,genel bilgi; yaklaşık konum,hayir
+dam_ermenek,Ermenek Barajı,baraj,36.75,32.93,8,2009,,aktif,su yükü + gözenek basıncı,,genel bilgi; yaklaşık konum,hayir
+mine_soma,Soma kömür havzası (yeraltı + açık ocak),maden_komur,39.17,27.62,10,1930,,aktif,kütle çıkarımı + gerilme değişimi,2014 Soma maden faciası; yeraltı ocağı,genel bilgi; yaklaşık konum,hayir
+mine_zonguldak,Zonguldak taşkömürü havzası (yeraltı),maden_komur,41.45,31.79,15,1848,,aktif,kütle çıkarımı + gerilme değişimi,Derin yeraltı ocakları; madencilik kaynaklı sarsıntılar bildirilmiştir,genel bilgi; yaklaşık konum,hayir
+mine_amasra,Amasra taşkömürü ocağı (yeraltı),maden_komur,41.74,32.40,8,,,aktif,kütle çıkarımı + gerilme değişimi,2022 grizu patlaması,genel bilgi; yaklaşık konum,hayir
+mine_afsin_kislakoy,Afşin-Elbistan linyit (Kışlaköy açık ocak),maden_komur,38.33,36.96,10,1984,,aktif,kütle çıkarımı + yeraltı suyu boşaltımı,Çok büyük açık ocak; susuzlaştırma,genel bilgi; yaklaşık konum,hayir
+mine_afsin_collolar,Afşin-Elbistan linyit (Çöllolar açık ocak),maden_komur,38.30,37.03,10,2005,2011,pasif,kütle çıkarımı + yeraltı suyu boşaltımı,2011 büyük şev kayması sonrası durduruldu,genel bilgi; yaklaşık konum,hayir
+mine_cayirhan,Çayırhan linyit (yeraltı),maden_komur,40.10,31.70,8,1987,,aktif,kütle çıkarımı + gerilme değişimi,,genel bilgi; yaklaşık konum,hayir
+mine_tuncbilek,Tunçbilek linyit,maden_komur,39.63,29.46,8,1940,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_seyitomer,Seyitömer linyit (açık ocak),maden_komur,39.57,29.88,8,1960,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_kangal,Kangal linyit (açık ocak),maden_komur,39.08,37.30,8,1989,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_yatagan,Yatağan-Milas linyit sahaları,maden_komur,37.33,28.10,15,1982,,aktif,kütle çıkarımı + yeraltı suyu boşaltımı,,genel bilgi; yaklaşık konum,hayir
+mine_can,Çan linyit,maden_komur,40.03,27.05,8,,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_ermenek,Ermenek kömür ocağı (yeraltı),maden_komur,36.64,32.89,10,,,bilinmiyor,kütle çıkarımı,2014 su baskını kazası,genel bilgi; yaklaşık konum,hayir
+mine_divrigi,Divriği demir madeni,maden_metal,39.37,38.11,10,1938,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_kure,Küre bakır madeni (yeraltı),maden_metal,41.80,33.71,8,,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_murgul,Murgul bakır madeni (açık ocak),maden_metal,41.27,41.56,8,1951,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_cayeli,Çayeli bakır-çinko madeni (yeraltı),maden_metal,41.07,40.73,8,1994,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_kisladag,Kışladağ altın madeni (açık ocak),maden_metal,38.49,29.15,10,2006,,aktif,kütle çıkarımı + yığın liçi,,genel bilgi; yaklaşık konum,hayir
+mine_efemcukuru,Efemçukuru altın madeni (yeraltı),maden_metal,38.29,26.98,8,2011,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_ovacik,Ovacık altın madeni,maden_metal,39.03,27.07,10,2001,,bilinmiyor,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_copler,Çöpler altın madeni (İliç),maden_metal,39.44,38.53,8,2010,2024,pasif,kütle çıkarımı + yığın liçi,Şubat 2024 yığın liçi sahasında heyelan; faaliyet durduruldu,genel bilgi; yaklaşık konum,hayir
+mine_emet,Emet bor madenleri,maden_endustriyel,39.34,29.26,10,,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_bigadic,Bigadiç bor madenleri,maden_endustriyel,39.39,28.13,10,,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_kirka,Kırka bor madeni (açık ocak),maden_endustriyel,39.29,30.53,8,,,aktif,kütle çıkarımı,,genel bilgi; yaklaşık konum,hayir
+mine_beypazari_trona,Beypazarı trona (çözelti madenciliği),maden_cozelti,40.17,31.92,10,2009,,aktif,akışkan enjeksiyonu + çekimi,Sıcak su enjekte edilip çözelti geri alınır,genel bilgi; yaklaşık konum,hayir
+og_bati_raman,Batı Raman petrol sahası (CO2 enjeksiyonu),petrol,37.80,41.08,10,1961,,aktif,akışkan çekimi + CO2 enjeksiyonu,1986'dan beri CO2 ile ikincil üretim (Dodan CO2 sahasından),genel bilgi; yaklaşık konum,hayir
+og_raman,Raman petrol sahası,petrol,37.83,41.20,10,1945,,aktif,akışkan çekimi + su enjeksiyonu,Türkiye'nin ilk ticari petrol sahalarından,genel bilgi; yaklaşık konum,hayir
+og_dodan,Dodan doğal CO2 sahası,dogalgaz,37.90,41.40,15,,,aktif,CO2 üretimi,Batı Raman'a CO2 sağlar,genel bilgi; yaklaşık konum,hayir
+og_adiyaman,Adıyaman petrol sahaları,petrol,37.75,38.30,20,1970,,aktif,akışkan çekimi + su enjeksiyonu,Birden çok saha,genel bilgi; yaklaşık konum,hayir
+og_gabar,Gabar petrol sahası,petrol,37.45,42.35,15,2023,,aktif,akışkan çekimi,2022 keşif; 2023 üretim,genel bilgi; yaklaşık konum,hayir
+og_hamitabat,Hamitabat ve Trakya gaz sahaları,dogalgaz,41.40,27.35,20,1970,,aktif,akışkan çekimi,,genel bilgi; yaklaşık konum,hayir
+og_silivri,Silivri yeraltı gaz deposu (K. Marmara + Değirmenköy),gaz_depolama,41.00,28.20,10,2007,,aktif,döngüsel enjeksiyon/çekim,Tükenmiş sahada mevsimsel basınç döngüsü; Kuzey Anadolu Fayı Marmara koluna yakın,genel bilgi; yaklaşık konum,hayir
+og_tuzgolu,Tuz Gölü tuz mağarası gaz deposu,gaz_depolama,38.30,33.55,15,2017,,aktif,döngüsel enjeksiyon/çekim + çözelti,,genel bilgi; yaklaşık konum,hayir
+og_sakarya,Sakarya gaz sahası (Karadeniz açık deniz),dogalgaz,41.80,31.20,40,2023,,aktif,akışkan çekimi,Açık deniz; konum kaba,genel bilgi; kaba konum,hayir
+geo_kizildere,Kızıldere jeotermal sahası,jeotermal,37.9499,28.8354,2,1984,,aktif,akışkan çekimi + geri basma,Türkiye'nin ilk jeotermal santrali,WRI GPPD (konum); başlangıç yılı genel bilgi,hayir
+geo_germencik,Germencik jeotermal sahası,jeotermal,37.8845,27.6304,2,2009,,aktif,akışkan çekimi + geri basma,,WRI GPPD,hayir
+geo_efeler,Efeler / Deniz jeotermal santralleri (Germencik),jeotermal,37.8656,27.6474,3,2012,,aktif,akışkan çekimi + geri basma,,WRI GPPD,hayir
+geo_salavatli,Salavatlı / Dora jeotermal santralleri,jeotermal,37.8570,28.0716,3,2006,,aktif,akışkan çekimi + geri basma,,WRI GPPD (konum); başlangıç yılı genel bilgi,hayir
+geo_pamukoren,Pamukören jeotermal santrali,jeotermal,37.9171,28.5297,2,2014,,aktif,akışkan çekimi + geri basma,,WRI GPPD,hayir
+geo_gumuskoy,Gümüşköy jeotermal santrali,jeotermal,37.8534,27.4658,2,,,aktif,akışkan çekimi + geri basma,,WRI GPPD,hayir
+geo_alasehir,Alaşehir jeotermal sahası,jeotermal,38.4002,28.4311,3,2015,,aktif,akışkan çekimi + geri basma,Gediz grabeni,WRI GPPD,hayir
+geo_balcova,Balçova jeotermal sahası (ısıtma),jeotermal,38.39,27.04,5,1983,,aktif,akışkan çekimi + geri basma,Bölgesel ısıtma,genel bilgi; yaklaşık konum,hayir
+geo_simav,Simav jeotermal sahası,jeotermal,39.09,28.97,8,,,aktif,akışkan çekimi,Sık deprem etkinliği olan graben,genel bilgi; yaklaşık konum,hayir
+geo_afyon,Afyon (Ömer-Gecek) jeotermal sahası,jeotermal,38.80,30.55,10,,,aktif,akışkan çekimi,,genel bilgi; yaklaşık konum,hayir
+geo_tuzla,Tuzla jeotermal santrali (Çanakkale),jeotermal,39.56,26.18,8,2010,,aktif,akışkan çekimi + geri basma,,genel bilgi; yaklaşık konum,hayir
+geo_dikili,Dikili jeotermal sahası,jeotermal,39.07,26.89,10,,,aktif,akışkan çekimi,,genel bilgi; yaklaşık konum,hayir
+geo_kozakli,Kozaklı jeotermal sahası,jeotermal,39.22,34.85,8,,,aktif,akışkan çekimi,,genel bilgi; yaklaşık konum,hayir
+gas_marmara_west,Marmara Batı Sırtı gaz çıkışları,dogal_gaz_cikisi,40.82,27.75,15,,,dogal,gaz göçü,Deniz tabanı gaz çıkışlarının fay ve sismisiteyle ilişkisi (Géli vd. 2018),Géli vd. 2018 Sci. Rep.; yaklaşık konum,hayir
+gas_marmara_central,Marmara Orta Çukur gaz çıkışları,dogal_gaz_cikisi,40.83,28.00,20,,,dogal,gaz göçü,,Géli vd. 2018; kaba konum,hayir

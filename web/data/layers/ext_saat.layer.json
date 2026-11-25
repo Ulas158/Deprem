@@ -1,0 +1,59 @@
+{
+  "data": "ext_saat.geojson",
+  "visible": false,
+  "id": "ext_saat",
+  "label": "Gün içi saat yığılması (kontrol)",
+  "description": "Gece/gündüz algılama farkı veya patlamalar",
+  "group": "Dış yükler (gelgit, mevsim, uzak depremler)",
+  "order": 540,
+  "style": {
+    "type": "fill",
+    "opacity": 0.55
+  },
+  "color": {
+    "property": "hour_neglog10p",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#1b2433"
+      ],
+      [
+        1.3,
+        "#3f7be0"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        3,
+        "#e0497a"
+      ],
+      [
+        5,
+        "#ffe680"
+      ]
+    ],
+    "missing": "rgba(0,0,0,0)"
+  },
+  "legend": {
+    "title": "−log10 p (saat)"
+  },
+  "tooltip": {
+    "title": "cell_id",
+    "fields": [
+      {
+        "property": "hour_neglog10p",
+        "label": "−log10 p (saat)",
+        "digits": 2
+      },
+      {
+        "property": "n_independent",
+        "label": "Bağımsız olay",
+        "digits": 0
+      }
+    ]
+  },
+  "note": "Fiziksel bir etki değil, katalog kalitesi göstergesidir: yüksek değer taş ocağı patlamaları veya gündüz gürültüsü olabilir. Bu hücrelerde gelgit/mevsim sonuçlarına güvenmeyin."
+}
