@@ -74,6 +74,11 @@ altında "Jeodezi ve sismik gözlemler" grubu.
   zayıflatılmış bir sınamasıdır.
 * **Termal:** NASA POWER bir yeniden analiz ürünüdür; gerçek uydu kızılötesi (MODIS)
   NASA Earthdata hesabı gerektirir.
+* **Yapay zekâ katalogu (pilot sonucu):** Marmara'da 1 Mart 2024 günü, 10 KOERI istasyonunda
+  PhaseNet 513 faz seçimi yaptı; basit ızgara birleştirmesi 16 olay buldu (resmi katalogda
+  aynı kutu ve günde 8 olay; oran 2,0). Resmi olayların yalnız 3'ü eşleşti; birleştirme ve
+  konumlama kaba olduğundan bu sayı gerçek bir iyileşme kanıtı değildir. Eğitime girmesi için
+  aylarca kesintisiz işleme ve düzgün konumlama (ör. GaMMA + NonLinLoc) gerekir.
 * **InSAR:** hazır hız haritası açık arşivde yok. Ham interferogramlardan LiCSBAS ile
   üretmek çerçeve başına onlarca GB ve saatlerce hesap ister. Üretilen ya da
   yayımlanmış (ör. Weiss vd. 2020) hız GeoTIFF'leri `data/raw/insar/` altına konunca
