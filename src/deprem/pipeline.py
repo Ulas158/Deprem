@@ -307,11 +307,18 @@ class Run:
         miss_cols = [c for c in cols if X[c].isna().any()]
         if stats_ is None:
             stats_ = {"mean": X.mean().fillna(0).to_dict(), "std": X.std().replace(0, 1).fillna(1).to_dict(),
-                      "miss": miss_cols}
+                      "miss": miss_cols,
+                      "sparse": {c: bool(X[c].isna().mean() > 0.5) for c in miss_cols}}
         Z = (X - pd.Series(stats_["mean"])) / pd.Series(stats_["std"])
         Z = Z.clip(-5, 5).fillna(0.0)
         for c in stats_["miss"]:
-            Z[f"{c}__eksik"] = X[c].isna().astype(float)
+            # Çoğu hücrede eksik olan seyrek gözlemler (ör. birkaç istasyonlu sismik hız) için
+            # bayrak "değer var" olarak tanımlanır; aksi halde bayrak sabite yakın olur ve
+            # kesişimle birlikte büyük ama anlamsız bir katsayı alır.
+            if stats_.get("sparse", {}).get(c, X[c].isna().mean() > 0.5):
+                Z[f"{c}__var"] = X[c].notna().astype(float)
+            else:
+                Z[f"{c}__eksik"] = X[c].isna().astype(float)
         return Z, stats_
 
     @staticmethod

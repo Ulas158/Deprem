@@ -7,7 +7,7 @@
   "data": "slip_deficit.geojson",
   "visible": false,
   "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
-  "updated": "2026-11-24",
+  "updated": "2026-11-25",
   "style": {
     "type": "line",
     "width": 3,
