@@ -67,6 +67,9 @@ class ETAS(Forecast):
     dt_max_days: float = 3650.0
     aux_years: float = 5.0  # eğitim başından önceki tetikleyici dönemi
     b: float | None = None
+    # benzetimde büyüklük dağılımı: "gr" (b ile M8'e kadar) veya "empirical" (eğitim
+    # büyüklükleri; olabilirlikte kullanılan gerçek büyüklüklerle tutarlı)
+    mag_sampling: str = "gr"
     name: str = "etas"
     params: dict = field(default_factory=dict)
     fit_info: dict = field(default_factory=dict)
@@ -91,7 +94,9 @@ class ETAS(Forecast):
         return out / self._bg_norm + 1e-12
 
     # ------------------------------------------------------------ uyum
-    def fit(self, catalog, fit_start, fit_end, init: dict | None = None):
+    def fit(self, catalog, fit_start, fit_end, init: dict | None = None, fixed: dict | None = None):
+        """En çok olabilirlik. ``fixed``: sabit tutulacak parametreler; değer "b" ise
+        α = b·ln10 (ör. {"alpha": "b"})."""
         cat = catalog[(catalog["mag"] >= self.m0)].sort_values("time")
         aux_start = fit_start - pd.DateOffset(years=int(self.aux_years))
         hist = cat[(cat["time"] >= aux_start) & (cat["time"] < fit_end)].reset_index(drop=True)
@@ -99,6 +104,7 @@ class ETAS(Forecast):
         self.origin = fit_start
         self.b = self.b or b_value_mle(train["mag"], self.m0)[0]
         self._background(train)
+        self.set_mag_pool(train["mag"])
 
         t = _days(hist["time"], fit_start)
         x, y = _xy_km(hist["latitude"], hist["longitude"])
@@ -150,6 +156,13 @@ class ETAS(Forecast):
             v0 = np.array([np.log(init[n]) if n in LOG_PARAMS else init[n] for n in PARAM_NAMES])
         bounds = [(np.log(BOUNDS[n][0]), np.log(BOUNDS[n][1])) if n in LOG_PARAMS else BOUNDS[n]
                   for n in PARAM_NAMES]
+        for n, val in (fixed or {}).items():
+            if val == "b":
+                val = self.b * np.log(10)
+            k = PARAM_NAMES.index(n)
+            v = np.log(val) if n in LOG_PARAMS else float(val)
+            v0[k] = v
+            bounds[k] = (v, v)
         res = minimize(nll, v0, method="L-BFGS-B", bounds=bounds, options={"maxiter": 500})
         self.params = unpack(res.x)
         self.fit_info = {"loglik": float(-res.fun), "n_targets": int(len(tgt)),
@@ -201,7 +214,15 @@ class ETAS(Forecast):
         m = self._sample_mag(par.size, rng)
         return t, x_par[par] + r * np.cos(th), y_par[par] + r * np.sin(th), m
 
+    def set_mag_pool(self, mags):
+        """Benzetimde büyüklükleri GR yerine eğitim kataloğundan yeniden örnekle."""
+        m = np.asarray(mags, float)
+        self._mag_pool = m[m >= self.m0] - self.m0
+
     def _sample_mag(self, n, rng, mmax: float = 8.0):
+        pool = getattr(self, "_mag_pool", None)
+        if self.mag_sampling == "empirical" and pool is not None and len(pool) >= 50:
+            return pool[rng.integers(0, len(pool), n)]
         beta = self.b * np.log(10)
         u = rng.uniform(size=n)
         span = 1 - np.exp(-beta * (mmax - self.m0))

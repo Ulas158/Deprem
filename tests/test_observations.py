@@ -171,3 +171,18 @@ def test_walkforward_train_offset_default_is_compensator():
     assert Run._train_offset_mode(R()) == "compensator"
     R.cfg = {"walkforward": {"train_offset": "forecast"}}
     assert Run._train_offset_mode(R()) == "forecast"
+
+
+def test_etas_fixed_alpha_and_empirical_magnitudes():
+    from deprem.forecast.etas import ETAS
+    rng = np.random.default_rng(7)
+    n = 300
+    t = pd.Timestamp("2010-01-01", tz="UTC") + pd.to_timedelta(np.sort(rng.uniform(0, 4 * 365, n)), unit="D")
+    cat = pd.DataFrame({"time": t, "latitude": rng.uniform(37, 41, n), "longitude": rng.uniform(28, 40, n),
+                        "mag": 3.5 + rng.exponential(0.43, n), "depth_km": 10.0})
+    e = ETAS(m0=3.5, mag_sampling="empirical").fit(cat, pd.Timestamp("2011-01-01", tz="UTC"),
+                                                   pd.Timestamp("2014-01-01", tz="UTC"), fixed={"alpha": 1.3})
+    assert abs(e.params["alpha"] - 1.3) < 1e-9
+    m = e._sample_mag(1000, rng) + e.m0
+    pool = set(np.round(cat.loc[cat["time"] >= pd.Timestamp("2011-01-01", tz="UTC"), "mag"], 9))
+    assert set(np.round(m, 9)) <= pool
