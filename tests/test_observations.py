@@ -161,3 +161,13 @@ def test_longwalk_compensator_and_weighted_background():
     tp = (par["time"].iloc[0] - s0).days
     expect = 0.05 * np.exp(0.5) * _omori_integral(T - tp, 0.01, 1.2)
     assert abs(comp.sum() - (0.01 * T + expect)) < 1e-6
+
+
+def test_walkforward_train_offset_default_is_compensator():
+    from deprem.pipeline import Run
+
+    class R:
+        cfg = {}
+    assert Run._train_offset_mode(R()) == "compensator"
+    R.cfg = {"walkforward": {"train_offset": "forecast"}}
+    assert Run._train_offset_mode(R()) == "forecast"
