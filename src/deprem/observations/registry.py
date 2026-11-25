@@ -143,7 +143,7 @@ def apply_transform(name: str, x):
 
 def prior_for(column: str) -> tuple[float, float] | None:
     """Tasarım matrisi sütunu için (ortalama, sd); bilinmeyen sütun → None."""
-    if column.endswith("__eksik"):
+    if column.endswith(("__eksik", "__var")):
         return None
     f = OBS_FEATURES.get(column)
     return (f.prior_mean, f.prior_sd) if f else None

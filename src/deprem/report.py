@@ -206,7 +206,7 @@ def _obs_sections(run, model):
     cov = ev.get("coverage", {}).get("overall")
     if cov:
         md += ["Kapsama (hücre-yıllarının kaçında değer var):", "",
-               pd.DataFrame({"özellik": list(cov), "kapsama": [f"%{100 * v:.0f}" for v in cov.values()]})
+               pd.DataFrame({"özellik": list(cov), "kapsama": [(f"%{100 * v:.0f}" if v >= 0.01 or v == 0 else f"%{100 * v:.2f}") for v in cov.values()]})
                .to_markdown(index=False), ""]
     pp = model.get("obs_prior_posterior", [])
     if pp:

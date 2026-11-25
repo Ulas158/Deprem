@@ -23,7 +23,7 @@ kapsam dışıdır. Kuyu suyu ve gazlar ayrı çalışmadadır (`docs/akiskan_ve
 | GPS hız alanı, gerinim hızı | güçlü | Nevada Geodetic Lab, Türkiye ve çevresinde ~300 istasyon, günlük | çalışıyor |
 | GPS geçici hareket (yavaş kayma) | güçlü | aynı | çalışıyor |
 | Tekrarlayan depremler | güçlü | birleşik katalog (AFAD/EMSC/USGS) | çalışıyor (katalog adayı; dalga biçimi doğrulaması isteğe bağlı) |
-| Sismik hız değişimi (dv/v) | güçlü | KOERI KO ağı ham kayıtları (FDSN) | pilot: 12 istasyon, 10 günde bir saat |
+| Sismik hız değişimi (dv/v) | güçlü | KOERI KO ağı ham kayıtları (FDSN) | tamamlandı: 12 istasyon, 10 günde bir saat, 2012-2026; etki sıfırdan ayırt edilemiyor |
 | Yapay zekâ ile zengin katalog | güçlü | KOERI ham kayıtları + PhaseNet | pilot: Marmara, 1 gün |
 | Uydu radarı (InSAR) | güçlü | COMET LiCSAR | **veri bekliyor**: açık arşivde hazır hız haritası yok |
 | GONAF kuyu gerinimi | güçlü | GFZ / AFAD | **veri bekliyor**: başvuru ile alınıyor |
@@ -68,8 +68,14 @@ altında "Jeodezi ve sismik gözlemler" grubu.
   özellikleri birçok hücrede eksik; model eksik bayrağıyla bunu bilir.
 * **Tekrarlayan depremler:** katalog konum hatası (1-5 km) nedeniyle aileler adaydır.
   Gerçek tekrarlayanlar dalga biçimi benzerliğiyle (korelasyon ≥ 0,9) doğrulanmalıdır.
-* **dv/v:** hafif sürüm (10 günde 1 saat, 12 istasyon). Tam yöntem sürekli kayıt ve
-  istasyon çiftleri arası korelasyon ister.
+* **dv/v (sonuç):** hafif sürüm (10 günde 1 saat, 12 KOERI istasyonu, 2012-2026) tamamlandı.
+  5348 ölçüm noktasının yalnız 613'ü (%11) güvenilir çıktı (korelasyon > 0,5); ölçüm gürültüsü
+  istasyon başına %0,2-0,7, yani depremlerden önce beklenen ~%0,1'lik değişimlerden büyük.
+  Sadece istasyonlara yakın hücrelerde değer var (hücre-yıllarının %1'inden azı). Eğitilen etki
+  +0,08 ± 0,11: sıfırdan ayırt edilemiyor; sismik hız eklenince sınama sonucu değişmedi
+  (M≥3: +0,029 → +0,027). İşe yaraması için sürekli kayıt ve istasyon çiftleri arası korelasyon
+  gerekir. Çok seyrek gözlemlerde model "eksik" yerine "değer var" bayrağı kullanır; bu bayrağın
+  pozitif katsayısı istasyonların zaten aktif bölgelerde kurulu olmasından gelir, öncü sinyal değildir.
 * **ULF:** dakikalık veri klasik ULF bandını (10-100 mHz) içermez; bu hipotezin
   zayıflatılmış bir sınamasıdır.
 * **Termal:** NASA POWER bir yeniden analiz ürünüdür; gerçek uydu kızılötesi (MODIS)

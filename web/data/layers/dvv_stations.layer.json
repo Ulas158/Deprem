@@ -1,0 +1,59 @@
+{
+  "id": "dvv_stations",
+  "label": "Sismik hız değişimi (dv/v)",
+  "description": "Ortam gürültüsünden tek istasyon hız değişimi: son 6 ay − önceki 2 yıl (%). Negatif: kayaç hızı düşmüş (hasar veya akışkan basıncı artışı).",
+  "group": "Jeodezi ve sismik gözlemler",
+  "order": 33,
+  "data": "dvv_stations.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-25",
+  "style": {
+    "type": "circle",
+    "radius": 6,
+    "outline": "#ffffff",
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "dvv_change_pct",
+    "type": "interpolate",
+    "stops": [
+      [
+        -0.1,
+        "#ff3b30"
+      ],
+      [
+        0,
+        "#2a2f3a"
+      ],
+      [
+        0.1,
+        "#3f7be0"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "dv/v değişimi",
+    "unit": "%",
+    "labels": [
+      "-0.1",
+      "0",
+      "+0.1"
+    ]
+  },
+  "tooltip": {
+    "title": "sta",
+    "fields": [
+      {
+        "property": "dvv_change_pct",
+        "label": "dv/v değişimi",
+        "unit": "%",
+        "digits": 3
+      },
+      {
+        "property": "last",
+        "label": "Son ölçüm"
+      }
+    ]
+  }
+}
