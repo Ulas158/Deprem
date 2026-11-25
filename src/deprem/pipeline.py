@@ -7,6 +7,8 @@ atlanır):
 2. ``etas_fc``    her yıl penceresi için benzetimle ETAS beklenen sayıları
 3. ``coulomb``    büyük depremlerden fay alıcılarında ΔCFF, hücre/yıl özetleri
 3b. ``budget``    her 1 km elemanın kendi moment/kayma bütçesi, yıl başı anlık görüntüleri
+3b'. ``capacity`` enerji biriktirme kapasitesi, doluluk oranı (+Coulomb), GPS kilitlenme/krip,
+                  zincirleme kırılma (``deprem.faults.capacity_stage``)
 3c. ``observations`` GPS, tekrarlayan deprem, sismik hız, InSAR, GONAF yıllık özellikleri
                   (``deprem.observations``; yalnız yıl başından önceki veri)
 4. ``features``   hücre × yıl özellik tablosu (+ Coulomb + ETAS + gözlem özellikleri)
@@ -58,7 +60,7 @@ from .observations.registry import OBS_FEATURES, prior_for
 from .region import SUBREGIONS, TURKEY
 
 log = logging.getLogger("deprem.pipeline")
-STAGES = ["etas", "etas_fc", "coulomb", "budget", "observations", "features", "fit", "evaluate",
+STAGES = ["etas", "etas_fc", "coulomb", "budget", "capacity", "observations", "features", "fit", "evaluate",
           "obs_eval", "walkforward", "eventwalk", "report"]
 
 
@@ -238,6 +240,13 @@ class Run:
         pd.concat(rows).to_csv(self.dir / "budget_cells.csv", index=False)
         return {"n_events": res["n_events"], "n_elements": len(el)}
 
+    def stage_capacity(self):
+        """Enerji kapasitesi, doluluk, GPS kilitlenmesi, zincirleme kırılma (``[capacity] use``)."""
+        if not self.cfg.get("capacity", {}).get("use", False):
+            return {"skipped": True}
+        from .faults.capacity_stage import run_capacity
+        return run_capacity(self)
+
     def obs_enabled(self):
         return self.cfg.get("observations", {}).get("use", False)
 
@@ -294,6 +303,9 @@ class Run:
             tab = tab.merge(g, on=["cell_id", "year"], how="left")
         bc = pd.read_csv(self.dir / "budget_cells.csv")
         tab = tab.merge(bc, on=["cell_id", "year"], how="left")
+        if (self.dir / "capacity_cells.csv").exists() and self.cfg.get("capacity", {}).get("use", False):
+            cap = pd.read_csv(self.dir / "capacity_cells.csv")
+            tab = tab.merge(cap, on=["cell_id", "year"], how="left")
         if self.obs_enabled() and (self.dir / "obs_features.csv.gz").exists():
             ob = pd.read_csv(self.dir / "obs_features.csv.gz")
             tab = tab.merge(ob, on=["cell_id", "year"], how="left")
@@ -783,15 +795,19 @@ class Run:
         if self.cfg.get("map", {}).get("write_layers", False):
             write_layers(self)
 
-    def run(self):
+    def run(self, until: str | None = None):
         t_all = time.time()
         for st in STAGES:
             if self.done(st):
                 log.info("[%s] tamamlanmış, atlanıyor", st)
+                if st == until:
+                    break
                 continue
             log.info("[%s] başlıyor", st)
             t = time.time()
             info = getattr(self, f"stage_{st}")() or {}
             self.mark(st, seconds=round(time.time() - t, 1), **info)
             log.info("[%s] bitti (%.1f s)", st, time.time() - t)
+            if st == until:
+                break
         log.info("Tüm aşamalar bitti (%.1f s). Çıktılar: %s", time.time() - t_all, self.dir)

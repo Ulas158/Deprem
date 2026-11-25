@@ -47,8 +47,12 @@ def _xy(lat, lon):
 def element_budget(elements: pd.DataFrame, events: pd.DataFrame, start: pd.Timestamp,
                    end: pd.Timestamp, snapshots=(), min_mw: float = 4.0,
                    mw_col: str = "mw_best", known_ruptures: pd.DataFrame | None = None,
-                   coupling: float = 1.0) -> dict:
+                   coupling=1.0, record_min_mw: float | None = None) -> dict:
     """Eleman bütçesini zaman içinde ilerlet.
+
+    ``coupling``: tek sayı ya da eleman başına dizi (kilitlenme oranı; sürünen kısım
+    enerji biriktirmez). ``record_min_mw``: bu büyüklüğün üstündeki her depremden hemen
+    önceki tüm açık dizisi ve boşalım ağırlıkları ``records`` listesine yazılır.
 
     Dönen sözlük: ``final`` (DataFrame: m0_acc, m0_rel, deficit_Nm, slip_deficit_m,
     last_release_year) ve ``snapshots`` ({zaman: deficit dizisi}).
@@ -56,7 +60,7 @@ def element_budget(elements: pd.DataFrame, events: pd.DataFrame, start: pd.Times
     n = len(elements)
     ex, ey = _xy(elements["lat"], elements["lon"])
     ez = elements["depth_km"].to_numpy()
-    rate = coupling * elements["m0_rate_Nm_yr"].fillna(0).to_numpy() / 365.25  # N·m/gün
+    rate = np.asarray(coupling, dtype=float) * elements["m0_rate_Nm_yr"].fillna(0).to_numpy() / 365.25  # N·m/gün
     area_m2 = elements["area_km2"].to_numpy() * 1e6
     tree = cKDTree(np.column_stack([ex, ey]))
 
@@ -73,6 +77,7 @@ def element_budget(elements: pd.DataFrame, events: pd.DataFrame, start: pd.Times
     rel = np.zeros(n)
     last_rel = np.full(n, np.nan)
     out_snaps = {}
+    records = []
     kr = {} if known_ruptures is None else {
         str(r["event_id"]): r["coords"] for _, r in known_ruptures.iterrows()}
 
@@ -121,6 +126,11 @@ def element_budget(elements: pd.DataFrame, events: pd.DataFrame, start: pd.Times
         acc[idx] += rate[idx] * dt
         t_last[idx] = t_ev[k]
         r_e = m0 * w / w.sum()
+        if record_min_mw is not None and mw >= record_min_mw:
+            full = deficit + rate * (t_ev[k] - t_last)  # tüm elemanlar bu ana ilerletilmiş
+            records.append({"event_id": eid, "time": r["time"], "mw": mw, "lat": float(r["latitude"]),
+                            "lon": float(r["longitude"]), "idx": idx, "w": w / w.sum(),
+                            "deficit_before": full.astype(np.float32)})
         deficit[idx] = np.maximum(0.0, deficit[idx] - r_e)
         rel[idx] += r_e
         big = r_e > 0.05 * rate[idx] * 365.25  # en az ~bir aylık birikim kadar boşalım
@@ -134,7 +144,7 @@ def element_budget(elements: pd.DataFrame, events: pd.DataFrame, start: pd.Times
         "m0_acc": acc, "m0_rel": rel, "deficit_Nm": deficit,
         "slip_deficit_m": deficit / (MU * area_m2),
         "last_release_year": last_rel}, index=elements.index)
-    return {"final": final, "snapshots": out_snaps, "n_events": len(ev)}
+    return {"final": final, "snapshots": out_snaps, "n_events": len(ev), "records": records}
 
 
 def summarize_along_strike(elements: pd.DataFrame, values: pd.DataFrame, bin_km: float = 3.0):
