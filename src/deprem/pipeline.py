@@ -565,7 +565,9 @@ class Run:
     def _wf_etas(self):
         """Her yıl Y için ETAS'ı yalnız Y öncesi veriyle yeniden uydur ve Y'yi tahmin et."""
         path = self.dir / "walk_etas.npz"
-        if path.exists():
+        comp = self._train_offset_mode() == "compensator"
+        tr_path = self.dir / ("walk_etas_train_comp.npz" if comp else "walk_etas_train.npz")
+        if path.exists() and tr_path.exists():
             z = np.load(path)
             return {int(k): z[k] for k in z.files}
         c = self.cfg["etas"]
@@ -579,22 +581,39 @@ class Run:
             exp = e.expected(self.grid, t0, t1, catalog=self.catalog, n_sim=c["n_sim"],
                              seed=self.cfg["seed"] + y)
             out[y] = np.r_[exp.sum(-1).ravel(), e.b]  # son eleman: b
+            if comp:
+                from .longwalk import background_share, compensator
+                cat_m0 = self.catalog[self.catalog["mag"] >= e.m0]
+                U = background_share(e, self.grid)
+                n_cells = (self.grid.lat_edges.size - 1) * (self.grid.lon_edges.size - 1)
+                scale_m = 10 ** (-e.b * (self.grid.mag_edges[0] - e.m0))
             # aynı ETAS ile önceki (eğitim) yılların tahminleri: eğitim ofsetleri test
             # ofsetiyle tutarlı olsun (ETAS kalibrasyonu yıldan yıla değişiyor)
             for yp in self.years:
                 if yp >= y or self.window(yp)[0] < ts(c["fit_start"]) + pd.DateOffset(years=2):
                     continue
                 s0, s1 = self.window(yp)
-                ex = e.expected(self.grid, s0, s1, catalog=self.catalog, n_sim=c["n_sim"],
-                                seed=self.cfg["seed"] + yp)
-                out_tr[f"{y}_{yp}"] = ex.sum(-1).ravel()
+                if comp:
+                    # gerçekleşen geçmişle koşullu yoğunluk integrali: yıl içindeki artçılar
+                    # da ofsette; model ETAS'ın zaten açıkladığı artçıları yeniden öğrenmez
+                    out_tr[f"{y}_{yp}"] = compensator(e, cat_m0, s0, s1, U, self.grid, n_cells) * scale_m
+                else:
+                    ex = e.expected(self.grid, s0, s1, catalog=self.catalog, n_sim=c["n_sim"],
+                                    seed=self.cfg["seed"] + yp)
+                    out_tr[f"{y}_{yp}"] = ex.sum(-1).ravel()
             params[y] = {"params": {k: float(v) for k, v in e.params.items()}, "b": float(e.b)}
             log.info("ileri ETAS %d: b=%.2f, beklenen M≥%.1f = %.0f", y, e.b, self.grid.mag_edges[0],
                      exp.sum())
         np.savez_compressed(path, **{str(k): v for k, v in out.items()})
-        np.savez_compressed(self.dir / "walk_etas_train.npz", **out_tr)
+        np.savez_compressed(tr_path, **out_tr)
         (self.dir / "walk_etas_params.json").write_text(json.dumps(params, indent=2))
         return out
+
+    def _train_offset_mode(self):
+        """Eğitim yıllarının ETAS ofseti: "compensator" (gerçekleşen geçmişle koşullu yoğunluk
+        integrali, varsayılan) veya "forecast" (yıl başı benzetim tahmini; yıl içindeki
+        artçıları içermez, büyük dizili yıllardan sonra fazla tahmine yol açar)."""
+        return self.cfg.get("walkforward", {}).get("train_offset", "compensator")
 
     @staticmethod
     def _boot_ci(per, n_boot=2000, seed=0):
@@ -608,8 +627,9 @@ class Run:
         """Ana değerlendirme: geçmişten bugüne yıl yıl ilerleyerek eğit → bir sonraki yılı tahmin et.
 
         Her adım Y'de: ETAS yalnız Y öncesiyle uydurulur; model, ilk eğitim yılından Y−1'e kadar
-        olan yıllarla eğitilir (eğitim yıllarının ofsetleri de aynı Y-ETAS'ıyla hesaplanır, böylece
-        model ETAS'ın o anki kalibrasyonuna göre öğrenir) ve Y'yi tahmin eder. Sonra Y eğitime eklenir. Başarı ETAS'a karşı olay başına bilgi kazancıdır;
+        olan yıllarla eğitilir (eğitim yıllarının ofsetleri de aynı Y-ETAS'ıyla, gerçekleşen geçmişe
+        göre koşullu yoğunluk integrali olarak hesaplanır; böylece model, ETAS'ın zaten açıkladığı
+        yıl içi artçıları kendi özelliklerine yüklemez) ve Y'yi tahmin eder. Sonra Y eğitime eklenir. Başarı ETAS'a karşı olay başına bilgi kazancıdır;
         %95 güven aralığı olaylar üzerinden bootstrap ile hesaplanır.
         """
         wf = self._wf_etas()
@@ -637,7 +657,9 @@ class Run:
         start_y = wf_cfg.get("first_year", min(wf) + 3)
         steps, coefs_t, etas_cells = [], [], {}
         per_all = {(v, mg): [] for v in variants for mg in self.mags}
-        wtr = np.load(self.dir / "walk_etas_train.npz") if (self.dir / "walk_etas_train.npz").exists() else None
+        tr_path = self.dir / ("walk_etas_train_comp.npz" if self._train_offset_mode() == "compensator"
+                              else "walk_etas_train.npz")
+        wtr = np.load(tr_path) if tr_path.exists() else None
         for Y in [y for y in sorted(wf) if y >= start_y]:
             tr = tab[tab["year"] < Y].copy()
             te = tab[tab["year"] == Y]

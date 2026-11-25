@@ -61,6 +61,39 @@ python scripts/train.py --config configs/train_obs.toml
 Rapor: `reports/training_turkey_v2_obs.md`. Harita katmanları: `web/data/layers/`
 altında "Jeodezi ve sismik gözlemler" grubu.
 
+## Düzeltme: büyük depremli yıllardan sonra fazla tahmin (Kasım 2026)
+
+**Sorun.** İleriye kayan eğitimde model, eğitim yıllarında ETAS'ın *yıl başındaki* tahminini
+taban alıyordu. Bu tahmin o yıl içinde olacak büyük depremlerin artçılarını içermez. 2017,
+2020, 2023 gibi yıllarda gözlenen sayı tabandan çok yüksek kalınca model bunu "geçen yıl çok
+deprem olan hücrede daha çok deprem olur" diye öğrendi. Ertesi yıl ETAS artçıları zaten hesaba
+kattığı için aynı etki iki kez sayıldı: 2018'de 652 depreme 2106, 2021'de 1209 depreme 2286
+tahmin edildi (ETAS 1635 ve 1799).
+
+**Düzeltme.** Eğitim yıllarının tabanı artık ETAS'ın gerçekleşen geçmişle hesaplanan koşullu
+yoğunluk integrali (yıl içi artçılar dahil). Böylece model yalnız ETAS'ın açıklayamadığı kısmı
+öğrenir; deprem deprem puanlamayla da tutarlıdır. Eski davranış `[walkforward] train_offset =
+"forecast"` ile seçilebilir.
+
+**Sonuç** (M≥3, 2015-2025 ileriye kayan, ETAS'a göre olay başına kazanç, %95 GA):
+
+| | önce | sonra |
+|---|---|---|
+| 2018 tahmini (gözlenen 652) | 2106 | 1466 |
+| 2021 tahmini (gözlenen 1209) | 2286 | 1548 |
+| 2024 tahmini (gözlenen 1033) | 1809 | 1935 |
+| Yıl yıl M≥3 | −0,133 [−0,259; 0,081], 6/11 yıl | +0,074 [−0,037; 0,173], 10/11 yıl |
+| Yıl yıl M≥4 | −0,223 [−0,335; 0,014] | −0,002 [−0,121; 0,125] |
+| Yıl yıl M≥5 | −0,167 [−0,337; 0,149] | +0,051 [−0,082; 0,234] |
+| Deprem deprem M≥3,5 | −0,172 [−0,212; −0,122] (daha kötü) | −0,000 [−0,030; 0,032] |
+| Deprem deprem M≥4 | −0,207 [−0,259; −0,125] (daha kötü) | −0,034 [−0,084; 0,023] |
+| Deprem deprem M≥5 | −0,138 [−0,213; −0,013] (daha kötü) | +0,005 [−0,050; 0,087] |
+
+Model artık ETAS'tan anlamlı olarak kötü değil, ama anlamlı olarak iyi de değil: bütün güven
+aralıkları sıfırı içeriyor. Büyük dizilerden sonraki fazlalığın kalanı ETAS'ın kendisinden
+geliyor (2024'te ETAS 2449 tahmin etti); bu, ETAS'ın artçı azalmasını büyük dizilerde yavaş
+bulmasıyla ilgili ayrı bir konudur.
+
 ## Bilinen sınırlamalar
 
 * **GPS kapsaması:** Nevada arşivinde Türkiye istasyonlarının çoğu 2012-2016 arası;
