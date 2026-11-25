@@ -24,6 +24,14 @@ OUT = ROOT / "runs" / "faultwalk"
 CACHE = OUT / "walkdata.pkl"
 FREEZE_YEAR = 1900
 DVV = ROOT / "data" / "dvv" / "east_marmara_dvv.csv"   # sütunlar: date, dvv
+ENERGY = OUT / "energy.pkl"                              # fay enerjisi göstergeleri (deprem.fault_energy)
+ENERGY_COVS = ("deficit", "bval", "chain", "deficit_km", "chain_km")
+
+
+def _energy_covs(W):
+    from deprem.fault_energy import build_energy, covariates
+    E = build_energy(ROOT, W, cache=ENERGY)
+    W.extra.setdefault("cov", {}).update(covariates(W, E))
 
 
 _CORE = None
@@ -62,6 +70,19 @@ def _job(spec):
             import pandas as pd
             from deprem.faultwalk_data import dvv_covariate
             W.extra.setdefault("cov", {})["dvv"] = dvv_covariate(W, pd.read_csv(DVV))
+        elif any(c in ENERGY_COVS for c in v.cov.split(",")):
+            _energy_covs(W)
+    elif kind == "null_energy":           # enerji göstergelerini fay birimleri arasında karıştır
+        from deprem.faultwalk import VARIANTS as _V
+        v = _V["partial_energy"]
+        _energy_covs(W)
+        rng = np.random.default_rng(seed)
+        fay = np.where(W.units["kind"].to_numpy() == "fay")[0]
+        perm = fay[rng.permutation(fay.size)]
+        for c in ENERGY_COVS:
+            X = W.extra["cov"][c]
+            X[:, fay] = X[:, perm]
+        kw["cell_probs"] = False
     elif kind == "null_fault":            # fay birimlerini hücreler arasında karıştır
         v = VARIANTS["partial"]
         rng = np.random.default_rng(seed)
@@ -92,13 +113,15 @@ def main():
     ap.add_argument("--every", type=int, default=1)
     ap.add_argument("--nulls", type=int, default=0)
     ap.add_argument("--null-every", type=int, default=20)
+    ap.add_argument("--energy-nulls", type=int, default=0, help="enerji göstergeleri için şans kontrolü sayısı")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     OUT.mkdir(parents=True, exist_ok=True)
     if args.prepare or not CACHE.exists():
         from deprem.faultwalk_data import build
-        if CACHE.exists():
-            CACHE.unlink()
+        for pth in (CACHE, ENERGY):
+            if pth.exists():
+                pth.unlink()
         build(ROOT, cache=CACHE)
     specs = [(v, v, 0, args.every) for v in args.variants]
     if args.nulls:
@@ -107,8 +130,21 @@ def main():
                   (f"no_cfs_e{e}", "no_cfs", 0, e)]
         for s in range(args.nulls):
             specs += [(f"null_fault_{s}", "null_fault", s, e), (f"null_cfs_{s}", "null_cfs", s, e)]
+    if args.energy_nulls:
+        e = args.null_every
+        specs += [(f"partial_e{e}", "partial", 0, e), (f"partial_energy_e{e}", "partial_energy", 0, e)]
+        specs += [(f"null_energy_{s}", "null_energy", s, e) for s in range(args.energy_nulls)]
+    if any(sp[1] in ("null_energy",) or "energy" in sp[1] or sp[1].startswith(("partial_deficit", "partial_bval",
+                                                                                "partial_chain")) for sp in specs):
+        if not ENERGY.exists():                # tek seferde hesapla (işçiler önbellekten okur)
+            import pickle as _p
+            from deprem.fault_energy import build_energy
+            with open(CACHE, "rb") as fh:
+                build_energy(ROOT, _p.load(fh), cache=ENERGY)
     if not specs:
         return
+    seen = set()
+    specs = [sp for sp in specs if not (sp[0] in seen or seen.add(sp[0]))]
     import multiprocessing as mp
     counter = mp.Value("i", 0)
     with ProcessPoolExecutor(args.jobs, initializer=_init, initargs=(counter,)) as ex:

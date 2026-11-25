@@ -120,6 +120,18 @@ def load_catalog(root: Path, region=TURKEY) -> tuple[pd.DataFrame, pd.DataFrame]
     return cat, old
 
 
+def load_fault_table(root: Path) -> pd.DataFrame:
+    """GEM fay segmentleri (Türkiye kutusu), geometri, moment birikim hızı ve büyük sistem adı."""
+    f = gem.load_faults(gem.download(Path(root) / "data" / "ext" / "gem_active_faults_harmonized.geojson"), TURKEY)
+    f = add_geometry(f).reset_index(drop=True)
+    f["slip_rate_mm_yr"] = f["slip_rate_mm_yr"].fillna(0.2)
+    f["m0_rate_Nm_yr"] = f["m0_rate_Nm_yr"].fillna(f["m0_rate_Nm_yr"].median())
+    f["mid_lon"] = [float(np.asarray(c)[:, 0].mean()) for c in f["coords"]]
+    f["mid_lat"] = [float(np.asarray(c)[:, 1].mean()) for c in f["coords"]]
+    f["system"] = fault_systems(f)
+    return f
+
+
 # ------------------------------------------------------------------ ana veri
 @dataclass
 class WalkData:
@@ -174,13 +186,7 @@ def build(root: Path, end: str = "2026-01-01", cache: Path | None = None) -> Wal
     ev_cell = (ii * nlo + jj).to_numpy()
 
     # faylar
-    f = gem.load_faults(gem.download(root / "data" / "ext" / "gem_active_faults_harmonized.geojson"), TURKEY)
-    f = add_geometry(f).reset_index(drop=True)
-    f["slip_rate_mm_yr"] = f["slip_rate_mm_yr"].fillna(0.2)
-    f["m0_rate_Nm_yr"] = f["m0_rate_Nm_yr"].fillna(f["m0_rate_Nm_yr"].median())
-    f["mid_lon"] = [float(np.asarray(c)[:, 0].mean()) for c in f["coords"]]
-    f["mid_lat"] = [float(np.asarray(c)[:, 1].mean()) for c in f["coords"]]
-    f["system"] = fault_systems(f)
+    f = load_fault_table(root)
     dist = np.stack([point_to_polyline_km(lat_c, lon_c, c) for c in f["coords"]], 1)  # C × F
 
     # fay moment haritası: iz boyunca 2 km'lik noktalar, moment hızı uzunluğa paylaştırılır

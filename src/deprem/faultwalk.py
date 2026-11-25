@@ -73,6 +73,8 @@ GLOBAL = [  # ad, öncül ortalama, öncül sd
     ("g_cfs2", 0.0, 1.0),
     ("b0", 0.0, 0.5),
     ("k_cov", 0.0, 0.5),            # ek zamanla değişen girdi (ör. dv/v) katsayısı
+    ("k_cov1", 0.0, 0.5),           # ikinci ve üçüncü ek girdi (fay enerjisi göstergeleri)
+    ("k_cov2", 0.0, 0.5),
 ] + [(f"era{e}", 0.0, 2.0) for e in range(len(ERAS))]
 
 
@@ -90,7 +92,7 @@ class Variant:
     sd_delta: float = 0.5
     sd_B: float = 0.3
     sd_eps: float = 0.2
-    cov: str = ""                   # W.extra["cov"][cov]: (S, U) ek girdi (eksikte 0)
+    cov: str = ""                   # W.extra["cov"][ad]: (S, U) ek girdi; virgülle en çok 3 ad (eksikte 0)
 
 
 VARIANTS = {
@@ -109,7 +111,24 @@ VARIANTS = {
     "no_far": Variant("no_far", "Ana model, 100 km ötesi etki kesik", rmax_km=100.0),
     "no_load": Variant("no_load", "Ana model − fay doluluğu", load=False),
     "partial_dvv": Variant("partial_dvv", "Ana model + Doğu Marmara dv/v", cov="dvv"),
+    # fay enerjisi göstergeleri (deprem.fault_energy)
+    "partial_deficit": Variant("partial_deficit", "Ana model + moment açığı oranı (küçük depremler dahil)",
+                               cov="deficit"),
+    "partial_bval": Variant("partial_bval", "Ana model + yerel b-değeri farkı (son 5 yıl)", cov="bval"),
+    "partial_chain": Variant("partial_chain", "Ana model + yüklü komşu fay zinciri uzunluğu", cov="chain"),
+    "partial_energy": Variant("partial_energy", "Ana model + üç enerji göstergesi birlikte",
+                              cov="deficit,bval,chain"),
+    # aynı göstergeler fay 1 km'lik elemanlara bölünerek (Ulas'ın önerisi, 25 Kasım 2026)
+    "partial_deficit_km": Variant("partial_deficit_km", "Ana model + moment açığı oranı (1 km elemanlar)",
+                                  cov="deficit_km"),
+    "partial_chain_km": Variant("partial_chain_km", "Ana model + yüklü kesintisiz fay boyu (1 km elemanlar)",
+                                cov="chain_km"),
+    "partial_energy_km": Variant("partial_energy_km", "Ana model + üç gösterge (1 km elemanlar)",
+                                 cov="deficit_km,bval,chain_km"),
 }
+
+NCOV = 3
+COV_PARAMS = ("k_cov", "k_cov1", "k_cov2")
 
 
 # ------------------------------------------------------------------ JAX modeli
@@ -142,9 +161,13 @@ class Model:
             BuS[:, u] = W.smap[:, m].sum(1)
             BuF[u] = W.fmap[m].sum()
         Lm = W.L if v.load else np.zeros_like(W.L)
-        Xc = W.extra.get("cov", {}).get(v.cov) if v.cov else None
-        if Xc is None:
-            Xc = np.zeros_like(W.L)
+        cov_names = [c for c in v.cov.split(",") if c] if v.cov else []
+        assert len(cov_names) <= NCOV
+        Xc = np.zeros(W.L.shape + (NCOV,))
+        for k, cn in enumerate(cov_names):
+            X1 = W.extra.get("cov", {}).get(cn)
+            if X1 is not None:
+                Xc[:, :, k] = X1
         dtau = np.diff(W.tau)
         era_s = W.step_era
         self.ev_unit = unit_of_cell[W.ev_cell]
@@ -177,8 +200,7 @@ class Model:
         if not v.slow:
             for n in ("logK2", "alpha2", "log_tau2", "log_D2", "log_q2m1", "g_cross2", "g_cfs2"):
                 free[self.gi[n]] = False
-        if not v.cov:
-            fix0 += ["k_cov"]
+        fix0 += list(COV_PARAMS[len(cov_names):])
         for n in fix0:
             free[self.gi[n]] = False
             mean[self.gi[n]] = 0.0
@@ -251,12 +273,13 @@ class Model:
             mu = jnp.exp(g["log_mu"])
             w = jax.nn.sigmoid(g["w_logit"])
             # arka plan, adım başına
-            ex = jnp.exp(au[None, :] + bu[None, :] * a["L"] + g["k_cov"] * a["X"])  # S × U
+            kc = jnp.stack([g[n] for n in COV_PARAMS])
+            ex = jnp.exp(au[None, :] + bu[None, :] * a["L"] + a["X"] @ kc)  # S × U
             Bu = w * a["BuS"][a["step_year"]] + (1 - w) * a["BuF"][None, :]       # S × U
             bg_s = mu * a["dtau"] * (Bu * ex).sum(1)
             # arka plan, olay başına
             exu = jnp.exp(au[a["ev_unit"]] + bu[a["ev_unit"]] * a["L"][a["ev_step"], a["ev_unit"]]
-                          + g["k_cov"] * a["X"][a["ev_step"], a["ev_unit"]])
+                          + a["X"][a["ev_step"], a["ev_unit"]] @ kc)
             Bc = w * a["smap"][a["ev_year"], a["ev_cell"]] + (1 - w) * a["fmap"][a["ev_cell"]]
             bg_e = mu * Bc * exu
             trig_e = jnp.zeros_like(bg_e)
@@ -306,7 +329,7 @@ class Model:
             w = jax.nn.sigmoid(g["w_logit"])
             uc = a["unit_of_cell"]
             bg = jnp.exp(g["log_mu"]) * (w * a["smap"][a["step_year"][s]] + (1 - w) * a["fmap"]) * \
-                jnp.exp(au[uc] + bu[uc] * a["L"][s][uc] + g["k_cov"] * a["X"][s][uc])
+                jnp.exp(au[uc] + bu[uc] * a["L"][s][uc] + a["X"][s][uc] @ jnp.stack([g[n] for n in COV_PARAMS]))
             dt = a["t"][i] - a["t"]
             tr = jnp.zeros_like(bg)
             if trig_on:
