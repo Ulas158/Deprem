@@ -1,0 +1,71 @@
+# Uzun dönem parametre araması: 1900'den bugüne M≥5,5 (tarihsel + aletsel katalog).
+# Önce: python scripts/train_long.py ile uzun katalog (data/processed/turkey_catalog_long.csv.gz)
+# Sonra: python scripts/train.py --config configs/train_search_long.toml
+#        python scripts/search_params.py --config configs/train_search_long.toml
+#
+# Yalnız 1900'e kadar geri hesaplanabilen parametreler: katalog (M≥5,5), fay geometrisi,
+# Coulomb aktarımı, kayma açığı, kapasite/doluluk, zincirleme kırılma, kayaç sertliği.
+# GPS ve küçük depreme dayanan parametreler kısa aramadadır (train_search.toml).
+# HİÇBİR ÇIKTI DEPREM TAHMİNİ DEĞİLDİR.
+
+run_name = "turkey_search_long"
+seed = 0
+out_dir = "runs"
+
+[data]
+catalog = "data/processed/turkey_catalog_long.csv.gz"
+faults = "data/ext/gem_active_faults_harmonized.geojson"
+cell_deg = 0.5
+mc = 5.5                # 1900'den beri yaklaşık eksiksiz eşik
+
+[split]
+first_train_year = 1905
+first_test_year = 2020
+last_test_year = 2025
+window_years = 1
+
+[etas]
+m0 = 5.5
+fit_start = "1875-01-01"
+bandwidth_km = 25.0
+r_max_km = 300.0
+dt_max_days = 3650.0
+n_sim = 100
+
+[coulomb]
+min_mw = 6.0
+source_since = "1700-01-01"    # tarihsel büyük depremler de gerilme kaynağı
+mu_eff_grid = [0.0, 0.4, 0.8]
+receiver_strike_step = 2
+
+[budget]
+start = "1700-01-01"           # tarihsel katalogla birikim 1700'den başlar (1900 başlangıcından daha gerçekçi)
+min_mw = 5.5
+
+[model]
+train_mag = 5.5
+eval_mags = [5.5, 6.0, 6.5]
+prior_sd = 0.5
+use_uncertainty_weights = true
+features = ["counts", "moment_release", "time_since", "b_value", "faults", "rate_change", "depth", "clustering"]
+
+[observations]
+use = false
+
+[capacity]
+use = true
+coulomb_mu = 0.4
+cascade_alpha = 0.5
+cascade_thr = 0.8
+calib_from = 1900       # bütçe 1700'de başlıyor: 200 yıl ısınma, kalibrasyon aletsel dönemden
+
+[walkforward]
+first_year = 1920
+
+[search]
+search_years = "1920-2019"
+score_mags = [5.5, 6.0, 6.5]
+refit_every = 5                # katsayılar 5 yılda bir (yalnız o blok öncesiyle) yeniden eğitilir
+
+[map]
+write_layers = false

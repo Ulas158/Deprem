@@ -1,0 +1,87 @@
+{
+  "data": "fay_doluluk.geojson",
+  "visible": false,
+  "id": "fay_doluluk",
+  "label": "Fay doluluk oranı (%)",
+  "description": "Her fay için biriken kayma açığının, o bölgede büyük depremlerin (M≥6,8, 1950+) tipik olarak kırıldığı birikime oranı. %100 = geçmişte tipik kırılma düzeyi. GPS kilitlenmesi ve Coulomb aktarımı dahil. Bütçe 1900'de sıfırdan başladığı için göreli bir ölçüdür; geçmiş depremler çok farklı doluluklarda kırılmıştır.",
+  "group": "Faylar ve enerji",
+  "order": 12,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Doluluk eşiği yöntemi sınamada doğrulanmadı.",
+  "updated": "2026-11-25",
+  "style": {
+    "type": "line",
+    "width": 3,
+    "glow": true,
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "doluluk",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#3f7be0"
+      ],
+      [
+        50,
+        "#7fa6e8"
+      ],
+      [
+        100,
+        "#ffd166"
+      ],
+      [
+        200,
+        "#ff7b39"
+      ],
+      [
+        400,
+        "#ff3b30"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Doluluk",
+    "unit": "%",
+    "labels": [
+      "0",
+      "100",
+      "≥400"
+    ]
+  },
+  "tooltip": {
+    "title": "fault_id",
+    "fields": [
+      {
+        "property": "doluluk",
+        "label": "Doluluk",
+        "unit": "%",
+        "digits": 0
+      },
+      {
+        "property": "doluluk_alt",
+        "label": "Alt (%16)",
+        "unit": "%",
+        "digits": 0
+      },
+      {
+        "property": "doluluk_ust",
+        "label": "Üst (%84)",
+        "unit": "%",
+        "digits": 0
+      },
+      {
+        "property": "en_dolu_1km",
+        "label": "En dolu 1 km",
+        "unit": "%",
+        "digits": 0
+      },
+      {
+        "property": "kayma_hizi",
+        "label": "Kayma hızı",
+        "unit": "mm/yıl",
+        "digits": 1
+      }
+    ]
+  }
+}

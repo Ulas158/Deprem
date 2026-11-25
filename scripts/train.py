@@ -24,9 +24,11 @@ def main():
     ap.add_argument("--config", type=Path, default=ROOT / "configs/train_default.toml")
     ap.add_argument("--force", nargs="*", default=[], choices=STAGES + ["all"],
                     help="yeniden hesaplanacak aşamalar")
+    ap.add_argument("--until", choices=STAGES, default=None,
+                    help="bu aşamadan sonra dur (ör. parametre araması için --until features)")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-    Run(args.config, ROOT, force=args.force).run()
+    Run(args.config, ROOT, force=args.force).run(until=args.until)
 
 
 if __name__ == "__main__":

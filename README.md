@@ -80,6 +80,27 @@ hatalarıyla 10 kez yeniden örneklenip yürüyüşün baştan yapılmasıyla he
 eski dönemlerde daha geniştir. Rapor: `reports/training_turkey_v4_long.md`. Yöntem:
 `src/deprem/longwalk.py`.
 
+### Parametre kombinasyonu araması ve fay doluluk oranı
+
+```bash
+pip install -e ".[search]"
+python scripts/train.py --config configs/train_search.toml --until features       # ortak veri (kapasite dahil)
+python scripts/train.py --config configs/train_search_long.toml --until features  # 1900'den M≥5,5 (önce train_long.py ile uzun katalog)
+python scripts/search_params.py --config configs/train_search.toml   # arama 2015-2019, sınama 2020-2025
+python scripts/search_params.py --config configs/train_search_long.toml  # arama 1920-2019
+python scripts/search_report.py                                       # rapor + harita katmanı
+```
+
+Parametre grupları, grup önem ağırlıkları, düzenlileştirme, enerji öncülü ve model ayarları
+Bayesçi optimizasyonla **yalnız arama yıllarında** denenir; en iyi kombinasyon aramada hiç
+kullanılmamış sınama yıllarında bir kez ölçülür. Aynı arama özellikleri karıştırılmış verilerde
+de yapılır (şans sınırı), sınamada Holm düzeltmesi ve katalog belirsizliği yeniden örneklemesi
+uygulanır. `capacity` aşaması her 1 km fay elemanı için enerji biriktirme kapasitesi (kilitli
+alan × CRUST1.0 kayaç sertliği × gerilme düşümü), GPS'ten kilitlenme/krip, geçmiş büyük
+depremlerle hiyerarşik kalibre edilmiş yüzde doluluk (+Coulomb aktarımı) ve zincirleme kırılma
+özellikleri üretir. Rapor: `reports/parametre_aramasi.md`. Yöntem: `src/deprem/search.py`,
+`src/deprem/faults/capacity.py`, `src/deprem/faults/locking.py`.
+
 ### Veri kaynakları
 
 | Kaynak | Kapsam | Not |
@@ -90,6 +111,7 @@ eski dönemlerde daha geniştir. Rapor: `reports/training_turkey_v4_long.md`. Y�
 | AFAD açık API | yalnızca son ~2 hafta | Düzenli çekilerek arşiv biriktirilmeli |
 | AFAD web kataloğu (elle) | tam arşiv | Oturum gerektirir; dışa aktarılan dosya `--afad-export` ile okunur |
 | GEM Küresel Aktif Faylar (EMME) | ~430 segment | Kayma hızı, eğim, rake, sismojenik derinlik |
+| CRUST1.0 (Laske vd. 2013) | 1°×1° küresel kabuk modeli | Kayaç sertliği (ρ·Vs²), kabuk kalınlığı |
 
 AFAD web kataloğundan elle indirme: deprem.afad.gov.tr/event-catalog sayfasında
 tarih aralığını ve Türkiye sınırlarını seçip sonuçları CSV/Excel olarak indirin,
