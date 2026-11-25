@@ -87,6 +87,121 @@ def magnitude_test(ev: pd.DataFrame, feats: dict, start_n: int = 60) -> pd.DataF
     return pd.DataFrame(out).dropna()
 
 
+MARMARA = dict(lat=(39.8, 41.5), lon=(26.0, 31.6))
+
+
+def _in_box(lat, lon, box=MARMARA):
+    lat, lon = np.asarray(lat), np.asarray(lon)
+    return (lat >= box["lat"][0]) & (lat <= box["lat"][1]) & (lon >= box["lon"][0]) & (lon <= box["lon"][1])
+
+
+def marmara_section(W, E, rng) -> list:
+    """Marmara: 1 km parçalarla Kuzey Anadolu Fayı kuzey kolu boyunca yük profili ve model sınaması."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from deprem.faultwalk_data import year_start_days
+    L = ["## 6. Marmara bölgesi\n"]
+    km, seg = E.km, E.seg
+    el = km.el
+    sys_el = seg["system"].to_numpy()[el["seg"]]
+    m = _in_box(el["lat"], el["lon"]) & (sys_el == "Kuzey Anadolu Fayı")
+    tau = E.tau[:-1]
+    s_now = len(tau) - 1
+
+    def step_at(date):
+        return int(np.searchsorted(tau, year_start_days(int(date[:4])) + (pd.Timestamp(date) - pd.Timestamp(date[:4] + "-01-01")).days, side="right") - 1)
+
+    snaps = [("2026 başı", s_now), ("16 Ağustos 1999 (İzmit'ten bir gün önce)", step_at("1999-08-16")),
+             ("8 Ağustos 1912 (Mürefte-Şarköy'den bir gün önce)", step_at("1912-08-08"))]
+    o = np.argsort(el["lon"].to_numpy()[m])
+    lon = el["lon"].to_numpy()[m][o]
+    lat = el["lat"].to_numpy()[m][o]
+    fig, axs = plt.subplots(len(snaps), 1, figsize=(10, 7.5), sharex=True)
+    cat = W.cat
+    big = cat[(cat["mw"] >= 6.5) & _in_box(cat["latitude"], cat["longitude"])]
+    from scipy.spatial import cKDTree
+    from deprem.faultwalk_data import xy_km
+    tx, ty = xy_km(el["lat"].to_numpy()[m], el["lon"].to_numpy()[m])
+    bx, by = xy_km(big["latitude"].to_numpy(), big["longitude"].to_numpy())
+    dd, _ = cKDTree(np.column_stack([tx, ty])).query(np.column_stack([bx, by]))
+    big = big[dd <= 20]                                   # yalnız kuzey kol üzerindekiler
+    for ax, (lab, s) in zip(axs, snaps):
+        R = km.R[s][m][o]
+        ax.scatter(lon, R, s=3, c=np.where(R >= 0.5, "#c0392b", "#7f8c8d"))
+        ax.axhline(0.5, color="#555", lw=0.6, ls="--")
+        ax.set_ylabel("doluluk R")
+        ax.set_title(lab, fontsize=10, loc="left")
+        t_s = tau[s]
+        for _, r in big[big["t"] > t_s].head(3).iterrows():
+            half = 10 ** (-2.44 + 0.59 * r["mw"]) / 2 / (111.195 * np.cos(np.radians(40.7)))
+            ax.axvspan(r["longitude"] - half, r["longitude"] + half, color="#f39c12", alpha=0.15)
+            ax.text(r["longitude"], ax.get_ylim()[1] * 0.9, f"{r['time'].year} M{r['mw']:.1f}", fontsize=7, ha="center")
+    axs[-1].set_xlabel("boylam (batı → doğu: Saros, Ganos, Marmara Denizi, İzmit, Düzce)")
+    fig.suptitle("Kuzey Anadolu Fayı, Marmara: 1 km parçalarda biriken yük (kırmızı: R ≥ 0,5). "
+                 "Turuncu: sonraki büyük depremler (kaba kırık boyu)", fontsize=9)
+    fig.tight_layout()
+    FIG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG / "fault_energy_marmara.png", dpi=130)
+    plt.close(fig)
+    pd.DataFrame({"lat": lat.round(4), "lon": lon.round(4), "R_2026": km.R[s_now][m][o].round(3),
+                  "yüklü_boy_km_2026": km.chain_km[s_now][m][o].round(0)}).to_csv(
+        TAB / "fault_energy_marmara_1km.csv", index=False)
+    Rn = km.R[s_now][m][o]
+    L.append(f"Marmara kutusunda (enlem {MARMARA['lat'][0]}-{MARMARA['lat'][1]}, boylam {MARMARA['lon'][0]}-"
+             f"{MARMARA['lon'][1]}) Kuzey Anadolu Fayı kuzey kolu {m.sum()} adet 1 km parçaya bölündü. 2026 başında "
+             f"bunların %{100 * (Rn >= 0.5).mean():.0f}'i yüklü (R ≥ 0,5); en uzun kesintisiz yüklü parça "
+             f"{km.chain_km[s_now][m].max():.0f} km. Tablo: `reports/tables/fault_energy_marmara_1km.csv`.\n")
+    L.append("![Marmara yük profili](figures/fault_energy_marmara.png)\n")
+    # segment tablosu
+    fm = _in_box(seg["mid_lat"], seg["mid_lon"]) & (seg["slip_rate_mm_yr"] >= 2)
+    el_seg = el["seg"].to_numpy()
+    rows = []
+    for k in np.nonzero(fm.to_numpy())[0]:
+        e = el_seg == k
+        rows.append({"segment": seg["fault_id"].iloc[k], "sistem": seg["system"].iloc[k],
+                     "orta boylam": round(seg["mid_lon"].iloc[k], 2), "uzunluk_km": round(seg["length_km"].iloc[k]),
+                     "kayma_hızı": seg["slip_rate_mm_yr"].iloc[k], "segment R": round(E.R[s_now, k], 2),
+                     "1 km R ortalama": round(float(np.maximum(km.R[s_now, e], 0).mean()), 2),
+                     "1 km yüklü pay %": round(100 * float((km.R[s_now, e] >= 0.5).mean())),
+                     "b farkı z": round(E.bz[s_now, k], 2), "b olay sayısı": int(E.bn[s_now, k])})
+    L.append("Marmara'daki segmentler (kayma hızı ≥ 2 mm/yıl), 2026 başı. Segment R tüm segmentin ortalaması; "
+             "1 km sütunları, segmentin depremlerle kısmen boşalmış parçalarını ayrı sayar.\n")
+    L.append(pd.DataFrame(rows).sort_values("orta boylam").to_markdown(index=False) + "\n")
+    L.append("Dikkat: katalog 1700'de başlıyor. Marmara'da 1509 ve daha önceki büyük depremler hesaba girmiyor; "
+             "1766 depremlerinin kırık uzunlukları tarihsel kaynaklarda tartışmalı, burada yalnız büyüklükten kaba "
+             "tahmin edildi. Bu yüzden 1 km çözünürlük, yükün nerede biriktiğini değil, bu varsayımlarla nerede "
+             "birikmiş görüneceğini gösterir.\n")
+    # model sınaması Marmara alt kümesi
+    part = load("partial")
+    base = load("etas")
+    if part is not None and base is not None:
+        rows, ps = [], []
+        for n, lab, _ in NEW:
+            d = load(n)
+            if d is None:
+                continue
+            for ref_name, ref in (("ETAS", base), ("ana model", part)):
+                mm = d.merge(ref[["i", "score"]], on="i", suffixes=("", "_r"))
+                mm = window(mm[_in_box(mm["lat"], mm["lon"])], 1900, 2026)
+                if len(mm) < 5:
+                    continue
+                mean, lo, hi, p = boot((mm["score"] - mm["score_r"]).to_numpy(), mm["year"].to_numpy(), rng)
+                rows.append({"model": "Ana model + " + lab, "karşı": ref_name, "Marmara 1900-2025": f3(mean),
+                             "%95 GA": f"[{lo:+.3f}, {hi:+.3f}]", "p": p})
+                ps.append(p)
+        if rows:
+            T = pd.DataFrame(rows)
+            T["Holm p"] = [f"{x:.3f}" for x in holm(ps)]
+            T["p"] = T["p"].map(lambda x: f"{x:.3f}")
+            nM = int(_in_box(window(part, 1900, 2026)["lat"], window(part, 1900, 2026)["lon"]).sum())
+            L.append(f"Model sınaması yalnız Marmara depremleriyle (1900-2025, {nM} deprem M≥5,5). Model tüm Türkiye "
+                     "verisiyle eğitildi, puan yalnız Marmara'daki depremlerden. Bu kadar az depremle küçük farklar "
+                     "şansla ayırt edilemez.\n")
+            L.append(T.to_markdown(index=False) + "\n")
+    return L
+
+
 def main():
     from deprem.fault_energy import CHAIN_THR, energy_joule, length_to_mw
     from deprem.faultwalk import VARIANTS
@@ -327,6 +442,8 @@ def main():
                  f"aldı; model her 20 depremde bir eğitildi). Gerçek katkı {f3(real)}; {len(nv)} karıştırmada "
                  f"ortalama {f3(nv.mean())}, en yüksek {f3(nv.max())}. Şans p = "
                  f"{(1 + (nv >= real).sum()) / (1 + len(nv)):.2f}.\n")
+
+    L.extend(marmara_section(W, E, rng))
 
     L.append("## Yöntem ve sınırlar\n")
     L.append("- Yöntem: `src/deprem/fault_energy.py`; modele ekleme: `src/deprem/faultwalk.py` (`partial_*` sürümleri).\n"

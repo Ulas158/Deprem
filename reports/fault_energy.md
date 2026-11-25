@@ -109,6 +109,73 @@ Fay üstündeki her M≥5,5 deprem için (1900-2025, ilk 60'ı yalnız eğitim, 
 
 ## 5. Göstergeler deprem modeline eklenince (ne zaman ve nerede)
 
+Her deprem, yalnız önceki verilerle yeniden eğitilmiş modelle puanlandı (421 deprem 1900-2025; 97'i 2000-2025). Olay başına log olasılık farkı; GA yıl blokları bootstrap'ı; Holm düzeltmesi tablodaki tüm karşılaştırmalar için. b-değeri girdisi küçük deprem kaydı yeterli olan yıllarda (pratikte 1998 sonrası) doludur, öncesinde etkisizdir; bu yüzden 2000-2025 sütununa ayrıca bakın.
+
+| model                                     | karşı     |   1900-2025 | %95 GA           |   p |   1900-1959 |   1960-1999 |   2000-2025 |   M≥6,5 |   Holm p |
+|:------------------------------------------|:----------|------------:|:-----------------|----:|------------:|------------:|------------:|--------:|---------:|
+| Ana model + üçü birlikte                  | ETAS      |      -0.014 | [-0.053, +0.022] |   1 |      -0.034 |       0.011 |       0.001 |  -0.071 |        1 |
+| Ana model + üçü birlikte                  | ana model |      -0.003 | [-0.017, +0.009] |   1 |      -0.004 |       0.002 |      -0.005 |  -0.019 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla | ETAS      |      -0.015 | [-0.056, +0.021] |   1 |      -0.036 |       0.011 |       0.003 |  -0.074 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla | ana model |      -0.003 | [-0.018, +0.009] |   1 |      -0.006 |       0.002 |      -0.003 |  -0.022 |        1 |
+
+Öğrenilen katsayılar (+ = gösterge yüksekken o fayda deprem daha olası). Girdiler: moment açığı log R; b farkı z; zincir log10(km/100).
+
+| model                         | girdi      |   katsayı (2025 sonu) |
+|:------------------------------|:-----------|----------------------:|
+| üçü birlikte                  | deficit    |                -0.029 |
+| üçü birlikte                  | bval       |                 0.185 |
+| üçü birlikte                  | chain      |                -0.173 |
+| üçü birlikte, 1 km parçalarla | deficit_km |                -0.076 |
+| üçü birlikte, 1 km parçalarla | bval       |                 0.184 |
+| üçü birlikte, 1 km parçalarla | chain_km   |                -0.192 |
+
+### Fayı 1 km'lik parçalara bölmek, segment bütününe göre işe yarıyor mu?
+
+Her fay 24,965 parçaya bölündü (1 km). Her parçada yük, kayma hızıyla her yıl artıyor; bir deprem o parçaya ulaştığında (merkezden kırık yarı boyu + 5 km) momenti kadar yük düşüyor, yük sıfırın altına inmiyor ("son kırılmadan beri biriken"). Pozitif = 1 km sürümü daha iyi.
+
+| gösterge     |   1 km − segment (1900-2025) | %95 GA           |   p |   M≥6,5 |
+|:-------------|-----------------------------:|:-----------------|----:|--------:|
+| üçü birlikte |                       -0.001 | [-0.003, +0.001] |   1 |  -0.002 |
+
+## 6. Marmara bölgesi
+
+Marmara kutusunda (enlem 39.8-41.5, boylam 26.0-31.6) Kuzey Anadolu Fayı kuzey kolu 542 adet 1 km parçaya bölündü. 2026 başında bunların %59'i yüklü (R ≥ 0,5); en uzun kesintisiz yüklü parça 359 km. Tablo: `reports/tables/fault_energy_marmara_1km.csv`.
+
+![Marmara yük profili](figures/fault_energy_marmara.png)
+
+Marmara'daki segmentler (kayma hızı ≥ 2 mm/yıl), 2026 başı. Segment R tüm segmentin ortalaması; 1 km sütunları, segmentin depremlerle kısmen boşalmış parçalarını ayrı sayar.
+
+| segment    | sistem                  |   orta boylam |   uzunluk_km |   kayma_hızı |   segment R |   1 km R ortalama |   1 km yüklü pay % |   b farkı z |   b olay sayısı |
+|:-----------|:------------------------|--------------:|-------------:|-------------:|------------:|------------------:|-------------------:|------------:|----------------:|
+| ME_TRCS996 | Kuzey Anadolu Fayı      |         26.58 |          275 |         21.9 |        1.36 |              1.39 |                100 |       -1.55 |             498 |
+| ME_TRCS027 | diğer: Batı Anadolu-Ege |         26.65 |           98 |          3.6 |        0.25 |              0.26 |                  0 |       -4    |             240 |
+| ME_TRCS417 | diğer: Batı Anadolu-Ege |         26.98 |           28 |          3   |        0.24 |              0.25 |                  0 |        0    |               0 |
+| ME_TRCS031 | diğer: Batı Anadolu-Ege |         27.45 |           69 |          3.6 |        0.06 |              0.12 |                  0 |       -2.01 |             105 |
+| ME_TRCS025 | diğer: Batı Anadolu-Ege |         27.48 |           44 |          3   |        0.06 |              0.06 |                  0 |       -2.38 |             153 |
+| ME_TRCS024 | diğer: Batı Anadolu-Ege |         27.68 |           40 |          3   |        0.05 |              0.05 |                  0 |       -1.89 |             156 |
+| ME_TRCS023 | diğer: Batı Anadolu-Ege |         28.49 |           97 |          5.3 |        0.38 |              0.38 |                  0 |       -1.45 |             289 |
+| ME_TRCS013 | Kuzey Anadolu Fayı      |         28.63 |          104 |         21.4 |        1.79 |              1.79 |                100 |        1.2  |             594 |
+| ME_TRCS040 | diğer: Batı Anadolu-Ege |         28.63 |           35 |          3.4 |        0.15 |              0.17 |                  0 |       -0.39 |             180 |
+| ME_TRCS038 | diğer: Batı Anadolu-Ege |         29.06 |           26 |          5.3 |        0.25 |              0.25 |                  0 |       -0.51 |             226 |
+| ME_TRCS039 | diğer: Batı Anadolu-Ege |         29.49 |           20 |          3.4 |        0.21 |              0.25 |                  0 |        0    |               0 |
+| ME_TRCS028 | diğer: Batı Anadolu-Ege |         29.7  |           50 |          3.4 |        0.05 |              0.14 |                  0 |        0    |               0 |
+| ME_TRCS022 | diğer: Batı Anadolu-Ege |         29.92 |          141 |          6.4 |        0.04 |              0.14 |                 12 |       -2.2  |             284 |
+| ME_TRCS012 | Kuzey Anadolu Fayı      |         30.14 |          137 |         10.7 |        0.07 |              0.15 |                  0 |       -2.45 |             262 |
+| ME_TRCS009 | Kuzey Anadolu Fayı      |         30.77 |           62 |         12.6 |        0.09 |              0.16 |                  0 |       -2.17 |             205 |
+| ME_TRCS010 | Kuzey Anadolu Fayı      |         31.23 |           47 |         19.3 |        0.91 |              0.82 |                100 |       -2.33 |             315 |
+| ME_TRCS008 | Kuzey Anadolu Fayı      |         31.32 |           32 |         12   |        0.47 |              0.44 |                 14 |       -2.21 |             273 |
+
+Dikkat: katalog 1700'de başlıyor. Marmara'da 1509 ve daha önceki büyük depremler hesaba girmiyor; 1766 depremlerinin kırık uzunlukları tarihsel kaynaklarda tartışmalı, burada yalnız büyüklükten kaba tahmin edildi. Bu yüzden 1 km çözünürlük, yükün nerede biriktiğini değil, bu varsayımlarla nerede birikmiş görüneceğini gösterir.
+
+Model sınaması yalnız Marmara depremleriyle (1900-2025, 44 deprem M≥5,5). Model tüm Türkiye verisiyle eğitildi, puan yalnız Marmara'daki depremlerden. Bu kadar az depremle küçük farklar şansla ayırt edilemez.
+
+| model                                     | karşı     |   Marmara 1900-2025 | %95 GA           |   p |   Holm p |
+|:------------------------------------------|:----------|--------------------:|:-----------------|----:|---------:|
+| Ana model + üçü birlikte                  | ETAS      |              -0.114 | [-0.198, -0.026] |   1 |        1 |
+| Ana model + üçü birlikte                  | ana model |              -0.025 | [-0.061, -0.003] |   1 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla | ETAS      |              -0.119 | [-0.205, -0.031] |   1 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla | ana model |              -0.031 | [-0.070, -0.004] |   1 |        1 |
+
 ## Yöntem ve sınırlar
 
 - Yöntem: `src/deprem/fault_energy.py`; modele ekleme: `src/deprem/faultwalk.py` (`partial_*` sürümleri).
