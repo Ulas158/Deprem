@@ -1,0 +1,65 @@
+# İstasyon çifti dv/v (Doğu Marmara pilotu) eklenmiş uzun yürüyüş. Taban: train_dvv_base.toml.
+# Önce: scripts/fetch_dvv_pairs.py ccf && scripts/fetch_dvv_pairs.py dvv
+# Çalıştırma:  python scripts/train_long.py --config configs/train_dvv_pairs.toml
+# Ayrıntı: src/deprem/longwalk.py
+#
+# HİÇBİR ÇIKTI DEPREM TAHMİNİ DEĞİLDİR: sonuçlar, her yıl yalnız o yıldan önceki
+# veriyle eğitilip ETAS'a karşı ölçülen olasılıksal hipotez testleridir.
+
+run_name = "turkey_v5_dvvpairs"
+seed = 0
+out_dir = "runs"
+
+[data]
+catalog = "data/processed/turkey_catalog_long.csv.gz"   # aletsel + tarihsel (1700-1899)
+faults = "data/ext/gem_active_faults_harmonized.geojson"
+cell_deg = 0.5
+mc = 4.0
+
+[split]               # özellik/Coulomb/bütçe yılları: 1875-2026
+first_train_year = 1875
+first_test_year = 2026
+last_test_year = 2026
+window_years = 1
+
+[etas]
+m0 = 4.0
+fit_start = "1990-01-01"
+bandwidth_km = 15.0
+r_max_km = 300.0
+dt_max_days = 3650.0
+n_sim = 100
+
+[coulomb]
+min_mw = 6.0
+source_since = "1900-01-01"
+mu_eff_grid = [0.4]
+receiver_strike_step = 2
+
+[budget]
+start = "1900-01-01"
+min_mw = 4.0
+
+[model]
+train_mag = 4.0
+eval_mags = [4.0]
+prior_sd = 0.5
+use_uncertainty_weights = true
+features = "all"
+
+[observations]
+use = true
+include = ["dvv_pair_change_pct"]
+
+[longwalk]
+replicates = 10      # katalog belirsizliği örnekleri (zaman/konum/büyüklük hatalarıyla)
+n_sim = 100          # yıllık sayı tahmini için ETAS benzetimi
+prior_sd = 0.5
+coulomb_mu = 0.4
+workers = 3
+
+[[longwalk.runs]]    # dv/v yalnız 2012'den sonra var; M≥4 2000'den beri eksiksiz
+m0 = 4.0
+fit_start = 1990
+score_from = 1995
+score_to = 2025

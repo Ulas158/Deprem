@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from . import dvv as dvv_mod
+from . import dvv_pairs
 from . import gnss, gonaf, insar, repeaters
 from .registry import OBS_FEATURES, apply_transform
 
@@ -29,6 +30,9 @@ def yearly_table(root: Path, cells: pd.DataFrame, years: list[int], catalog: pd.
     dv = None
     if (obs / "dvv_series.csv.gz").exists():
         dv = pd.read_csv(obs / "dvv_series.csv.gz", parse_dates=["time"])
+    dvp = None
+    if (obs / "dvv_pairs_series.csv.gz").exists():
+        dvp = pd.read_csv(obs / "dvv_pairs_series.csv.gz", parse_dates=["time"])
     ins = insar.cell_features(raw / "insar", cells)
     frames = []
     for y in years:
@@ -41,6 +45,8 @@ def yearly_table(root: Path, cells: pd.DataFrame, years: list[int], catalog: pd.
         parts.append(repeaters.cell_features(fam, cells, t0))
         if dv is not None:
             parts.append(dvv_mod.cell_features(dv, cells, t0.tz_localize(None)))
+        if dvp is not None:
+            parts.append(dvv_pairs.cell_features(dvp, cells, t0.tz_localize(None)))
         parts.append(gonaf.cell_features(raw / "gonaf", cells, t0))
         parts.append(ins)
         d = pd.concat(parts, axis=1)
