@@ -48,6 +48,9 @@ def search_section(run, w, title, h="##"):
              if beat_null else
              "Gerçek arama bunları **geçemedi**: arama döneminde bulunan 'en iyi' kombinasyon, bilgisiz "
              "veride şans eseri bulunabilecek kadar iyi; yani üstünlüğü büyük ölçüde şans."))
+    else:
+        w("- Bilgisi silinmiş verilerde tekrar arama bu koşuda tamamlanmadı (bir arama 1 saatten uzun sürdü); "
+          "sınama sonucu zaten negatif olduğu için sonucu değiştirmez.")
     p = best["Holm düzeltilmiş p"]
     w(f"- Dokunulmamış sınama yıllarında ({ty[0]}-{ty[-1]}) en iyi kombinasyonun puanı "
       f"{best['sınama puanı']:+.3f}; %95 güven aralığı {best['birleşik %95 GA']}, çoklu test düzeltmeli p = {p:.2f}. "
@@ -65,7 +68,10 @@ def search_section(run, w, title, h="##"):
       "ridge), fiziksel enerji öncülü (enerji/kayma birikimi grupları büyük, gelgit gibi küçük etkiler küçük "
       "başlangıç), katalog belirsizlik ağırlıkları ve eğitim penceresi (tüm geçmiş / son 3 / son 5 yıl). "
       "Arama Bayesçi optimizasyonla (TPE) yapıldı.")
-    w("3. **Şans sınırı:** aynı arama, parametrelerin hücrelere rastgele karıştırıldığı verilerde tekrarlandı.")
+    if nb:
+        w("3. **Şans sınırı:** aynı arama, parametrelerin hücrelere rastgele karıştırıldığı verilerde tekrarlandı.")
+    else:
+        w("3. **Şans sınırı:** bu koşuda tamamlanmadı; yerine dokunulmamış sınama yılları ve çoklu test düzeltmesi kullanıldı.")
     w(f"4. **Sınama {ty[0]}-{ty[-1]}:** aramada hiç kullanılmadı. İlk {sum(test['model'].str.startswith('aramada'))} "
       "farklı kombinasyon ve karşılaştırma modelleri burada yıl yıl ileri yürüyüşle bir kez ölçüldü; güven aralıkları "
       "yıllar üzerinden bootstrap, p değerleri Holm yöntemiyle çoklu teste göre düzeltildi.")
@@ -141,7 +147,7 @@ def capacity_section(run, w):
     cal = json.loads((d / "capacity_calibration.json").read_text())
     last = cal[max(cal, key=int)]
     big = rf[(rf["time"].dt.year >= cfrom) & (rf["kayma_hızı_ağırlıklı"] >= 2.0) & (rf["mw"] >= 6.8)]
-    w("## \"%100 dolunca deprem olur mu?\" testi\n")
+    w("### \"%100 dolunca deprem olur mu?\" testi\n")
     w("Her 1 km parçanın enerji biriktirme kapasitesi = kilitli alan × kayaç sertliği (CRUST1.0) × taşınabilir en büyük "
       "gerilme düşümü. Doluluk = biriken kayma açığı (GPS kilitlenmesiyle, depremlerde boşalarak) / kapasite. "
       "Ardından kapasite, geçmiş büyük depremlerin kırıldığı andaki doluluğa göre fay → bölge → genel "
@@ -210,6 +216,18 @@ def main():
       "kayaç sertliği. Arama 1920-2019.")
     w("- **Kısa arama (2012'den, M≥3):** yukarıdakilere ek olarak AFAD küçük deprem parametreleri (b-değeri, sürüler, "
       "sürtünme vekili), gaz/sıvı ve dış etkiler, GPS gerinim ve kilitlenme/krip. Arama 2015-2019.\n")
+    w("## Özet\n")
+    w("- **Maksimize eden tek bir kombinasyon bulunamadı.** Aramanın en iyi bulduğu ayarlar arama yıllarında ETAS'ı "
+      "geçiyor, ama dokunulmamış 2020-2025 yıllarında bu üstünlük ya küçülüyor (kısa arama: +0,06, anlamlı değil) ya da "
+      "tersine dönüyor (uzun arama: -0,09). Yani arama, geçmişe fazla uyan (ezberleyen) ayarlar seçiyor.")
+    w("- **Enerji öncülü** (enerji birikimi gelgitten önemli varsayımı) sonucu değiştirmedi: kısa aramada fark 0,001, "
+      "uzun aramada kapatınca sınama puanı biraz düştü (-0,087 → -0,105), ikisi de anlamsız.")
+    w("- **Kayaç sertliği/kapasite ve zincirleme kırılma** tek başına eklendiğinde sınamada küçük ama tutarlı artı "
+      "verdi (+0,01 ile +0,05; tek başına anlamlılık testi yapılmadı, keşif amaçlı); **doluluk oranı ve doluluk + Coulomb** ise sıfır ya da eksi.")
+    w("- **%100 dolunca kırılır mı?** Hayır, sabit bir eşik yok: aynı fay bir döngüde %100'ün çok altında, başka "
+      "döngüde çok üstünde kırılıyor. Kırılan yerler ortalamadan biraz daha dolu (bölgedeki %65'lik dilim), o kadar.")
+    w("- **Zincirleme model** 1999 İzmit-Düzce ve 2023 Kahramanmaraş kırılma uzunluklarını yeniden üretemedi.")
+    w("- **GPS'ten krip** açık istasyonlar seyrek olduğu için çözülemedi (İsmetpaşa: GPS 0, literatür ~8 mm/yıl).\n")
     search_section(rl, w, "Uzun arama: 1900'den bugüne, M≥5,5")
     search_section(rs, w, "Kısa arama: 2012'den bugüne, M≥3 (tüm parametreler)")
     w("## Fay doluluk oranı (uzun koşu: birikim 1700'den, tarihsel katalogla)\n")

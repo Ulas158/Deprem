@@ -65,7 +65,9 @@ def _replicate_worker(args):
     cat_groups = [g for g in ["counts", "moment_release", "time_since", "b_value", "rate_change", "depth",
                               "clustering", "swarms_fluid"] if g in feats]
     fns = [FEATURE_REGISTRY[g] for g in cat_groups if g in FEATURE_REGISTRY]
-    t = build_table(cat, TURKEY, run.cfg["data"]["cell_deg"], starts, pd.DateOffset(years=1),
+    # pandas zaman farkı ±292 yılla sınırlı: en son yıldan 290 yıldan eski kayıtlar özelliklere girmez
+    cat_f = cat[cat["time"] >= starts[-1] - pd.DateOffset(years=290)]
+    t = build_table(cat_f, TURKEY, run.cfg["data"]["cell_deg"], starts, pd.DateOffset(years=1),
                     target_mags=run.mags, mc=run.cfg["data"]["mc"], faults=run.faults, features=fns)
     t["year"] = t["window_start"].dt.year
     t = t.sort_values(["year", "cell_id"]).reset_index(drop=True)
@@ -147,6 +149,10 @@ def main():
     groups = sr.groups_of(data)
     summary = {"search_years": sy, "test_years": ty, "groups": {g: c for g, c in groups.items()},
                "n_trials": args.trials}
+    prev = json.loads((out / "summary.json").read_text()) if (out / "summary.json").exists() else {}
+    for step, key in (("null", "null_best_scores"), ("eventwalk", "eventwalk"), ("replicates", "replicates")):
+        if step in args.skip and key in prev:
+            summary[key] = prev[key]  # atlanan adımın önceki sonucu korunur
 
     # 1) gerçek arama --------------------------------------------------------
     t = time.time()
@@ -169,7 +175,11 @@ def main():
                 df.to_csv(out / f"null_trials_{k}.csv", index=False)
                 null_best.append(float(df["score"].iloc[0]))
         log.info("karıştırılmış aramaların en iyi puanları: %s", null_best)
-    summary["null_best_scores"] = null_best
+    if "null" not in args.skip:
+        summary["null_best_scores"] = null_best
+    elif sorted(out.glob("null_trials_*.csv")):
+        summary["null_best_scores"] = [float(pd.read_csv(p_)["score"].max())
+                                       for p_ in sorted(out.glob("null_trials_*.csv"))]
     summary["real_best_score"] = float(trials["score"].iloc[0])
 
     # 3) sınama --------------------------------------------------------------
