@@ -1,9 +1,10 @@
-"""Ege canlı (ileriye dönük) tahmin kaydı ve değerlendirmesi.
+"""Ege ve Marmara canlı (ileriye dönük) tahmin kaydı ve değerlendirmesi.
 
-Ön kayıt: docs/onkayit/2026-11-25_ege_ustunluk.md, bölüm 8.
+Ön kayıt: docs/onkayit/2026-11-25_ege_ustunluk.md (bölüm 8) ve
+docs/onkayit/2026-11-25_marmara_canli.md.
 
     python scripts/ege_canli.py tahmin                 # ertesi UTC günü için tahmini yaz
-    python scripts/ege_canli.py degerlendir --katalog data/processed/turkey_catalog.csv.gz
+    python scripts/ege_canli.py degerlendir --bolge marmara --katalog data/processed/turkey_catalog.csv.gz
 
 ``tahmin``: son günlerin depremlerini USGS + EMSC (+ erişilirse AFAD) ile çeker, durum
 kataloğunu (forecasts/ege/katalog_canli.csv.gz) günceller ve ertesi UTC günü için Ege
@@ -40,8 +41,12 @@ from deprem.region import TURKEY
 ROOT = Path(__file__).resolve().parents[1]
 LIVE = ROOT / "forecasts/ege"
 STATE = LIVE / "katalog_canli.csv.gz"
-DAILY = LIVE / "gunluk"
-EGE_NAME = "Ege / Batı Anadolu"
+# bölge -> (klasör, bölge adı (regional.REGION_NAMES), ön kayıtlı ilk değerlendirme günü)
+# Ortak durum dosyaları (ETAS, model çarpanı, katalog) forecasts/ege altındadır.
+REGIONS = {
+    "ege": (ROOT / "forecasts/ege", "Ege / Batı Anadolu", "2027-05-26"),
+    "marmara": (ROOT / "forecasts/marmara", "Marmara (KAF batı)", "2027-05-26"),
+}
 CELL = 0.5
 KEEP = ["time", "latitude", "longitude", "depth_km", "mag", "mag_type", "source", "event_id"]
 log = logging.getLogger("ege_canli")
@@ -136,9 +141,10 @@ def tahmin(args):
     now = pd.Timestamp.now(tz="UTC") if args.simdi is None else pd.Timestamp(args.simdi, tz="UTC")
     d0 = now.ceil("D") if now != now.floor("D") else now
     d1 = d0 + pd.Timedelta(days=1)
-    out = DAILY / f"{d0:%Y}" / f"{d0:%Y-%m-%d}.csv"
-    if out.exists():
-        log.info("%s zaten var; geçmiş tahmin değiştirilmez", out)
+    todo = {k: v for k, v in REGIONS.items()
+            if not (v[0] / "gunluk" / f"{d0:%Y}" / f"{d0:%Y-%m-%d}.csv").exists()}
+    if not todo:
+        log.info("%s için tüm bölgeler zaten var; geçmiş tahmin değiştirilmez", d0.date())
         return
     if args.katalog_guncelleme:
         cat, used = update_catalog(now)
@@ -149,35 +155,38 @@ def tahmin(args):
     etas = json.loads((LIVE / "etas_2026.json").read_text())
     U = pd.read_csv(LIVE / "etas_arka_plan_2026.csv").sort_values("cell_id")["arka_plan_payi"].to_numpy()
     mult = pd.read_csv(LIVE / "model_carpani_2026.csv")
-    ege = mult[mult["bolge"] == EGE_NAME].sort_values("cell_id")
     lam0 = daily_etas(cat, d0, d1, now, etas, U, seed=int(d0.strftime("%Y%m%d")))
-    cid = ege["cell_id"].to_numpy()
     b, m0 = etas["b"], etas["m0"]
     s3, s4 = 10 ** (-b * (3.0 - m0)), 10 ** (-b * (4.0 - m0))
-    e3 = lam0[cid] * s3
-    k = ege["model_carpani"].to_numpy()
-    df = pd.DataFrame({"cell_id": cid, "lat_c": ege["lat_c"].to_numpy(), "lon_c": ege["lon_c"].to_numpy(),
-                       "etas_m3": e3, "model_m3": e3 * k,
-                       "etas_m4": e3 * s4 / s3, "model_m4": e3 * k * s4 / s3})
-    out.parent.mkdir(parents=True, exist_ok=True)
-    head = (f"# Ege günlük tahmini. Pencere: {d0.isoformat()} - {d1.isoformat()} (UTC). "
-            f"Verildiği an: {now.isoformat()}. Son bilinen deprem: {cat['time'].max().isoformat()}. "
-            f"Kaynaklar: {' '.join(used)}. Beklenen sayılar (olay/gün). Deprem uyarısı değildir.\n")
-    with open(out, "w") as fh:
-        fh.write(head)
-        df.to_csv(fh, index=False, float_format="%.6g")
-    summ = LIVE / "gunluk_ozet.csv"
-    row = pd.DataFrame([{"pencere_baslangic": d0.isoformat(), "verildi": now.isoformat(),
-                         "etas_m3_toplam": e3.sum(), "model_m3_toplam": (e3 * k).sum(),
-                         "son_deprem": cat["time"].max().isoformat(), "kaynaklar": " ".join(used)}])
-    row.to_csv(summ, mode="a", header=not summ.exists(), index=False, float_format="%.5g")
-    log.info("yazıldı: %s (ETAS M≥3 toplam %.3f, model %.3f)", out, e3.sum(), (e3 * k).sum())
+    for key, (folder, name, _) in todo.items():
+        reg = mult[mult["bolge"] == name].sort_values("cell_id")
+        cid = reg["cell_id"].to_numpy()
+        e3 = lam0[cid] * s3
+        k = reg["model_carpani"].to_numpy()
+        df = pd.DataFrame({"cell_id": cid, "lat_c": reg["lat_c"].to_numpy(), "lon_c": reg["lon_c"].to_numpy(),
+                           "etas_m3": e3, "model_m3": e3 * k,
+                           "etas_m4": e3 * s4 / s3, "model_m4": e3 * k * s4 / s3})
+        out = folder / "gunluk" / f"{d0:%Y}" / f"{d0:%Y-%m-%d}.csv"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        head = (f"# {name} günlük tahmini. Pencere: {d0.isoformat()} - {d1.isoformat()} (UTC). "
+                f"Verildiği an: {now.isoformat()}. Son bilinen deprem: {cat['time'].max().isoformat()}. "
+                f"Kaynaklar: {' '.join(used)}. Beklenen sayılar (olay/gün). Deprem uyarısı değildir.\n")
+        with open(out, "w") as fh:
+            fh.write(head)
+            df.to_csv(fh, index=False, float_format="%.6g")
+        summ = folder / "gunluk_ozet.csv"
+        row = pd.DataFrame([{"pencere_baslangic": d0.isoformat(), "verildi": now.isoformat(),
+                             "etas_m3_toplam": e3.sum(), "model_m3_toplam": (e3 * k).sum(),
+                             "son_deprem": cat["time"].max().isoformat(), "kaynaklar": " ".join(used)}])
+        row.to_csv(summ, mode="a", header=not summ.exists(), index=False, float_format="%.5g")
+        log.info("yazıldı: %s (ETAS M≥3 toplam %.3f, model %.3f)", out, e3.sum(), (e3 * k).sum())
 
 
 # ------------------------------------------------------------------ değerlendirme
 def degerlendir(args):
+    folder, name, first_eval = REGIONS[args.bolge]
     rows = []
-    for p in sorted(DAILY.glob("*/*.csv")):
+    for p in sorted((folder / "gunluk").glob("*/*.csv")):
         d = pd.read_csv(p, comment="#")
         d["gun"] = pd.Timestamp(p.stem, tz="UTC")
         rows.append(d)
@@ -191,8 +200,8 @@ def degerlendir(args):
     days = set(fc["gun"])
     cat = cat[cat["gun"].isin(days) & cat["cell_id"].isin(set(fc["cell_id"]))]
     first, last = min(days), max(days)
-    note = "" if last >= pd.Timestamp("2027-05-25", tz="UTC") else " (ARA BAKIŞ: ön kayıtlı 6 ay dolmadı, karar sayılmaz)"
-    res = {"gun_sayisi": len(days), "donem": [first.isoformat(), last.isoformat()], "not": note.strip()}
+    note = "" if last >= pd.Timestamp(first_eval, tz="UTC") - pd.Timedelta(days=1) else " (ARA BAKIŞ: ön kayıtlı 6 ay dolmadı, karar sayılmaz)"
+    res = {"bolge": name, "gun_sayisi": len(days), "donem": [first.isoformat(), last.isoformat()], "not": note.strip()}
     for mg, ce, cm in ((3.0, "etas_m3", "model_m3"), (4.0, "etas_m4", "model_m4")):
         obs = cat[cat["mag"] >= mg].groupby(["cell_id", "gun"]).size().rename("n")
         d = fc.set_index(["cell_id", "gun"]).join(obs).fillna({"n": 0}).reset_index()
@@ -227,7 +236,7 @@ def degerlendir(args):
     res["karar"] = k + note
     print(json.dumps(res, indent=2, ensure_ascii=False))
     if args.yaz:
-        (LIVE / f"degerlendirme_{last:%Y-%m-%d}.json").write_text(json.dumps(res, indent=2, ensure_ascii=False))
+        (folder / f"degerlendirme_{last:%Y-%m-%d}.json").write_text(json.dumps(res, indent=2, ensure_ascii=False))
 
 
 def main():
@@ -239,6 +248,7 @@ def main():
     d = sub.add_parser("degerlendir")
     d.add_argument("--katalog", type=Path, default=ROOT / "data/processed/turkey_catalog.csv.gz")
     d.add_argument("--yaz", action="store_true")
+    d.add_argument("--bolge", choices=list(REGIONS), default="ege")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     {"tahmin": tahmin, "degerlendir": degerlendir}[args.adim](args)
