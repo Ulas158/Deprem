@@ -7,10 +7,20 @@ atlanır):
 2. ``etas_fc``    her yıl penceresi için benzetimle ETAS beklenen sayıları
 3. ``coulomb``    büyük depremlerden fay alıcılarında ΔCFF, hücre/yıl özetleri
 3b. ``budget``    her 1 km elemanın kendi moment/kayma bütçesi, yıl başı anlık görüntüleri
-4. ``features``   hücre × yıl özellik tablosu (+ Coulomb + ETAS özellikleri)
-5. ``fit``        ETAS'ı taban alan log-doğrusal Poisson model (öncüllü), μ' seçimi
+3c. ``observations`` GPS, tekrarlayan deprem, sismik hız, InSAR, GONAF yıllık özellikleri
+                  (``deprem.observations``; yalnız yıl başından önceki veri)
+4. ``features``   hücre × yıl özellik tablosu (+ Coulomb + ETAS + gözlem özellikleri)
+5. ``fit``        ETAS'ı taban alan log-doğrusal Poisson model, μ' seçimi. Gözlem
+                  özelliklerinin öncülü literatür başlangıç etkisidir (registry)
 6. ``evaluate``   sınama yıllarında ETAS'a karşı: log-olabilirlik, bilgi kazancı,
                   N-testi, Brier, kalibrasyon; eşik eşik (M3/M4/M5/M6)
+6b. ``obs_eval``  gözlemlerin katkısı (gözlemli/gözlemsiz model, grup grup) ve
+                  zayıf kanıtlı hipotezlerin kısa vadeli testi
+6c. ``walkforward`` ANA DEĞERLENDİRME: yıl yıl ileri kayan eğitim. Her yıl ETAS ve model
+                  yalnız o yıldan önceki veriyle eğitilir, o yıl tahmin edilir, sonra yıl
+                  eğitime eklenir. Başarılar %95 güven aralığıyla (bootstrap) raporlanır
+6d. ``eventwalk``  deprem deprem: her olaydan önce bir sonraki depremin zamanı, yeri,
+                  büyüklüğü için olasılık; olay gelince puanla, geçmişe ekle (ETAS'a karşı)
 7. ``report``     sade dilli rapor + harita katmanları
 
 Model:   λ(hücre, yıl) = Λ_ETAS(hücre, yıl) · exp(β0 + Σ β_k z_k)
@@ -43,10 +53,13 @@ from .features.table import FEATURE_REGISTRY, assign_cell, build_table, make_cel
 from .forecast.base import ForecastGrid
 from .forecast.etas import ETAS
 from .forecast.tests import n_test, poisson_loglik
+from .observations import fit as pfit
+from .observations.registry import OBS_FEATURES, prior_for
 from .region import SUBREGIONS, TURKEY
 
 log = logging.getLogger("deprem.pipeline")
-STAGES = ["etas", "etas_fc", "coulomb", "budget", "features", "fit", "evaluate", "report"]
+STAGES = ["etas", "etas_fc", "coulomb", "budget", "observations", "features", "fit", "evaluate",
+          "obs_eval", "walkforward", "eventwalk", "report"]
 
 
 def ts(s):
@@ -225,6 +238,24 @@ class Run:
         pd.concat(rows).to_csv(self.dir / "budget_cells.csv", index=False)
         return {"n_events": res["n_events"], "n_elements": len(el)}
 
+    def obs_enabled(self):
+        return self.cfg.get("observations", {}).get("use", False)
+
+    def stage_observations(self):
+        if not self.obs_enabled():
+            return {"skipped": True}
+        from .observations.features import yearly_table
+        cells = make_cells(TURKEY, self.cfg["data"]["cell_deg"])
+        inc = self.cfg["observations"].get("include", "all")
+        tab = yearly_table(self.root, cells, self.years, self.catalog,
+                           include=None if inc == "all" else inc)
+        tab.to_csv(self.dir / "obs_features.csv.gz", index=False)
+        cov = {c: round(float(tab[c].notna().mean()), 3) for c in tab.columns if c in OBS_FEATURES}
+        (self.dir / "obs_coverage.json").write_text(json.dumps(
+            {"overall": cov, "by_year": {int(y): {c: round(float(g[c].notna().mean()), 3) for c in cov}
+                                         for y, g in tab.groupby("year")}}, indent=2))
+        return {"columns": list(cov)}
+
     def stage_features(self):
         cat = self.catalog
         cells = make_cells(TURKEY, self.cfg["data"]["cell_deg"])
@@ -263,6 +294,9 @@ class Run:
             tab = tab.merge(g, on=["cell_id", "year"], how="left")
         bc = pd.read_csv(self.dir / "budget_cells.csv")
         tab = tab.merge(bc, on=["cell_id", "year"], how="left")
+        if self.obs_enabled() and (self.dir / "obs_features.csv.gz").exists():
+            ob = pd.read_csv(self.dir / "obs_features.csv.gz")
+            tab = tab.merge(ob, on=["cell_id", "year"], how="left")
         tab.to_csv(self.dir / "feature_table.csv.gz", index=False)
         return {"rows": len(tab), "cols": tab.shape[1]}
 
@@ -281,25 +315,27 @@ class Run:
         return Z, stats_
 
     @staticmethod
-    def _fit_poisson(Z, offset, y, prior_sd):
-        X = np.column_stack([np.ones(len(Z)), Z.to_numpy()])
-        prec = np.r_[1e-4, np.full(Z.shape[1], 1 / prior_sd ** 2)]
+    def _priors(columns, prior_sd):
+        """Her sütun için öncül (ortalama, sd): gözlem özellikleri literatürden, diğerleri 0 ± prior_sd."""
+        m, s = [], []
+        for c in columns:
+            p = prior_for(c)
+            m.append(p[0] if p else 0.0)
+            s.append(p[1] if p else prior_sd)
+        return np.array(m), np.array(s)
 
-        def f(beta):
-            eta = np.clip(offset + X @ beta, -30, 30)
-            lam = np.exp(eta)
-            nll = (lam - y * eta).sum() + 0.5 * (prec * beta ** 2).sum()
-            grad = X.T @ (lam - y) + prec * beta
-            return nll, grad
-
-        res = minimize(f, np.zeros(X.shape[1]), jac=True, method="L-BFGS-B")
-        return res.x, res
+    @classmethod
+    def _fit_poisson(cls, Z, offset, y, prior_sd, return_sd=False):
+        pm, ps = cls._priors(Z.columns, prior_sd)
+        beta, sd, res = pfit.fit(Z.to_numpy(), np.asarray(offset), np.asarray(y), pm, ps)
+        return (beta, res, sd) if return_sd else (beta, res)
 
     def feature_columns(self, tab, mu):
         drop = {"cell_id", "window_start", "lat_c", "lon_c", "year", "y_max_mag", "y_wcount_train",
                 "etas_log_rate", "etas_train", "y_fit"}
+        excl = set(getattr(self, "_exclude_cols", ()))
         cols = [c for c in tab.columns if c not in drop and not c.startswith("y_")
-                and not c.startswith("dcff_")]
+                and not c.startswith("dcff_") and c not in excl]
         cols += [f"dcff_max_mu{mu:g}", f"dcff_mean_mu{mu:g}", f"dcff_frac_pos_mu{mu:g}"]
         return cols
 
@@ -337,11 +373,17 @@ class Run:
         best_mu = max(sel, key=lambda r: r["val_loglik"])["mu_eff"]
         cols = self.feature_columns(tab, best_mu)
         Z, st = self._design(train, cols)
-        beta, res = self._fit_poisson(Z, np.log(train["etas_train"]), train[y_col].to_numpy(),
-                                      self.cfg["model"]["prior_sd"])
+        beta, res, sd = self._fit_poisson(Z, np.log(train["etas_train"]), train[y_col].to_numpy(),
+                                          self.cfg["model"]["prior_sd"], return_sd=True)
         coef = dict(zip(["(sabit)"] + list(Z.columns), beta.tolist()))
+        pm, ps = self._priors(Z.columns, self.cfg["model"]["prior_sd"])
+        prior_post = [{"özellik": c, "grup": OBS_FEATURES[c].group, "kanıt": OBS_FEATURES[c].evidence,
+                       "öncül_ort": float(m_), "öncül_sd": float(s_), "öğrenilen": float(b_),
+                       "sonsal_sd": float(d_)}
+                      for c, m_, s_, b_, d_ in zip(Z.columns, pm, ps, beta[1:], sd[1:]) if c in OBS_FEATURES]
         out = {"mu_eff_selection": sel, "mu_eff": best_mu, "columns": cols, "design_stats": st,
-               "coef": coef, "converged": bool(res.success), "etas_b": e.b}
+               "coef": coef, "coef_sd": dict(zip(["(sabit)"] + list(Z.columns), sd.tolist())),
+               "obs_prior_posterior": prior_post, "converged": bool(res.success), "etas_b": e.b}
         (self.dir / "model.json").write_text(json.dumps(out, indent=2, default=float))
         return {"mu_eff": best_mu, "n_coef": len(beta)}
 
@@ -402,6 +444,309 @@ class Run:
         tab[["cell_id", "year", "lat_c", "lon_c", "lam_etas", "lam_model"] +
             [f"y_count_m{m:g}" for m in self.mags]].to_csv(self.dir / "predictions.csv.gz", index=False)
         return {"thresholds": len(rows)}
+
+    # ------------------------------------------------------------ gözlemlerin katkısı
+    def _fit_eval_cols(self, tab, cols, prior_scale: float = 1.0):
+        """Verilen sütunlarla eğit (μ' sabit), sınamada eşik eşik ETAS'a karşı bilgi kazancı."""
+        e = self.etas_model()
+        b = e.b
+        train = tab[tab["year"].isin(self.train_years)]
+        test = tab[tab["year"].isin(self.test_years)]
+        Zt, st = self._design(train, cols)
+        if prior_scale != 1.0:
+            pm, ps = self._priors(Zt.columns, self.cfg["model"]["prior_sd"])
+            beta, _, _ = pfit.fit(Zt.to_numpy(), np.log(train["etas_train"]).to_numpy(),
+                                  train["y_fit"].to_numpy(), pm * prior_scale, ps)
+        else:
+            beta, _ = self._fit_poisson(Zt, np.log(train["etas_train"]), train["y_fit"].to_numpy(),
+                                        self.cfg["model"]["prior_sd"])
+        Zs, _ = self._design(test, cols, st)
+        lam = pfit.predict(Zs.to_numpy(), np.log(test["etas_train"]).to_numpy(), beta)
+        out = {}
+        for m in self.mags:
+            s = 10 ** (-b * (m - self.train_mag))
+            le, lm = test["etas_train"].to_numpy() * s, lam * s
+            y = test[f"y_count_m{m:g}"].to_numpy()
+            n = y.sum()
+            if n == 0:
+                out[f"M≥{m:g}"] = (None, None)
+                continue
+            idx = np.repeat(np.arange(len(y)), y.astype(int))
+            per = np.log(lm[idx]) - np.log(le[idx]) - (lm.sum() - le.sum()) / n
+            out[f"M≥{m:g}"] = (round(float(per.mean()), 4),
+                               float(stats.ttest_1samp(per, 0).pvalue) if n > 1 else None)
+        return out, per
+
+    def stage_obs_eval(self):
+        res = {}
+        if self.obs_enabled():
+            tab = pd.read_csv(self.dir / "feature_table.csv.gz", parse_dates=["window_start"])
+            m = json.loads((self.dir / "model.json").read_text())
+            e = self.etas_model()
+            scale = 10 ** (-e.b * (self.train_mag - self.grid.mag_edges[0]))
+            tab["etas_train"] = np.exp(tab["etas_log_rate"]) * scale
+            raw_col = f"y_count_m{self.train_mag:g}"
+            tr = tab["year"].isin(self.train_years)
+            k = tab.loc[tr, raw_col].sum() / max(tab.loc[tr, "y_wcount_train"].sum(), 1e-9)
+            tab["y_fit"] = tab["y_wcount_train"] * k if self.cfg["model"]["use_uncertainty_weights"] else tab[raw_col]
+            cols = m["columns"]
+            obs_cols = [c for c in cols if c in OBS_FEATURES]
+            groups = {}
+            for c in obs_cols:
+                groups.setdefault(OBS_FEATURES[c].group, []).append(c)
+            variants = {"gözlemsiz (önceki model)": [c for c in cols if c not in obs_cols],
+                        "tüm gözlemlerle": cols}
+            for g, gc in groups.items():
+                variants[f"yalnız {g} eklenmiş"] = [c for c in cols if c not in obs_cols or c in gc]
+            rows = []
+            for name, vc in variants.items():
+                r, _ = self._fit_eval_cols(tab, vc)
+                rows.append({"model": name, **{f"{k_} kazanç": v[0] for k_, v in r.items()},
+                             **{f"{k_} p": v[1] for k_, v in r.items()}})
+            # öncülün tek başına etkisi: öncül sıfır vs literatür (aynı veriyle)
+            r0, _ = self._fit_eval_cols(tab, cols, prior_scale=0.0)
+            rows.append({"model": "tüm gözlemler, öncül = 0 (literatürsüz)",
+                         **{f"{k_} kazanç": v[0] for k_, v in r0.items()},
+                         **{f"{k_} p": v[1] for k_, v in r0.items()}})
+            res["yearly_ablation"] = rows
+            res["coverage"] = json.loads((self.dir / "obs_coverage.json").read_text())
+        st = self.cfg.get("observations", {}).get("shortterm", {})
+        if st.get("use", False):
+            res["shortterm"] = self._shortterm(st)
+        (self.dir / "obs_evaluation.json").write_text(json.dumps(res, indent=2, default=float))
+        return {"variants": len(res.get("yearly_ablation", []))}
+
+    def _shortterm(self, cfg):
+        from .observations import shortterm as stm
+        obs = self.root / "data" / "obs"
+        boxes = stm.make_boxes(TURKEY, cfg.get("box_deg", 2.0))
+        start = pd.Timestamp(f"{self.train_years[0]}-01-01")
+        end = pd.Timestamp(f"{self.test_years[-1] + 1}-01-01")
+        train_end = pd.Timestamp(f"{self.test_years[0]}-01-01")
+        sources = {
+            "tec_daily.csv.gz": (["tec_z_max", "tec_z_min", "tec_frac_pos"], 300.0),
+            "ulf_daily.csv.gz": (["ulf_zh_rel_z", "ulf_z_rel_z"], cfg.get("ulf_radius_km", 200.0)),
+            "thermal_daily.csv.gz": (["thermal_dts_z", "thermal_dsa_z"], 80.0),
+        }
+        out = {}
+        for mag in cfg.get("target_mags", [4.0, 4.5]):
+            panel = stm.build_panel(self.catalog, TURKEY, boxes, start, end, mag)
+            wins = pd.DatetimeIndex(sorted(panel["win"].unique()))
+            feats = {}
+            for fn, (cols, rad) in sources.items():
+                if not (obs / fn).exists():
+                    continue
+                d = pd.read_csv(obs / fn, parse_dates=["date"])
+                if "disturbed" in d.columns:
+                    d = d[~d["disturbed"].astype(bool)]
+                for c in cols:
+                    if c not in d.columns:
+                        continue
+                    db = stm.daily_to_box(d[["date", "lat", "lon", c]].dropna(), c, boxes, rad)
+                    agg = "min" if c == "tec_z_min" else ("mean" if c.endswith("frac_pos") else "max")
+                    arr = stm.lead_feature(db, wins, agg)
+                    # panel sırası: pencere × kutu
+                    feats[c] = arr.reshape(-1)
+            if not feats:
+                continue
+            res, coefs = stm.evaluate(panel, feats, train_end, end)
+            out[f"M≥{mag:g}"] = {"results": res.to_dict("records"), "coefs": coefs.to_dict("records"),
+                                 "n_boxes": len(boxes), "window_days": stm.WIN_DAYS, "lead_days": stm.LEAD_DAYS}
+        return out
+
+    # ------------------------------------------------------------ ileriye kayan değerlendirme
+    def _wf_etas(self):
+        """Her yıl Y için ETAS'ı yalnız Y öncesi veriyle yeniden uydur ve Y'yi tahmin et."""
+        path = self.dir / "walk_etas.npz"
+        if path.exists():
+            z = np.load(path)
+            return {int(k): z[k] for k in z.files}
+        c = self.cfg["etas"]
+        out, params, out_tr = {}, {}, {}
+        for y in self.years:
+            t0, t1 = self.window(y)
+            if t0 < ts(c["fit_start"]) + pd.DateOffset(years=2):
+                continue
+            e = ETAS(m0=c["m0"], bandwidth_km=c["bandwidth_km"], r_max_km=c["r_max_km"],
+                     dt_max_days=c["dt_max_days"]).fit(self.catalog, ts(c["fit_start"]), t0)
+            exp = e.expected(self.grid, t0, t1, catalog=self.catalog, n_sim=c["n_sim"],
+                             seed=self.cfg["seed"] + y)
+            out[y] = np.r_[exp.sum(-1).ravel(), e.b]  # son eleman: b
+            # aynı ETAS ile önceki (eğitim) yılların tahminleri: eğitim ofsetleri test
+            # ofsetiyle tutarlı olsun (ETAS kalibrasyonu yıldan yıla değişiyor)
+            for yp in self.years:
+                if yp >= y or self.window(yp)[0] < ts(c["fit_start"]) + pd.DateOffset(years=2):
+                    continue
+                s0, s1 = self.window(yp)
+                ex = e.expected(self.grid, s0, s1, catalog=self.catalog, n_sim=c["n_sim"],
+                                seed=self.cfg["seed"] + yp)
+                out_tr[f"{y}_{yp}"] = ex.sum(-1).ravel()
+            params[y] = {"params": {k: float(v) for k, v in e.params.items()}, "b": float(e.b)}
+            log.info("ileri ETAS %d: b=%.2f, beklenen M≥%.1f = %.0f", y, e.b, self.grid.mag_edges[0],
+                     exp.sum())
+        np.savez_compressed(path, **{str(k): v for k, v in out.items()})
+        np.savez_compressed(self.dir / "walk_etas_train.npz", **out_tr)
+        (self.dir / "walk_etas_params.json").write_text(json.dumps(params, indent=2))
+        return out
+
+    @staticmethod
+    def _boot_ci(per, n_boot=2000, seed=0):
+        rng = np.random.default_rng(seed)
+        if len(per) < 2:
+            return (None, None)
+        bs = rng.choice(per, size=(n_boot, len(per)), replace=True).mean(1)
+        return (round(float(np.quantile(bs, 0.025)), 4), round(float(np.quantile(bs, 0.975)), 4))
+
+    def stage_walkforward(self):
+        """Ana değerlendirme: geçmişten bugüne yıl yıl ilerleyerek eğit → bir sonraki yılı tahmin et.
+
+        Her adım Y'de: ETAS yalnız Y öncesiyle uydurulur; model, ilk eğitim yılından Y−1'e kadar
+        olan yıllarla eğitilir (eğitim yıllarının ofsetleri de aynı Y-ETAS'ıyla hesaplanır, böylece
+        model ETAS'ın o anki kalibrasyonuna göre öğrenir) ve Y'yi tahmin eder. Sonra Y eğitime eklenir. Başarı ETAS'a karşı olay başına bilgi kazancıdır;
+        %95 güven aralığı olaylar üzerinden bootstrap ile hesaplanır.
+        """
+        wf = self._wf_etas()
+        tab = pd.read_csv(self.dir / "feature_table.csv.gz", parse_dates=["window_start"])
+        m = json.loads((self.dir / "model.json").read_text())
+        n_cells = len(make_cells(TURKEY, self.cfg["data"]["cell_deg"]))
+        tab = tab.sort_values(["year", "cell_id"]).reset_index(drop=True)
+        tab = tab[tab["year"].isin(list(wf))].copy()
+        mmin = self.grid.mag_edges[0]
+        off, bs = np.empty(len(tab)), {}
+        for y, g in tab.groupby("year"):
+            v = wf[int(y)]
+            b = float(v[-1])
+            bs[int(y)] = b
+            rate = v[:-1].reshape(-1)[:n_cells]
+            off[g.index] = np.log(rate[g["cell_id"].to_numpy()] * 10 ** (-b * (self.train_mag - mmin)) + 1e-9)
+        tab["wf_off"] = off
+        raw_col = f"y_count_m{self.train_mag:g}"
+        cols_all = m["columns"]
+        variants = {"model (tüm özellikler)": cols_all}
+        obs_cols = [c for c in cols_all if c in OBS_FEATURES]
+        if obs_cols:
+            variants["model (yeni gözlemler olmadan)"] = [c for c in cols_all if c not in obs_cols]
+        wf_cfg = self.cfg.get("walkforward", {})
+        start_y = wf_cfg.get("first_year", min(wf) + 3)
+        steps, coefs_t, etas_cells = [], [], {}
+        per_all = {(v, mg): [] for v in variants for mg in self.mags}
+        wtr = np.load(self.dir / "walk_etas_train.npz") if (self.dir / "walk_etas_train.npz").exists() else None
+        for Y in [y for y in sorted(wf) if y >= start_y]:
+            tr = tab[tab["year"] < Y].copy()
+            te = tab[tab["year"] == Y]
+            if wtr is not None:
+                # eğitim yıllarının ofsetlerini Y'de uydurulan ETAS'la yeniden hesapla
+                bY = bs[int(Y)]
+                for yp, g in tr.groupby("year"):
+                    key = f"{int(Y)}_{int(yp)}"
+                    if key in wtr.files:
+                        rate = wtr[key][:n_cells]
+                        tr.loc[g.index, "wf_off"] = np.log(
+                            rate[g["cell_id"].to_numpy()] * 10 ** (-bY * (self.train_mag - mmin)) + 1e-9)
+            if tr.empty or te.empty:
+                continue
+            k = tr[raw_col].sum() / max(tr["y_wcount_train"].sum(), 1e-9)
+            ytr = (tr["y_wcount_train"] * k if self.cfg["model"]["use_uncertainty_weights"]
+                   else tr[raw_col]).to_numpy()
+            row = {"yıl": int(Y), "eğitim_yılları": f"{int(tr['year'].min())}-{int(Y) - 1}"}
+            for vname, cols in variants.items():
+                Zt, st = self._design(tr, cols)
+                beta, _, sd = self._fit_poisson(Zt, tr["wf_off"], ytr, self.cfg["model"]["prior_sd"],
+                                                return_sd=True)
+                Zs, _ = self._design(te, cols, st)
+                lam = pfit.predict(Zs.to_numpy(), te["wf_off"].to_numpy(), beta)
+                base = np.exp(te["wf_off"].to_numpy())
+                if vname.startswith("model (tüm"):
+                    eta = np.zeros(n_cells)
+                    eta[te["cell_id"].to_numpy()] = np.log(lam / base)
+                    etas_cells[str(int(Y))] = eta
+                    for c_, b_, s_ in zip(Zt.columns, beta[1:], sd[1:]):
+                        if c_ in OBS_FEATURES:
+                            coefs_t.append({"yıl": int(Y), "özellik": c_, "katsayı": round(float(b_), 3),
+                                            "ci95_alt": round(float(b_ - 1.96 * s_), 3),
+                                            "ci95_üst": round(float(b_ + 1.96 * s_), 3)})
+                for mg in self.mags:
+                    s = 10 ** (-bs[int(Y)] * (mg - self.train_mag))
+                    le, lm = base * s, lam * s
+                    y = te[f"y_count_m{mg:g}"].to_numpy()
+                    n = int(y.sum())
+                    key = f"M≥{mg:g}"
+                    if vname.startswith("model (tüm"):
+                        lo, hi = stats.poisson.ppf([0.025, 0.975], lm.sum())
+                        row[f"{key} gözlenen"] = n
+                        row[f"{key} model beklenen (%95)"] = f"{lm.sum():.1f} ({lo:.0f}-{hi:.0f})"
+                        row[f"{key} ETAS beklenen"] = round(float(le.sum()), 1)
+                    if n == 0:
+                        continue
+                    idx = np.repeat(np.arange(len(y)), y.astype(int))
+                    per = np.log(lm[idx]) - np.log(le[idx]) - (lm.sum() - le.sum()) / n
+                    per_all[(vname, mg)].append(per)
+                    # yalnız "nerede": model toplamı ETAS toplamına eşitlenir
+                    lms = lm * le.sum() / lm.sum()
+                    per_s = np.log(lms[idx]) - np.log(le[idx])
+                    per_all.setdefault((vname + " · yalnız konum", mg), []).append(per_s)
+                    if vname.startswith("model (tüm"):
+                        lo_, hi_ = self._boot_ci(per, seed=int(Y))
+                        row[f"{key} kazanç"] = round(float(per.mean()), 3)
+                        row[f"{key} kazanç %95"] = f"[{lo_}, {hi_}]"
+                        lo_, hi_ = self._boot_ci(per_s, seed=int(Y))
+                        row[f"{key} konum kazancı"] = round(float(per_s.mean()), 3)
+                        row[f"{key} konum kazancı %95"] = f"[{lo_}, {hi_}]"
+            steps.append(row)
+            log.info("ileri adım %d: %s", Y, {k_: v for k_, v in row.items() if "kazanç" in k_})
+        summary = []
+        for (vname, mg), lst in per_all.items():
+            if not lst:
+                continue
+            per = np.concatenate(lst)
+            # yıl blokları üzerinden bootstrap (aynı yıldaki olaylar bağımsız değil)
+            rng = np.random.default_rng(1)
+            yr_means = [(p.sum(), len(p)) for p in lst]
+            bsv = []
+            for _ in range(2000):
+                pick = rng.integers(0, len(yr_means), len(yr_means))
+                s_, n_ = sum(yr_means[i][0] for i in pick), sum(yr_means[i][1] for i in pick)
+                bsv.append(s_ / n_)
+            pos_years = sum(1 for p in lst if p.mean() > 0)
+            summary.append({"model": vname, "eşik": f"M≥{mg:g}", "adım (yıl)": len(lst), "olay": len(per),
+                            "ortalama kazanç": round(float(per.mean()), 4),
+                            "%95 GA (yıl bootstrap)": f"[{np.quantile(bsv, 0.025):.3f}, {np.quantile(bsv, 0.975):.3f}]",
+                            "ETAS'ı geçtiği yıl": f"{pos_years}/{len(lst)}"})
+        np.savez_compressed(self.dir / "walk_eta.npz", **etas_cells)
+        out = {"steps": steps, "summary": summary, "coef_path": coefs_t, "first_year": start_y}
+        (self.dir / "walkforward.json").write_text(json.dumps(out, indent=2, default=float))
+        return {"steps": len(steps)}
+
+    def stage_eventwalk(self):
+        from .forecast.eventwalk import score_year, summarize
+        pj = json.loads((self.dir / "walk_etas_params.json").read_text())
+        eta = np.load(self.dir / "walk_eta.npz")
+        c = self.cfg["etas"]
+        frames = []
+        for mg in self.cfg.get("eventwalk", {}).get("target_mags", [c["m0"], 4.0, 5.0]):
+            for y in [int(k) for k in eta.files]:
+                t0, t1 = self.window(y)
+                e = ETAS(m0=c["m0"], bandwidth_km=c["bandwidth_km"], r_max_km=c["r_max_km"],
+                         dt_max_days=c["dt_max_days"])
+                cat = self.catalog
+                train = cat[(cat["mag"] >= e.m0) & (cat["time"] >= ts(c["fit_start"])) & (cat["time"] < t0)]
+                e._background(train)
+                e.params = pj[str(y)]["params"]
+                e.b = pj[str(y)]["b"]
+                d = score_year(e, cat, t0, t1, self.grid, eta[str(y)], mg)
+                d["year"], d["target"] = y, f"M≥{mg:g}"
+                frames.append(d)
+                log.info("olay olay %d M≥%g: %d olay", y, mg, len(d))
+        df = pd.concat(frames, ignore_index=True)
+        df.to_csv(self.dir / "eventwalk_scores.csv.gz", index=False)
+        summ = [{"hedef": tg, **summarize(g)} for tg, g in df.groupby("target", sort=False)]
+        by_year = [{"hedef": tg, "yıl": int(y), **summarize(g)} for (tg, y), g in df.groupby(["target", "year"], sort=False)]
+        big = df[df["mag"] >= 5.5].sort_values("time")
+        (self.dir / "eventwalk.json").write_text(json.dumps(
+            {"summary": summ, "by_year": by_year,
+             "large_events": big[big["target"] == big["target"].iloc[0]].to_dict("records") if len(big) else []},
+            indent=2, default=str))
+        return {"events": len(df)}
 
     def stage_report(self):
         from .report import write_report, write_layers

@@ -1,0 +1,79 @@
+{
+  "id": "gnss_strain",
+  "label": "GPS gerinim hızı",
+  "description": "İstasyon hızlarının Gauss ağırlıklı (40 km) gradyanından ikinci değişmez gerinim hızı (nanogerinim/yıl). Kabukta enerjinin ne hızla biriktiğini gösterir.",
+  "group": "Jeodezi ve sismik gözlemler",
+  "order": 31,
+  "data": "gnss_strain.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "fill",
+    "opacity": 0.45
+  },
+  "color": {
+    "property": "strain_ns",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#0b1220"
+      ],
+      [
+        30,
+        "#1f3b73"
+      ],
+      [
+        100,
+        "#3f7be0"
+      ],
+      [
+        300,
+        "#e0497a"
+      ],
+      [
+        1000,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Gerinim hızı",
+    "unit": "nanogerinim/yıl",
+    "labels": [
+      "0",
+      "100",
+      "300",
+      "1000+"
+    ]
+  },
+  "tooltip": {
+    "title": "Hücre",
+    "fields": [
+      {
+        "property": "strain_ns",
+        "label": "Gerinim hızı",
+        "unit": "ns/yıl",
+        "digits": 0
+      },
+      {
+        "property": "shear_ns",
+        "label": "Makaslama",
+        "unit": "ns/yıl",
+        "digits": 0
+      },
+      {
+        "property": "dilat_ns",
+        "label": "Hacim değişimi",
+        "unit": "ns/yıl",
+        "digits": 0
+      },
+      {
+        "property": "n_sta",
+        "label": "İstasyon sayısı",
+        "digits": 0
+      }
+    ]
+  }
+}

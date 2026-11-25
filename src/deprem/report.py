@@ -29,7 +29,9 @@ def write_report(run):
     md = [f"# Eğitim raporu: {run.cfg['run_name']}", "",
           f"> {NOTE} Sonuçlar, modelin eğitimde hiç görmediği {run.test_years[0]}–"
           f"{run.test_years[-1]} yıllarında, kabul görmüş referans model ETAS'a karşı ölçülmüştür.", "",
-          "## Sade dille özet", ""]
+          ] + _headline(run) + ["## Tek sınama dönemi özeti (ikincil değerlendirme)", "",
+          f"Model {run.train_years[0]}–{run.train_years[-1]} ile bir kez eğitilip "
+          f"{run.test_years[0]}–{run.test_years[-1]} tek blok olarak sınandı:", ""]
     for r in rows:
         ig = r["bilgi_kazancı_olay_başına"]
         p = r["p_değeri"]
@@ -68,10 +70,180 @@ def write_report(run):
     for key, rel in ev["reliability"].items():
         df = pd.DataFrame(rel["model"])[["p_mean", "obs_freq", "n"]].round(3)
         md += [f"**{key} (model)**", "", df.to_markdown(index=False), ""]
+    md += _eventwalk_section(run)
+    md += _walkforward_section(run)
+    md += _obs_sections(run, model)
     text = "\n".join(md)
     (run.dir / "report.md").write_text(text)
     rep = run.root / "reports" / f"training_{run.cfg['run_name']}.md"
     rep.write_text(text)
+
+
+def _verdict(ig, p):
+    if ig is None or (isinstance(ig, float) and not np.isfinite(ig)):
+        return "değerlendirilemedi"
+    if p is not None and p < 0.05:
+        return "anlamlı iyileşme" if ig > 0 else "anlamlı kötüleşme"
+    return "anlamlı fark yok"
+
+
+def _headline(run):
+    """Raporun başı: ana (ileriye kayan) değerlendirmelerin sade sonucu."""
+    md = []
+    wf_p, ev_p = run.dir / "walkforward.json", run.dir / "eventwalk.json"
+    if not (wf_p.exists() or ev_p.exists()):
+        return md
+    md += ["## Ana sonuç (sade dille)", ""]
+    if ev_p.exists():
+        ev = json.loads(ev_p.read_text())
+        for r in ev["summary"]:
+            md.append(f"* **Deprem deprem, {r['hedef']}** ({r['olay']} olay): bir sonraki depremin "
+                      f"zamanı ve yeri için model ETAS'a göre olay başına {r['toplam kazanç']:+.3f} "
+                      f"(%95 GA {r['toplam %95 GA']}). "
+                      + ("ETAS'tan **daha iyi**." if r["toplam %95 GA"].startswith("[") and
+                         float(r["toplam %95 GA"][1:].split(",")[0]) > 0 else
+                         "ETAS'tan **daha kötü**." if float(r["toplam %95 GA"].split(",")[1][:-1]) < 0
+                         else "ETAS'tan anlamlı farkı yok."))
+    if wf_p.exists():
+        wf = json.loads(wf_p.read_text())
+        for r in wf["summary"]:
+            if r["model"] != "model (tüm özellikler)":
+                continue
+            lo, hi = (float(v) for v in r["%95 GA (yıl bootstrap)"].strip("[]").split(","))
+            verdict = ("ETAS'tan **daha iyi**" if lo > 0 else "ETAS'tan **daha kötü**" if hi < 0
+                       else "ETAS'tan anlamlı farkı yok")
+            md.append(f"* **Yıl yıl, {r['eşik']}**: ortalama kazanç {r['ortalama kazanç']:+.3f} "
+                      f"(%95 GA {r['%95 GA (yıl bootstrap)']}), ETAS'ı {r['ETAS\'ı geçtiği yıl']} yılda geçti: {verdict}.")
+    md += ["", "Ana değerlendirme ileriye kayan değerlendirmedir: model her adımda yalnız o ana kadarki "
+           "veriyle eğitilir ve bir sonrakini tahmin eder. Aşağıdaki tek dönemlik sınama ikincildir; "
+           "iki değerlendirme çelişirse ileriye kayan sonuç esas alınmalıdır.", ""]
+    return md
+
+
+def _eventwalk_section(run):
+    path = run.dir / "eventwalk.json"
+    if not path.exists():
+        return []
+    ev = json.loads(path.read_text())
+    md = ["", "## Ana değerlendirme: deprem deprem ileri tahmin", "",
+          "Her depremden hemen önce, o ana kadarki tüm geçmişle bir sonraki depremin **ne zaman**, "
+          "**nerede** ve **hangi büyüklükte** olacağına olasılık verildi; deprem gelince puanlandı ve "
+          "geçmişe eklendi. Koşullu yoğunluk her olayda güncellendi; model ve ETAS parametreleri "
+          "yılda bir, yalnız o yıldan önceki veriyle yeniden eğitildi.", "",
+          "* **Zaman kazancı:** bekleme süresini ETAS'tan ne kadar iyi bildi (olay başına log-olabilirlik farkı).",
+          "* **Konum kazancı:** depremin olduğu yere ETAS'tan ne kadar yüksek olasılık verdi.",
+          "* **En olası %5 hücrede:** deprem, o an en yüksek olasılık verilen hücrelerin %5'inden "
+          "birinde mi oldu (0,5° hücre).",
+          "* **Büyüklük:** her iki model de aynı Gutenberg-Richter dağılımını kullanıyor; büyüklük "
+          "henüz tahmin edilebilir değil, puan yalnız bilgi amaçlı.",
+          "* Köşeli parantez: aylık blok bootstrap ile %95 güven aralığı; sıfırı içeriyorsa fark şans olabilir.", "",
+          pd.DataFrame(ev["summary"]).to_markdown(index=False), "",
+          "### Yıl yıl", "",
+          pd.DataFrame(ev["by_year"])[["hedef", "yıl", "olay", "zaman kazancı", "zaman %95 GA", "konum kazancı",
+                                       "konum %95 GA", "toplam kazanç", "toplam %95 GA",
+                                       "en olası %5 hücrede (ETAS)", "en olası %5 hücrede (model)"]]
+          .to_markdown(index=False), ""]
+    big = ev.get("large_events") or []
+    if big:
+        df = pd.DataFrame(big)
+        df["zaman (model−ETAS)"] = (df["time_ll_model"] - df["time_ll_etas"]).round(2)
+        df["konum (model−ETAS)"] = (df["space_ll_model"] - df["space_ll_etas"]).round(2)
+        df["hücre sırası ETAS"] = (100 * df["cell_rank_etas"]).round(1).astype(str) + "%"
+        df["hücre sırası model"] = (100 * df["cell_rank_model"]).round(1).astype(str) + "%"
+        md += ["### M≥5,5 depremler tek tek", "",
+               "Hücre sırası: depremin olduğu hücre, o an en olası hücrelerin yüzde kaçlık diliminde "
+               "(küçük = iyi tahmin).", "",
+               df[["time", "lat", "lon", "mag", "zaman (model−ETAS)", "konum (model−ETAS)",
+                   "hücre sırası ETAS", "hücre sırası model"]].round(3).to_markdown(index=False), ""]
+    return md
+
+
+def _walkforward_section(run):
+    path = run.dir / "walkforward.json"
+    if not path.exists():
+        return []
+    wf = json.loads(path.read_text())
+    md = ["", "## Ana değerlendirme: yıl yıl ileriye doğru eğitim", "",
+          f"Geçmişten başlayarak her yıl için: ETAS ve model **yalnız o yıldan önceki** verilerle "
+          f"eğitildi, o yıl tahmin edildi, gerçekle karşılaştırıldı, sonra o yıl eğitime eklendi "
+          f"({wf['first_year']}'den bugüne). Kazanç: olay başına bilgi kazancı (ETAS'a göre; "
+          "0 = ETAS kadar iyi, pozitif = daha iyi). Köşeli parantez: %95 güven aralığı. Aralık "
+          "sıfırı içeriyorsa fark şans eseri olabilir. **Konum kazancı**: modelin toplam sayısı ETAS'a "
+          "eşitlenince kalan fark, yani yalnız depremlerin *nerede* olacağını ne kadar iyi bildiği; "
+          "toplam kazanç ise *kaç* deprem olacağını da içerir.", "",
+          "### Özet (tüm adımlar birlikte)", "",
+          pd.DataFrame(wf["summary"]).to_markdown(index=False), "", "### Yıl yıl", ""]
+    st = pd.DataFrame(wf["steps"])
+    for mg in run.mags:
+        key = f"M≥{mg:g}"
+        cols = ["yıl", "eğitim_yılları"] + [c for c in st.columns if c.startswith(key + " ")]
+        if len(cols) > 2:
+            md += [f"**{key}**", "", st[cols].to_markdown(index=False), ""]
+    cp = pd.DataFrame(wf.get("coef_path", []))
+    if not cp.empty:
+        last = cp[cp["yıl"] == cp["yıl"].max()]
+        md += ["### Gözlem katsayılarının yıllar içinde öğrenilmesi (son adım, %95 aralık)", "",
+               last.to_markdown(index=False), ""]
+    return md
+
+
+def _obs_sections(run, model):
+    path = run.dir / "obs_evaluation.json"
+    if not path.exists():
+        return []
+    from .observations.registry import table as obs_table
+    ev = json.loads(path.read_text())
+    md = ["", "## Yeni gözlemler: jeodezik, sismik ve hipotezler", "",
+          "Her gözlem için literatürdeki fiziksel ilişkiden bir **başlangıç etkisi** (öncül) ve "
+          "belirsizliği tanımlandı; model bunları 2012-2019 depremleriyle eğitip güncelledi. "
+          "Sınama yine modelin görmediği yıllarda, ETAS'a karşıdır.", ""]
+    reg = obs_table()
+    md += ["### Özellik listesi ve durumları", "",
+           reg[["name", "group", "evidence", "horizon", "status", "prior_mean", "prior_sd", "source"]]
+           .rename(columns={"name": "özellik", "group": "grup", "evidence": "kanıt", "horizon": "vade",
+                            "status": "durum", "prior_mean": "başlangıç etkisi", "prior_sd": "belirsizlik",
+                            "source": "kaynak"}).to_markdown(index=False), ""]
+    cov = ev.get("coverage", {}).get("overall")
+    if cov:
+        md += ["Kapsama (hücre-yıllarının kaçında değer var):", "",
+               pd.DataFrame({"özellik": list(cov), "kapsama": [f"%{100 * v:.0f}" for v in cov.values()]})
+               .to_markdown(index=False), ""]
+    pp = model.get("obs_prior_posterior", [])
+    if pp:
+        df = pd.DataFrame(pp)
+        df["oran_etkisi (×)"] = np.exp(df["öğrenilen"]).round(2)
+        md += ["### Başlangıç etkisi → eğitimle öğrenilen etki (yıllık model)", "",
+               "Katsayı: özellik 1 standart sapma arttığında deprem oranının logaritmasındaki değişim. "
+               "Sonsal sd, öncül sd'den çok küçükse veri bu etki hakkında bilgi taşıyor demektir; "
+               "yakınsa sonuç büyük ölçüde başlangıç varsayımıdır.", "",
+               df.round(3).to_markdown(index=False), ""]
+    ab = ev.get("yearly_ablation")
+    if ab:
+        md += ["### Gözlemlerin katkısı (sınama yılları, ETAS'a karşı olay başına bilgi kazancı)", "",
+               "Aynı model gözlemli ve gözlemsiz eğitildi; fark, gözlemlerin katkısıdır.", "",
+               pd.DataFrame(ab).to_markdown(index=False, floatfmt=".4g"), ""]
+        base = ab[0]
+        full = ab[1]
+        for key in [k for k in full if k.endswith("kazanç")]:
+            b, f = base.get(key), full.get(key)
+            if b is not None and f is not None:
+                md.append(f"* **{key.replace(' kazanç', '')}**: gözlemsiz {b:+.3f} → gözlemli {f:+.3f} "
+                          f"({_verdict(f, full.get(key.replace('kazanç', 'p')))} ETAS'a göre)")
+        md.append("")
+    stv = ev.get("shortterm")
+    if stv:
+        md += ["### Zayıf kanıtlı hipotezlerin kısa vadeli testi (iyonosfer, ULF, termal)", "",
+               "2° × 2° kutular, 5 günlük pencereler. Soru: son 10 günde anomali varsa, sonraki 5 günde "
+               "bağımsız (artçı olmayan) deprem olasılığı, depremlerin kendi kümelenmesinden "
+               "beklenenden yüksek mi? Eğitim 2012-2019, sınama 2020-2025. Alarm olasılık kazancı: "
+               "eğitimdeki %90'lık eşiği aşan anomaliden sonraki pencerelerde deprem payı / alarm "
+               "altındaki uzay-zaman payı (1 = şans düzeyi).", ""]
+        for mag, r in stv.items():
+            md += [f"**Hedef {mag}**", "", pd.DataFrame(r["results"]).to_markdown(index=False, floatfmt=".4g"), ""]
+            if r.get("coefs"):
+                md += ["Başlangıç etkisi → öğrenilen:", "",
+                       pd.DataFrame(r["coefs"]).to_markdown(index=False, floatfmt=".3g"), ""]
+    return md
 
 
 def _layer(dir_: Path, id_, label, desc, group, order, geojson, color, legend, tooltip,
@@ -204,3 +376,160 @@ def write_layers(run):
                {"property": "seis_max_mag", "label": "En büyük M", "digits": 1},
                {"property": "seis_mean_depth", "label": "Ort. derinlik", "unit": "km", "digits": 1}]},
            style={"type": "line", "width": 2.5, "opacity": 0.9})
+    if run.obs_enabled():
+        write_obs_layers(run, out)
+
+
+def _points(df, props, lat="lat", lon="lon"):
+    return {"type": "FeatureCollection", "metadata": {"note": NOTE},
+            "features": [{"type": "Feature",
+                          "geometry": {"type": "Point", "coordinates": [round(float(r[lon]), 4), round(float(r[lat]), 4)]},
+                          "properties": {p: _clean(r[p]) for p in props}} for _, r in df.iterrows()]}
+
+
+def write_obs_layers(run, out):
+    """Yeni gözlem katmanları: GPS istasyonları ve gerinim hızı, tekrarlayan depremler, dv/v."""
+    from .observations import gnss, repeaters
+    obs = run.root / "data" / "obs"
+    group = "Jeodezi ve sismik gözlemler"
+    if (obs / "gnss_station_year.csv").exists():
+        sty = pd.read_csv(obs / "gnss_station_year.csv")
+        last = sty.sort_values("year").groupby("site").tail(1).copy()
+        last["v_horiz"] = np.hypot(last["ve"], last["vn"])
+        _layer(out, "gnss_stations", "GPS istasyonları (hız, geçici hareket)",
+               "Nevada Geodetic Lab günlük çözümleri, Avrasya sabit. Renk: son 1 yılda uzun dönem "
+               "hızdan sapmanın gürültüye oranı (z). Her istasyonun verisi olan son yıl.", group, 30,
+               _points(last, ["site", "year", "ve", "vn", "v_horiz", "tr_z", "tr_e", "tr_n"]),
+               {"property": "tr_z", "type": "interpolate",
+                "stops": [[0, "#2a78d6"], [2, "#8a5cf0"], [4, "#ff8c42"], [8, "#ffe680"]]},
+               {"title": "Geçici hareket z", "unit": "", "labels": ["0", "2", "4", "8+"]},
+               {"title": "site", "fields": [
+                   {"property": "year", "label": "Yıl başı", "digits": 0},
+                   {"property": "v_horiz", "label": "Yatay hız", "unit": "mm/yıl", "digits": 1},
+                   {"property": "tr_z", "label": "Geçici z", "digits": 1},
+                   {"property": "tr_e", "label": "Hız sapması D", "unit": "mm/yıl", "digits": 1},
+                   {"property": "tr_n", "label": "Hız sapması K", "unit": "mm/yıl", "digits": 1}]},
+               style={"type": "circle", "radius": 4.5, "outline": "#ffffff", "opacity": 0.9})
+        cells = make_cells(TURKEY, 0.25)
+        sr = gnss.strain_rate_at(cells["lat_c"], cells["lon_c"], last)
+        cells = pd.concat([cells, sr], axis=1).dropna(subset=["strain_2inv"])
+        d = 0.125
+        feats = [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[
+            [round(r.lon_c - d, 3), round(r.lat_c - d, 3)], [round(r.lon_c + d, 3), round(r.lat_c - d, 3)],
+            [round(r.lon_c + d, 3), round(r.lat_c + d, 3)], [round(r.lon_c - d, 3), round(r.lat_c + d, 3)],
+            [round(r.lon_c - d, 3), round(r.lat_c - d, 3)]]]},
+            "properties": {"strain_ns": _clean(r.strain_2inv), "shear_ns": _clean(r.max_shear),
+                           "dilat_ns": _clean(r.dilatation), "n_sta": int(r.n_sta)}} for r in cells.itertuples()]
+        _layer(out, "gnss_strain", "GPS gerinim hızı",
+               "İstasyon hızlarının Gauss ağırlıklı (40 km) gradyanından ikinci değişmez gerinim hızı "
+               "(nanogerinim/yıl). Kabukta enerjinin ne hızla biriktiğini gösterir.", group, 31,
+               {"type": "FeatureCollection", "metadata": {"note": NOTE}, "features": feats},
+               {"property": "strain_ns", "type": "interpolate",
+                "stops": [[0, "#0b1220"], [30, "#1f3b73"], [100, "#3f7be0"], [300, "#e0497a"], [1000, "#ffe680"]]},
+               {"title": "Gerinim hızı", "unit": "nanogerinim/yıl", "labels": ["0", "100", "300", "1000+"]},
+               {"title": "Hücre", "fields": [
+                   {"property": "strain_ns", "label": "Gerinim hızı", "unit": "ns/yıl", "digits": 0},
+                   {"property": "shear_ns", "label": "Makaslama", "unit": "ns/yıl", "digits": 0},
+                   {"property": "dilat_ns", "label": "Hacim değişimi", "unit": "ns/yıl", "digits": 0},
+                   {"property": "n_sta", "label": "İstasyon sayısı", "digits": 0}]},
+               style={"type": "fill", "opacity": 0.45})
+    fam = repeaters.find_families(run.catalog)
+    if not fam.empty:
+        g = fam.groupby("family").agg(lat=("latitude", "mean"), lon=("longitude", "mean"),
+                                      depth_km=("depth_km", "mean"), n=("mag", "size"), mag=("mag", "mean"),
+                                      first=("time", "min"), last=("time", "max"), slip_cm=("slip_cm", "sum"))
+        span = ((g["last"] - g["first"]).dt.days / 365.25).clip(lower=0.5)
+        g["slip_rate_cm_yr"] = g["slip_cm"] / span
+        g["first"], g["last"] = g["first"].dt.year, g["last"].dt.year
+        _layer(out, "repeaters", "Tekrarlayan deprem adayları",
+               "Aynı noktada (≤1 km), benzer büyüklükte ve düzenli aralıklarla tekrarlayan küçük depremler. "
+               "Fayın derindeki sessiz kayma hızını gösterir (Nadeau & Johnson 1998). Katalog konum hatası "
+               "nedeniyle adaydır; dalga biçimi ile doğrulanmamıştır.", group, 32,
+               _points(g.reset_index(), ["family", "n", "mag", "depth_km", "first", "last", "slip_rate_cm_yr"]),
+               {"property": "slip_rate_cm_yr", "type": "interpolate",
+                "stops": [[0, "#2a78d6"], [0.5, "#8a5cf0"], [2, "#ff8c42"], [5, "#ffe680"]]},
+               {"title": "Kayma hızı", "unit": "cm/yıl", "labels": ["0", "0.5", "2", "5+"]},
+               {"title": "family", "fields": [
+                   {"property": "n", "label": "Olay sayısı", "digits": 0},
+                   {"property": "mag", "label": "Ort. büyüklük", "digits": 1},
+                   {"property": "depth_km", "label": "Derinlik", "unit": "km", "digits": 1},
+                   {"property": "first", "label": "İlk", "digits": 0},
+                   {"property": "last", "label": "Son", "digits": 0},
+                   {"property": "slip_rate_cm_yr", "label": "Kayma hızı", "unit": "cm/yıl", "digits": 2}]},
+               style={"type": "circle", "radius": 4, "outline": "#ffffff", "opacity": 0.9})
+    if (obs / "dvv_series.csv.gz").exists():
+        dv = pd.read_csv(obs / "dvv_series.csv.gz", parse_dates=["time"])
+        rows = []
+        for s, g in dv.groupby("sta"):
+            g = g.dropna(subset=["dvv"])
+            if len(g) < 20:
+                continue
+            t1 = g["time"].max()
+            rec = g[g["time"] >= t1 - pd.DateOffset(months=6)]["dvv"].mean()
+            prev = g[(g["time"] < t1 - pd.DateOffset(months=6)) & (g["time"] >= t1 - pd.DateOffset(months=30))]["dvv"].mean()
+            rows.append({"sta": s, "lat": g["lat"].iloc[0], "lon": g["lon"].iloc[0],
+                         "dvv_change_pct": 100 * (rec - prev), "n": len(g), "last": t1.strftime("%Y-%m-%d")})
+        if rows:
+            _layer(out, "dvv_stations", "Sismik hız değişimi (dv/v)",
+                   "Ortam gürültüsünden tek istasyon hız değişimi: son 6 ay − önceki 2 yıl (%). "
+                   "Negatif: kayaç hızı düşmüş (hasar veya akışkan basıncı artışı).", group, 33,
+                   _points(pd.DataFrame(rows), ["sta", "dvv_change_pct", "n", "last"]),
+                   {"property": "dvv_change_pct", "type": "interpolate",
+                    "stops": [[-0.1, "#ff3b30"], [0, "#2a2f3a"], [0.1, "#3f7be0"]]},
+                   {"title": "dv/v değişimi", "unit": "%", "labels": ["-0.1", "0", "+0.1"]},
+                   {"title": "sta", "fields": [
+                       {"property": "dvv_change_pct", "label": "dv/v değişimi", "unit": "%", "digits": 3},
+                       {"property": "last", "label": "Son ölçüm"}]},
+                   style={"type": "circle", "radius": 6, "outline": "#ffffff", "opacity": 0.9})
+
+
+# ------------------------------------------------------------------ uzun yürüyüş
+def write_long_report(run, root):
+    """En eski veriden bugüne deprem deprem ileri eğitimin raporu."""
+    res = json.loads((run.dir / "longwalk.json").read_text())
+    lw = run.cfg["longwalk"]
+    L = [f"# Uzun ileri eğitim: {run.cfg['run_name']}", "", f"> {NOTE}", ""]
+    L += ["## Ne yapıldı", "",
+          "Model, elimizdeki en eski kayıtlardan başlayarak bugüne kadar **yıl yıl ve deprem deprem** "
+          "ilerledi. Her yılın başında yalnız o güne kadarki verilerle ETAS ve model yeniden eğitildi; "
+          "o yıl içindeki her deprem gerçekleşmeden önce zamanı, yeri ve büyüklüğü için olasılık verildi, "
+          "deprem gelince puanlandı ve geçmişe eklendi.", "",
+          "* 1700-1899 arası tarihsel depremler (EPICA, SHARE, GEM, NOAA) zaman çizelgesine, daha eskileri "
+          "(MÖ 2000'den beri) yalnız \"nerede deprem olur\" haritasına düşük ağırlıkla girdi.",
+          "* Katalog her dönemde farklı büyüklükten itibaren eksiksiz olduğu için üç koşu var: "
+          + ", ".join(f"M≥{s['m0']:g} ({s['score_from']}-{s['score_to']}, eğitim {s['fit_start']}'ten)"
+                      for s in lw["runs"]) + ".",
+          "* Eski yıllar eğitimde daha az ağırlık aldı (o yılların konum/büyüklük hataları büyük).",
+          f"* **Güven aralıkları eski kayıtların belirsizliğini içerir:** katalog {lw.get('replicates', 10)} kez "
+          "yeniden örneklendi; her depremin tarihi, yeri ve büyüklüğü kendi hatası kadar rastgele kaydırıldı ve "
+          "yürüyüş her seferinde baştan yapıldı. Aralıklar bu örnekler ve ay blokları üzerinden bootstrap ile "
+          "hesaplandı, bu yüzden eski dönemlerde daha geniştir.",
+          "* GPS, iyonosfer gibi gözlemlerin olmadığı yıllarda bu özellikler \"eksik\" olarak işaretlendi.", ""]
+    L += ["## Sonuç: ETAS'a karşı olay başına bilgi kazancı", "",
+          "Pozitif = model ETAS'tan iyi. Aralık sıfırı içeriyorsa fark anlamlı değil. "
+          "\"Toplam kazanç\" en iyi tahmin katalogundan, \"katalog örnekleri ortalaması\" hatalarla "
+          "kaydırılmış kataloglardan gelir; kaydırma gerçek hatanın üstüne ek gürültü kattığından örnekler "
+          "biraz kötümserdir, aralık bu duyarlılığı gösterir. "
+          "\"Yalnız örnekleme GA\" katalog belirsizliği olmadan çıkan aralıktır; aradaki fark "
+          "eski kayıtların belirsizliğinden gelir.", ""]
+    cols = ["eşik", "dönem", "olay", "toplam kazanç", "katalog örnekleri ortalaması", "toplam %95 GA",
+            "yalnız örnekleme GA",
+            "katalog belirsizliğinin payı", "zaman kazanç", "zaman %95 GA", "konum kazanç", "konum %95 GA",
+            "en olası %5 hücrede (ETAS)", "en olası %5 hücrede (model)",
+            "yıllık sayı aralığı tuttu (ETAS)", "yıllık sayı aralığı tuttu (model)"]
+    rows = [{c: r.get(c, "") for c in cols} for r in res["runs"]]
+    if rows:
+        L += [_fmt_table(rows), ""]
+    if res.get("forecast_next"):
+        L += ["## Gelecek yıl için model çıktısı (%95 aralık)", "",
+              "Bu bir deprem tahmini değildir; modelin Türkiye geneli için yıllık beklenen sayıları ve "
+              "olasılıklarıdır. Aralıklar benzetim ve katalog belirsizliğini birlikte içerir.", "",
+              _fmt_table(res["forecast_next"]), ""]
+    if res.get("by_year"):
+        by = pd.DataFrame(res["by_year"])
+        L += ["## Yıl yıl beklenen ve gerçekleşen sayılar", ""]
+        for eş, g in by.groupby("eşik", sort=False):
+            L += [f"### {eş}", "", g.drop(columns="eşik").to_markdown(index=False), ""]
+    out = Path(root) / "reports" / f"training_{run.cfg['run_name']}.md"
+    out.write_text("\n".join(L))
+    return out
