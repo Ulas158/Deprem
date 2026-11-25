@@ -25,6 +25,16 @@ COMPARE = ["poisson", "pooled", "partial", "separate", "fixed", "no_interact", "
 B = 4000
 
 
+ABLATE = [("no_far", "100 km ötesindeki fayların etkisi"),
+          ("no_interact", "faylar arası etkinin tümü (sistem, Coulomb, yavaş)"),
+          ("no_slow", "yavaş (yıllar süren) etki"),
+          ("no_cross", "farklı büyük sistemler arası ayrı çarpan"),
+          ("no_cfs", "Coulomb gerilme yönü"),
+          ("no_load", "fay doluluğu (son büyük depremden beri biriken)"),
+          ("pooled", "fay fay ayar (ortak ayara karşı)"),
+          ("fixed", "sürekli güncelleme (1900'de dondurmaya karşı)"),]
+
+
 def load(name):
     p = RUN / f"{name}.csv"
     if not p.exists():
@@ -119,6 +129,47 @@ def main():
     nmain = len(window(base, MAIN[1], MAIN[2]))
     L.append(f"1900-2025: {nmain} deprem. Güven aralığı yıl blokları bootstrap'ı, p değerleri Holm ile çoklu teste göre düzeltildi.\n")
     L.append(tab.to_markdown(index=False) + "\n")
+
+    # bileşenlerin katkısı: ana model − (o bileşen çıkarılmış sürüm), doğrudan karşılaştırma
+    if "partial" in res:
+        L.append("## Her parçanın katkısı (ana model − o parça çıkarılmış sürüm, 1900-2025)\n")
+        L.append("Pozitif = o parça işe yarıyor. Aynı depremler üzerinde eşli fark; GA yıl blokları bootstrap'ı.\n")
+        pm = window(res["partial"], MAIN[1], MAIN[2])
+        crows, cps = [], []
+        for n, lab in ABLATE:
+            if n not in res:
+                continue
+            m = pm.merge(res[n][["i", "score"]], on="i", suffixes=("", "_o"))
+            diff = (m["score"] - m["score_o"]).to_numpy()
+            mean, lo, hi, p = boot(diff, m["year"].to_numpy(), rng)
+            crows.append({"parça": lab, "katkı": f3(mean), "%95 GA": f"[{lo:+.3f}, {hi:+.3f}]", "p": p})
+            cps.append(p)
+        if crows:
+            ct = pd.DataFrame(crows)
+            ct["Holm p"] = [f"{x:.3f}" for x in holm(cps)]
+            ct["p"] = ct["p"].map(lambda x: f"{x:.3f}")
+            L.append(ct.to_markdown(index=False) + "\n")
+
+    # dv/v katkısı
+    if "partial_dvv" in res and "partial" in res:
+        L.append("## Doğu Marmara dv/v (kaya hız değişimi) eklenince\n")
+        m = res["partial_dvv"].merge(res["partial"][["i", "score"]], on="i", suffixes=("", "_o"))
+        w = m[m["year"] >= 2009]
+        diff = (w["score"] - w["score_o"]).to_numpy()
+        mean, lo, hi, p = boot(diff, w["year"].to_numpy(), rng)
+        em = w[w["lat"].between(40.0, 41.2) & w["lon"].between(29.0, 31.6)]
+        L.append(f"2009-2025, tüm Türkiye ({len(w)} deprem): olay başına {f3(mean)} [{lo:+.3f}, {hi:+.3f}], p = {p:.3f}. "
+                 f"Doğu Marmara kutusunda bu dönemde M≥5,5 deprem sayısı: {len(em)}"
+                 + (" (" + ", ".join(f"{r.time:%Y-%m-%d} M{r.mw:.1f}: {r.score - r.score_o:+.3f}" for r in em.itertuples()) + ")"
+                    if len(em) else "") + ".\n")
+        pj = RUN / "partial_dvv.params.json"
+        if pj.exists():
+            k = json.load(open(pj))[-1].get("k_cov")
+            if k is not None:
+                L.append(f"Öğrenilen dv/v katsayısı (2025 sonu): {k:+.3f} (dv/v 1 standart sapma yükselince bölgedeki fayların "
+                         f"deprem hızı ×{np.exp(k):.2f}).\n")
+        L.append("Bu büyüklük eşiğinde (M≥5,5) dv/v'nin kapsadığı yer ve zamanda çok az deprem olduğu için bu test "
+                 "neredeyse hiç güç taşımaz; sonuç ne çıkarsa çıksın dv/v için kanıt sayılmamalı.\n")
 
     # şans kontrolleri
     L.append("## Şans kontrolü\n")

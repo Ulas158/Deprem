@@ -361,3 +361,44 @@ def coulomb_signs(cat, f, lat_c, lon_c, dist, mu_eff=0.4, scale_bar=0.1) -> np.n
         out[j] = np.tanh(dcff / 1e5 / scale_bar)
     log.info("Coulomb işaretleri: %d kaynak × %d hücre", len(src), C)
     return out
+
+
+EAST_MARMARA = dict(lat=(40.0, 41.2), lon=(29.0, 31.6))
+
+
+def dvv_covariate(W: WalkData, series: pd.DataFrame, box=EAST_MARMARA, window_days: int = 30,
+                  min_hist_days: int = 365) -> np.ndarray:
+    """Doğu Marmara dv/v serisinden (S, U) zamanla değişen girdi.
+
+    series: 'date' ve 'dvv' sütunları (günlük, bölge ortalaması). Adım s için değer yalnız tau[s]'den ÖNCEKİ
+    verilerle hesaplanır: son `window_days` günün ortalaması, o güne kadarki tüm geçmişin ortalama/sapmasıyla
+    z-puanına çevrilir. Geçmiş `min_hist_days`'ten kısaysa ya da veri yoksa 0 (etkisiz). Yalnız hücre merkezi
+    kutu içinde kalan fay birimleri bu girdiyi alır; diğer her yerde 0.
+    """
+    s = series.dropna(subset=["dvv"]).copy()
+    s["t"] = days(pd.to_datetime(s["date"], utc=True))
+    s = s.groupby("t", as_index=False)["dvv"].mean().sort_values("t")
+    t, v = s["t"].to_numpy(float), s["dvv"].to_numpy(float)
+    cs, cs2 = np.concatenate([[0], np.cumsum(v)]), np.concatenate([[0], np.cumsum(v * v)])
+    S = W.tau.size - 1
+    z = np.zeros(S)
+    for k in range(S):
+        hi = np.searchsorted(t, W.tau[k], side="left")          # yalnız tau[k]'dan önceki günler
+        if hi == 0 or W.tau[k] - t[0] < min_hist_days:
+            continue
+        lo = np.searchsorted(t, W.tau[k] - window_days, side="left")
+        if hi - lo < 5:
+            continue
+        mu = cs[hi] / hi
+        sd = np.sqrt(max(cs2[hi] / hi - mu * mu, 1e-12))
+        z[k] = ((cs[hi] - cs[lo]) / (hi - lo) - mu) / sd
+    inbox = ((W.lat_c >= box["lat"][0]) & (W.lat_c <= box["lat"][1])
+             & (W.lon_c >= box["lon"][0]) & (W.lon_c <= box["lon"][1]))
+    kinds = W.units["kind"].to_numpy()
+    U = len(W.units)
+    sel = np.zeros(U, bool)
+    sel[np.unique(W.unit_of_cell[inbox])] = True
+    sel &= kinds == "fay"
+    X = np.zeros((S, U))
+    X[:, sel] = np.clip(z, -4, 4)[:, None]
+    return X

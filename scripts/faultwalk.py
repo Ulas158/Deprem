@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "runs" / "faultwalk"
 CACHE = OUT / "walkdata.pkl"
 FREEZE_YEAR = 1900
+DVV = ROOT / "data" / "dvv" / "east_marmara_dvv.csv"   # sütunlar: date, dvv
 
 
 _CORE = None
@@ -57,6 +58,10 @@ def _job(spec):
         kw["freeze_at"] = year_start_days(FREEZE_YEAR)
     elif kind in VARIANTS:
         v = VARIANTS[kind]
+        if v.cov == "dvv":                 # Doğu Marmara dv/v serisi (tarih, dvv)
+            import pandas as pd
+            from deprem.faultwalk_data import dvv_covariate
+            W.extra.setdefault("cov", {})["dvv"] = dvv_covariate(W, pd.read_csv(DVV))
     elif kind == "null_fault":            # fay birimlerini hücreler arasında karıştır
         v = VARIANTS["partial"]
         rng = np.random.default_rng(seed)
