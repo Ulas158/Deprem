@@ -23,6 +23,8 @@ dev = ["pytest>=7"]
 obs = ["rasterio>=1.3", "obspy>=1.4", "seisbench>=0.7"]
 # Parametre araması (Bayesçi optimizasyon)
 search = ["optuna>=3.0"]
+# Depremden depreme, fay fay öğrenen model (otomatik türev)
+walk = ["jax>=0.4"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
