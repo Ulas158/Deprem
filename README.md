@@ -204,3 +204,10 @@ Saha listesi `external_data/` altındadır.
 - [ ] GNSS gerinim, krip, ısı akısı vb. boş parametrelerin bağlanması
 - [ ] Tarihsel katalogla (1900 öncesi) birleştirme
 - [ ] İleriye dönük (prospektif) test kaydı: tahminler önceden zaman damgalı saklanır
+
+### Ön kayıtlı sınamalar ve canlı tahmin
+
+Bir ipucu sonuçlara bakılarak bulunduysa, kuralları önce `docs/onkayit/` altına yazılıp depoya
+gönderilir, sonra hiç kullanılmamış veriyle bir kez sınanır. İlk örnek: "model Ege'de ETAS'tan
+iyi" ipucu, 2026 verisinde desteklenmedi ([`reports/ege_onkayit.md`](reports/ege_onkayit.md)).
+Ege için günlük canlı tahmin kaydı: [`forecasts/ege/BENIOKU.md`](forecasts/ege/BENIOKU.md).

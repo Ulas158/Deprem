@@ -1,0 +1,51 @@
+# Ege canlı tahmin kaydı (ön kayıt: docs/onkayit/2026-11-25_ege_ustunluk.md, bölüm 8).
+# Her gün ertesi UTC günü için ETAS ve model tahminlerini yazar ve
+# "ege-canli-kayit" dalına commit'ler. Commit zamanı, tahminin pencere başlamadan
+# önce verildiğinin kanıtıdır. Geçmiş tahmin dosyaları hiçbir zaman değiştirilmez.
+name: Ege canlı tahmin
+
+on:
+  schedule:
+    - cron: "17 21 * * *"   # her gün 21:17 UTC (Türkiye 00:17); pencere ertesi gün 00:00-24:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ege-canli
+  cancel-in-progress: false
+
+jobs:
+  tahmin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Kayıt dalına geç (yoksa main'den oluştur)
+        run: |
+          git config user.name "ege-canli-tahmin"
+          git config user.email "actions@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin ege-canli-kayit; then
+            git fetch origin ege-canli-kayit
+            git checkout ege-canli-kayit
+          else
+            git checkout -b ege-canli-kayit
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Kurulum
+        run: |
+          pip install numpy pandas scipy requests
+          pip install --no-deps -e .
+      - name: Ertesi gün için tahmin
+        run: python scripts/ege_canli.py tahmin
+      - name: Kaydet
+        run: |
+          git add forecasts/ege
+          if git diff --cached --quiet; then echo "değişiklik yok"; exit 0; fi
+          git commit -m "Ege canlı tahmin: $(date -u -d tomorrow +%Y-%m-%d)"
+          for i in 1 2 3 4; do git push origin ege-canli-kayit && break; sleep $((i*15)); done
