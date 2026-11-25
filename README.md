@@ -66,6 +66,17 @@ kanıtlı hipotez** olarak ayrı, kısa vadeli (5 günlük) bir testte sınanır
 literatüre dayalı başlangıç etkisi ve belirsizliği `src/deprem/observations/registry.py`
 içindedir; eğitim bunları geçmiş depremlerle günceller. Ayrıntı: `docs/gozlemler.md`.
 
+### Bölge bazında parametre ayarı
+
+```bash
+python scripts/search_regional.py --config configs/train_search.toml   # kısa (2012+, M≥3)
+python scripts/regional_report.py                                      # reports/bolgesel_ayar.md
+```
+
+Tek ortak ayar yerine Marmara, Kuzey Anadolu, Doğu Anadolu, Ege ve Van-Kars için ayrı katsayılar;
+bölge katsayıları ortak ayara doğru çekilir (kısmi havuzlama). Sahte bölgelerle şans kontrolü ve
+dokunulmamış 2020-2025 sınaması. Yöntem: `src/deprem/regional.py`.
+
 ### En eski veriden bugüne deprem deprem eğitim
 
 ```bash
