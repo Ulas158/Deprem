@@ -50,6 +50,36 @@ yıllarında ETAS'a karşı M3/M4/M5/M6 eşiklerinde ayrı ayrı ölçülür.
 
 Yeni bir deneme için yapılandırmayı kopyalayıp `run_name`'i değiştirin.
 
+### Jeodezik, sismik ve hipotez gözlemleri
+
+```bash
+pip install -e ".[obs]"
+python scripts/fetch_observations.py all                 # GPS, iyonosfer, ULF, termal, tekrarlayan depremler
+python scripts/fetch_observations.py dvv mlcat           # ham sismogramlar (yavaş; pilot)
+python scripts/train.py --config configs/train_obs.toml  # gözlemlerle eğitim + katkı ölçümü
+```
+
+GPS (gerinim hızı, geçici hareket), tekrarlayan depremler, ortam gürültüsünden sismik hız
+değişimi, yapay zekâ ile zenginleştirilmiş katalog, InSAR ve GONAF kuyu gerinimi **güçlü**
+grupta yıllık modele girer. İyonosfer TEC, ULF manyetik ve termal anomaliler **zayıf
+kanıtlı hipotez** olarak ayrı, kısa vadeli (5 günlük) bir testte sınanır. Her özelliğin
+literatüre dayalı başlangıç etkisi ve belirsizliği `src/deprem/observations/registry.py`
+içindedir; eğitim bunları geçmiş depremlerle günceller. Ayrıntı: `docs/gozlemler.md`.
+
+### En eski veriden bugüne deprem deprem eğitim
+
+```bash
+python scripts/train_long.py --config configs/train_long.toml   # ~1 saat (4 çekirdek)
+```
+
+Tarihsel katalog (1700-1899 zaman çizelgesine, daha eskisi arka plan haritasına) ve aletsel
+katalogla 1900'den bugüne yıl yıl ve deprem deprem ilerler. Katalog her dönemde farklı
+büyüklükten eksiksiz olduğu için üç koşu vardır (M≥5,5 1900+, M≥4,5 1975+, M≥4 1995+).
+Eski kayıtlar eğitimde düşük ağırlık alır; güven aralıkları, katalogun tarih/konum/büyüklük
+hatalarıyla 10 kez yeniden örneklenip yürüyüşün baştan yapılmasıyla hesaplanır, bu yüzden
+eski dönemlerde daha geniştir. Rapor: `reports/training_turkey_v4_long.md`. Yöntem:
+`src/deprem/longwalk.py`.
+
 ### Veri kaynakları
 
 | Kaynak | Kapsam | Not |
@@ -101,6 +131,18 @@ src/deprem/
     features.py          hücre × pencere tablosuna yeni özellik grupları
     layers.py            harita katmanları
   faults/fill.py         eksik eleman değerlerini fay boyunca doldurma (+ bayrak, belirsizlik)
+  observations/          katalog dışı gözlemler (bkz. docs/gozlemler.md)
+    registry.py          özellik listesi, kanıt grubu, başlangıç etkisi ± belirsizlik
+    gnss.py              GPS zaman serileri, gerinim hızı, geçici hareket
+    repeaters.py         tekrarlayan deprem aileleri, derin kayma hızı
+    dvv.py               ortam gürültüsünden sismik hız değişimi
+    mlcatalog.py         PhaseNet ile zengin katalog (pilot)
+    insar.py, gonaf.py   InSAR hız ve kuyu gerinimi okuyucuları
+    ionosphere.py        TEC anomalileri (hipotez)
+    geomag.py            ULF manyetik anomaliler (hipotez)
+    thermal.py           yüzey sıcaklığı anomalileri (hipotez)
+    shortterm.py         kısa vadeli hipotez testi
+    fit.py               öncüllü Poisson (MAP + Laplace belirsizliği)
   plotting.py
 ```
 

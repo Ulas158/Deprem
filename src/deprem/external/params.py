@@ -58,9 +58,9 @@ PARAMS = [
     ("lake_level_change_m", "m", LOADS, "placeholder", "Doğal göl/rezervuar seviye değişimi", "DSİ / uydu altimetrisi (DAHITI, Hydroweb)"),
     ("slow_slip_rate_mm_yr", "mm/yıl", LOADS, "placeholder", "Yavaş kayma / geçici aseismik kayma hızı", "GNSS zaman serileri (Nevada Geodetic Lab)"),
     # ---- diğer öncü sinyal adayları (kanıt zayıf; karşılaştırma için tanımlı)
-    ("tec_anomaly_z", "-", "diğer öncü adayları", "placeholder", "İyonosfer toplam elektron içeriği (TEC) anomalisi", "IGS GNSS TEC haritaları"),
-    ("geomagnetic_anomaly_z", "-", "diğer öncü adayları", "placeholder", "Yerel manyetik alan / ULF anomalisi", "INTERMAGNET / yerel istasyonlar"),
-    ("thermal_ir_anomaly_z", "-", "diğer öncü adayları", "placeholder", "Uydu termal kızılötesi (yüzey sıcaklığı) anomalisi", "MODIS / Sentinel-3"),
+    ("tec_anomaly_z", "-", "diğer öncü adayları", "placeholder", "İyonosfer toplam elektron içeriği (TEC) anomalisi", "deprem.observations.ionosphere (hücre düzeyinde hesaplanıyor)"),
+    ("geomagnetic_anomaly_z", "-", "diğer öncü adayları", "placeholder", "Yerel manyetik alan / ULF anomalisi", "deprem.observations.geomag (hücre düzeyinde hesaplanıyor)"),
+    ("thermal_ir_anomaly_z", "-", "diğer öncü adayları", "placeholder", "Uydu termal kızılötesi (yüzey sıcaklığı) anomalisi", "deprem.observations.thermal (hücre düzeyinde hesaplanıyor)"),
     # ---- insan kaynaklı: saha listesinden
     ("site_reservoir_dist_km", "km", HUMAN, "external", "En yakın faal baraj rezervuarına uzaklık", "external_data/insan_kaynakli_sahalar.csv"),
     ("reservoir_years_since_fill", "yıl", HUMAN, "external", "50 km içindeki en yakın barajın dolumundan bu yana geçen süre", "Aynı"),

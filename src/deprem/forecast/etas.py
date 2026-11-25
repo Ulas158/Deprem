@@ -91,7 +91,7 @@ class ETAS(Forecast):
         return out / self._bg_norm + 1e-12
 
     # ------------------------------------------------------------ uyum
-    def fit(self, catalog, fit_start, fit_end):
+    def fit(self, catalog, fit_start, fit_end, init: dict | None = None):
         cat = catalog[(catalog["mag"] >= self.m0)].sort_values("time")
         aux_start = fit_start - pd.DateOffset(years=int(self.aux_years))
         hist = cat[(cat["time"] >= aux_start) & (cat["time"] < fit_end)].reset_index(drop=True)
@@ -146,6 +146,8 @@ class ETAS(Forecast):
 
         v0 = np.array([np.log(INIT[n]) if n in LOG_PARAMS else INIT[n] for n in PARAM_NAMES])
         v0[0] = np.log(max(len(tgt) / T * 0.4, 1e-3))
+        if init:  # sıcak başlangıç (ör. bir önceki yılın parametreleri)
+            v0 = np.array([np.log(init[n]) if n in LOG_PARAMS else init[n] for n in PARAM_NAMES])
         bounds = [(np.log(BOUNDS[n][0]), np.log(BOUNDS[n][1])) if n in LOG_PARAMS else BOUNDS[n]
                   for n in PARAM_NAMES]
         res = minimize(nll, v0, method="L-BFGS-B", bounds=bounds, options={"maxiter": 500})

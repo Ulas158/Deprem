@@ -1,0 +1,82 @@
+{
+  "id": "gnss_stations",
+  "label": "GPS istasyonları (hız, geçici hareket)",
+  "description": "Nevada Geodetic Lab günlük çözümleri, Avrasya sabit. Renk: son 1 yılda uzun dönem hızdan sapmanın gürültüye oranı (z). Her istasyonun verisi olan son yıl.",
+  "group": "Jeodezi ve sismik gözlemler",
+  "order": 30,
+  "data": "gnss_stations.geojson",
+  "visible": false,
+  "note": "Deneysel araştırma çıktısıdır, deprem tahmini değildir. Model ve varsayımlar doğrulanmamıştır.",
+  "updated": "2026-11-24",
+  "style": {
+    "type": "circle",
+    "radius": 4.5,
+    "outline": "#ffffff",
+    "opacity": 0.9
+  },
+  "color": {
+    "property": "tr_z",
+    "type": "interpolate",
+    "stops": [
+      [
+        0,
+        "#2a78d6"
+      ],
+      [
+        2,
+        "#8a5cf0"
+      ],
+      [
+        4,
+        "#ff8c42"
+      ],
+      [
+        8,
+        "#ffe680"
+      ]
+    ]
+  },
+  "legend": {
+    "title": "Geçici hareket z",
+    "unit": "",
+    "labels": [
+      "0",
+      "2",
+      "4",
+      "8+"
+    ]
+  },
+  "tooltip": {
+    "title": "site",
+    "fields": [
+      {
+        "property": "year",
+        "label": "Yıl başı",
+        "digits": 0
+      },
+      {
+        "property": "v_horiz",
+        "label": "Yatay hız",
+        "unit": "mm/yıl",
+        "digits": 1
+      },
+      {
+        "property": "tr_z",
+        "label": "Geçici z",
+        "digits": 1
+      },
+      {
+        "property": "tr_e",
+        "label": "Hız sapması D",
+        "unit": "mm/yıl",
+        "digits": 1
+      },
+      {
+        "property": "tr_n",
+        "label": "Hız sapması K",
+        "unit": "mm/yıl",
+        "digits": 1
+      }
+    ]
+  }
+}

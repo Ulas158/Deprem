@@ -19,6 +19,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+# Katalog dışı gözlemler: InSAR GeoTIFF okuma, dalga biçimi (dv/v), PhaseNet
+obs = ["rasterio>=1.3", "obspy>=1.4", "seisbench>=0.7"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
