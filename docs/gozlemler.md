@@ -94,6 +94,32 @@ aralıkları sıfırı içeriyor. Büyük dizilerden sonraki fazlalığın kalan
 geliyor (2024'te ETAS 2449 tahmin etti); bu, ETAS'ın artçı azalmasını büyük dizilerde yavaş
 bulmasıyla ilgili ayrı bir konudur.
 
+## ETAS'ın kendi fazla tahmini: denemeler (Kasım 2026)
+
+Önceki düzeltmeden sonra kalan fazla tahmin ETAS'ın kendisinden geliyor. Ayrıştırma (2024, M≥3,5):
+arka plan ~138, geçmiş depremlerin doğrudan artçıları ~118, ama benzetim ortalaması 874; gözlenen 364.
+Farkın çoğu benzetimde yıl içinde üretilen "artçıların artçıları". İki neden bulundu:
+
+* Benzetim büyüklükleri b ile M8'e kadar örnekleniyor; katalogda M5 üstü depremler bu dağılımın
+  öngördüğünden az. Benzetim çok sayıda büyük deprem ve dolayısıyla fazla artçı üretiyor.
+* α (büyüklük-üretkenlik eğimi) ~1,45, b·ln10 ~2,2'nin çok altında: küçük depremler fazla üretken.
+  Uyum büyük dizilere (2011, 2020, 2023) göre yapılıyor; sakin yıllarda yıl içi tetiklenme ~2 kat fazla.
+
+Dört varyant ileriye kayan şekilde (2015-2025) eski ETAS'a karşı sınandı
+(`scripts/compare_etas.py`, rapor `reports/etas_karsilastirma.md`):
+
+| varyant | yıllık sayı log-puanı (eski ETAS'a göre, %95 GA) | deprem deprem M≥3,5 (olay başına, %95 GA) |
+|---|---|---|
+| B: gerçek büyüklük dağılımıyla benzetim | −27,6 [−85,7; +8,0] (6/11 yıl iyi) | aynı (parametreler değişmiyor) |
+| C: B + α = b·ln10 | +26,4 [+2,3; +63,4] (7/11) | −0,390 [−0,592; −0,184] (daha kötü) |
+| D: B + α = 2,0 | +22,3 [+7,5; +42,5] (9/11) | −0,131 [−0,190; −0,054] (daha kötü) |
+
+**Sonuç:** Tek bir ayar iki testi birden iyileştirmiyor. B fazla tahmini azaltıyor (2024 medyanı
+806 → 635, medyan/gözlenen 1,15 → 0,98) ama büyük dizili yıllarda (2023, 2025) aralığı dar kaldığı
+için toplam puanı kötüleşiyor. C ve D yıllık sayıyı anlamlı olarak iyileştiriyor, fakat depremin
+zamanı ve yeri için anlamlı olarak kötüleşiyor. Ana test deprem deprem olduğu için referans ETAS
+değiştirilmedi; seçenekler (`mag_sampling`, `fit(fixed=...)`) kodda duruyor, varsayılan eski davranış.
+
 ## Bilinen sınırlamalar
 
 * **GPS kapsaması:** Nevada arşivinde Türkiye istasyonlarının çoğu 2012-2016 arası;
