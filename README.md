@@ -66,6 +66,17 @@ kanıtlı hipotez** olarak ayrı, kısa vadeli (5 günlük) bir testte sınanır
 literatüre dayalı başlangıç etkisi ve belirsizliği `src/deprem/observations/registry.py`
 içindedir; eğitim bunları geçmiş depremlerle günceller. Ayrıntı: `docs/gozlemler.md`.
 
+### Bölge bazında parametre ayarı
+
+```bash
+python scripts/search_regional.py --config configs/train_search.toml   # kısa (2012+, M≥3)
+python scripts/regional_report.py                                      # reports/bolgesel_ayar.md
+```
+
+Tek ortak ayar yerine Marmara, Kuzey Anadolu, Doğu Anadolu, Ege ve Van-Kars için ayrı katsayılar;
+bölge katsayıları ortak ayara doğru çekilir (kısmi havuzlama). Sahte bölgelerle şans kontrolü ve
+dokunulmamış 2020-2025 sınaması. Yöntem: `src/deprem/regional.py`.
+
 ### En eski veriden bugüne deprem deprem eğitim
 
 ```bash
@@ -193,3 +204,10 @@ Saha listesi `external_data/` altındadır.
 - [ ] GNSS gerinim, krip, ısı akısı vb. boş parametrelerin bağlanması
 - [ ] Tarihsel katalogla (1900 öncesi) birleştirme
 - [ ] İleriye dönük (prospektif) test kaydı: tahminler önceden zaman damgalı saklanır
+
+### Ön kayıtlı sınamalar ve canlı tahmin
+
+Bir ipucu sonuçlara bakılarak bulunduysa, kuralları önce `docs/onkayit/` altına yazılıp depoya
+gönderilir, sonra hiç kullanılmamış veriyle bir kez sınanır. İlk örnek: "model Ege'de ETAS'tan
+iyi" ipucu, 2026 verisinde desteklenmedi ([`reports/ege_onkayit.md`](reports/ege_onkayit.md)).
+Ege için günlük canlı tahmin kaydı: [`forecasts/ege/BENIOKU.md`](forecasts/ege/BENIOKU.md).

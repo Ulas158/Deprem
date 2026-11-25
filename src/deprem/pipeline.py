@@ -124,7 +124,12 @@ class Run:
         return self._cache["rec"]
 
     def window(self, y):
-        return ts(f"{y}-01-01"), ts(f"{y + self.cfg['split']['window_years']}-01-01")
+        t0, t1 = ts(f"{y}-01-01"), ts(f"{y + self.cfg['split']['window_years']}-01-01")
+        # tamamlanmamış son yıl: pencere veri kesim tarihinde biter (ör. ön kayıtlı 2026 sınaması)
+        end = self.cfg["split"].get("last_window_end")
+        if end and y == self.cfg["split"]["last_test_year"]:
+            t1 = min(t1, ts(end))
+        return t0, t1
 
     # ------------------------------------------------------------ aşamalar
     def stage_etas(self):
