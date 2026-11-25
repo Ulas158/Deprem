@@ -23,6 +23,7 @@ Her deprem için model **yalnız o depremden önceki** depremlerle yeniden eğit
 | Ana model − yavaş (yıllar-on yıllar) etki                          |             -0.026 | [-0.064, +0.010] |           1     |  -0.004 |  -0.022 |                      -0.01  |      -0.05  |      -0.012 |       0.012 |          -0.09  |        1 |
 | Ana model, 100 km ötesi etki kesik                                 |             -0.095 | [-0.172, -0.029] |           1     |  -0.03  |  -0.064 |                      -0.033 |      -0.158 |      -0.004 |      -0.057 |          -0.122 |        1 |
 | Ana model − fay doluluğu                                           |              0.002 | [-0.030, +0.034] |           0.456 |  -0.002 |   0.004 |                       0.018 |       0.004 |       0.009 |      -0.008 |          -0.018 |        1 |
+| Ana model + Doğu Marmara dv/v                                      |             -0.011 | [-0.049, +0.023] |           1     |  -0.002 |  -0.009 |                      -0.014 |      -0.03  |       0.009 |       0.006 |          -0.052 |        1 |
 
 ## Her parçanın katkısı (ana model − o parça çıkarılmış sürüm, 1900-2025)
 
@@ -30,14 +31,22 @@ Pozitif = o parça işe yarıyor. Aynı depremler üzerinde eşli fark; GA yıl 
 
 | parça                                              |   katkı | %95 GA           |     p |   Holm p |
 |:---------------------------------------------------|--------:|:-----------------|------:|---------:|
-| 100 km ötesindeki fayların etkisi                  |   0.083 | [+0.032, +0.137] | 0.002 |    0.011 |
-| faylar arası etkinin tümü (sistem, Coulomb, yavaş) |   0.008 | [-0.010, +0.027] | 0.186 |    0.929 |
-| yavaş (yıllar süren) etki                          |   0.015 | [-0.002, +0.032] | 0.053 |    0.321 |
+| 100 km ötesindeki fayların etkisi                  |   0.083 | [+0.032, +0.140] | 0.003 |    0.021 |
+| faylar arası etkinin tümü (sistem, Coulomb, yavaş) |   0.008 | [-0.010, +0.027] | 0.198 |    0.99  |
+| yavaş (yıllar süren) etki                          |   0.015 | [-0.003, +0.032] | 0.053 |    0.321 |
 | farklı büyük sistemler arası ayrı çarpan           |  -0.004 | [-0.013, +0.004] | 1     |    1     |
 | Coulomb gerilme yönü                               |  -0.001 | [-0.003, +0.000] | 1     |    1     |
 | fay doluluğu (son büyük depremden beri biriken)    |  -0.013 | [-0.025, -0.002] | 1     |    1     |
-| fay fay ayar (ortak ayara karşı)                   |  -0.027 | [-0.059, +0.003] | 1     |    1     |
-| sürekli güncelleme (1900'de dondurmaya karşı)      |   0.225 | [+0.127, +0.351] | 0.001 |    0.004 |
+| fay fay ayar (ortak ayara karşı)                   |  -0.027 | [-0.059, +0.004] | 1     |    1     |
+| sürekli güncelleme (1900'de dondurmaya karşı)      |   0.225 | [+0.125, +0.353] | 0.001 |    0.006 |
+
+## Doğu Marmara dv/v (kaya hız değişimi) eklenince
+
+2009-2025, tüm Türkiye (63 deprem): olay başına +0.000 [+0.000, +0.001], p = 0.097. Doğu Marmara kutusunda bu dönemde M≥5,5 deprem sayısı: 1 (2022-11-23 M6.1: +0.014).
+
+Öğrenilen dv/v katsayısı (2025 sonu): +0.111 (dv/v 1 standart sapma yükselince bölgedeki fayların deprem hızı ×1.12).
+
+Bu büyüklük eşiğinde (M≥5,5) dv/v'nin kapsadığı yer ve zamanda çok az deprem olduğu için bu test neredeyse hiç güç taşımaz; sonuç ne çıkarsa çıksın dv/v için kanıt sayılmamalı.
 
 ## Şans kontrolü
 
