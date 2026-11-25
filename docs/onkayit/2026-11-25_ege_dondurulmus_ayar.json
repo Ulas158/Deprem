@@ -1,0 +1,98 @@
+{
+  "on_kayit": "docs/onkayit/2026-11-25_ege_ustunluk.md",
+  "olusturma": "2026-11-25T22:10:05.170597+00:00",
+  "not": "Bu ayar 2015-2019 arama yıllarıyla seçildi; 2026 verisi hiçbir hesapta kullanılmadı.",
+  "arama": {
+    "yillar": [
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+    ],
+    "deneme": 300,
+    "tohum": 0,
+    "puan": 0.2095710601054053
+  },
+  "ayar": {
+    "groups": [
+      "b-değeri",
+      "fay geometrisi",
+      "gelgit ve periyodik yükler",
+      "hız değişimi",
+      "insan kaynaklı sahalar",
+      "kapasite ve kayaç",
+      "kümelenme",
+      "sayılar",
+      "son depremden geçen süre",
+      "sürtünme vekili",
+      "sürüler ve akışkan",
+      "uzak tetikleme",
+      "zincirleme kırılma"
+    ],
+    "weights": {
+      "b-değeri": 0.25830630729915527,
+      "fay geometrisi": 0.08942940531129705,
+      "gelgit ve periyodik yükler": 0.16377185042664924,
+      "hız değişimi": 2.484088948406141,
+      "insan kaynaklı sahalar": 2.9821069629459047,
+      "kapasite ve kayaç": 0.4523662849522901,
+      "kümelenme": 1.443599009518555,
+      "sayılar": 0.7906944151255084,
+      "son depremden geçen süre": 0.12674856901969778,
+      "sürtünme vekili": 1.0234176233350822,
+      "sürüler ve akışkan": 0.057503391953257474,
+      "uzak tetikleme": 0.27785811321658693,
+      "zincirleme kırılma": 0.10311579533970969
+    },
+    "prior_sd": 1.1204757356499029,
+    "mu_eff": 0.4,
+    "ard": true,
+    "energy_prior": false,
+    "uncertainty_weights": false,
+    "window": 5
+  },
+  "yeniden_uretim_2020_2025": {
+    "PR13_ege_M3_eski_olcut": 0.315,
+    "eski_olcut_ege": {
+      "M≥3": {
+        "olay": 4763,
+        "kazanç": 0.2635821363237688
+      },
+      "M≥4": {
+        "olay": 562,
+        "kazanç": 0.23596278430495585
+      }
+    },
+    "bolgeye_kisitli_ege": {
+      "M≥3": {
+        "olay": 4763,
+        "IG": 0.09808209474166754,
+        "GA95": [
+          -0.02726105059364086,
+          0.17323025397535932
+        ],
+        "p_tek_yonlu": 0.0691
+      },
+      "M≥4": {
+        "olay": 562,
+        "IG": 0.1131164200296438,
+        "GA95": [
+          -0.058925886487715885,
+          0.17927571519716162
+        ],
+        "p_tek_yonlu": 0.1124
+      },
+      "2,5≤M<3": {
+        "olay": 7035,
+        "IG": 0.07518542214919212,
+        "GA95": [
+          -0.021080066751726884,
+          0.15796385732524176
+        ],
+        "p_tek_yonlu": 0.0619
+      }
+    },
+    "tum_turkiye_sinama_puani": -0.05920507020153054
+  }
+}
