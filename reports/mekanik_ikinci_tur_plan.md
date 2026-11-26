@@ -199,3 +199,11 @@ makul geniş tutuldu. Okuyucu bu bilgiyi göz önünde tutmalı.
   hiçbir aşamada kullanılmaz. Aralıklar değişmez. Not: birinci tur ayarı genel tarih
   istatistiklerine (tekrarlanma, büyüklük) göre yapıldığı için sınav depremlerinden zayıf bir
   bilgi taşır; bu raporda belirtilir.
+
+### Doğu boşluğu (2026-11-26 15:22 UTC, hiçbir sonuç görülmeden eklendi)
+GFZ kataloğu 30,65°D'de bittiği için İzmit-Sapanca doğusu ve Düzce'de hassas veri yok. Bu
+bölgede 2006 sonrası ham katalogda ~1.300 kayıt var (AFAD 495, EMSC 798; çakışanlar ayıklanır),
+ama kayıtlarda hata payı bilgisi yok. Karar: ham AFAD kayıtları (EMSC ile çakışanlar tek sayılır)
+bu bölgede σ = 5 km varsayılarak ±2σ aday kutularıyla özümsemeye girer, puanlamada ağırlıkları
+GFZ olaylarından düşük kalır (1/σ²). 1999 kırılma alanı için yayınlanmış yeniden konumlanmış
+bir artçı kataloğu bulunursa o tercih edilir. Sonuç bu bölge dahil ve hariç ayrı raporlanır.
