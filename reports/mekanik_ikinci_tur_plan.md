@@ -45,3 +45,12 @@ Sabit (ölçümle bilinen): levha hızı (GPS), fay yeri ve yönü, elastik yük
 - İkisinin de yalnız bağımsız sınav sonuçları yan yana raporlanır.
 - Arama: önce kaba ve hızlı model (2 km kutu, kısa dönemler) ile Latin hiperküp + yerel
   iyileştirme, en iyi 5 aday tam modelle doğrulanır.
+
+## Saatin başlangıcı (Ulas'ın tarifi: yeri ve tarihi kesin olan en eski depremden ileri sar)
+- Büyük depremler: tarihler hepsinde kesin, ama yer (kırılma boyu) 1509, 1659 ve 1754'te
+  tartışmalı (güven "düşük"). Saat **1719 İzmit** ile başlar (yer güveni "orta"). 1509 ve 1659'un
+  bıraktığı yük bilinmediği için 1719'daki başlangıç durumu rastgele ısınma durumlarından bir
+  toplulukla temsil edilir. 1754 uygulanır ama düşük güvenli olduğu için puanlanmaz.
+  Ayarda puanlanan: 1766 Mayıs, 1766 Ağustos, 1894. Sınav: 1912, 1999 İzmit, 1999 Düzce.
+- Küçük depremler: saat GFZ kataloğunun başında (2006-01-01) başlar; 2006-2017 ayar,
+  2018-2023 sınav.
