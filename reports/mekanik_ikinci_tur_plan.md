@@ -172,3 +172,10 @@ bağıntısından yaklaşık düzlem kullanılır; modele binen gerilme cutde il
 zamanında uygulanır. Hücrelerde 0,01 MPa'nın altında etki üretenler atlanır. Adaylar en az:
 1953 Yenice-Gönen, 1957 Abant, 1964 Manyas, 1967 Mudurnu (birinci tur tablosunda yok;
 ana kola çok yakın, kontrol edilecek), 1855 Bursa.
+- Etkiye dayalı kural (15:16 UTC, yukarıdaki M≥5 / 10 km kuralının yerine): büyüklük ve
+  uzaklıktan bağımsız olarak, herhangi bir model hücresinde Coulomb gerilmesini 0,01 MPa'dan
+  (0,1 bar) fazla değiştiren her olay eklenir. Ulas %1 doluluk eşiğini önerdi; %1 doluluk
+  dayanım fazlasına bağlı olduğu için (başlangıçta derinde 0,1 MPa, sığda 0,025 MPa) hem
+  0,1 bar'dan 2,5-10 kat daha kaba hem de ayarlanan bir parametreye bağlı (ayar değiştikçe
+  hangi depremlerin girdiği değişirdi). Bu yüzden eşik sabit fiziksel birimde (0,01 MPa)
+  tutulur; bu, %1 kuralının seçeceği bütün olayları da kapsar. Eklenen olay sayısı raporlanır.
