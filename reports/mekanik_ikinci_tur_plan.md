@@ -154,3 +154,10 @@ Ulas "bilimsel ol, manipüle olma" dedi. Plandaki zayıf noktalar ve önlemler:
    sonuç "model işe yaramıyor" diye yazılır.
 4. Ulas'ın veya başka birinin önerileri, bu bölümle çelişirse uygulanmadan önce gerekçesiyle
    itiraz edilir.
+
+### Zaman sırası ve komşu depremler (2026-11-26 15:14 UTC, hiçbir sonuç görülmeden eklendi)
+Bütün depremler (büyük, küçük, ana kol, yan kol) tek bir zaman çizelgesinde eskiden yeniye
+işlenir; hiçbiri atlanmaz. Her biri sırası gelince yükünü elastik matrisle bütün hücrelere
+aktarır. Modellenmiş herhangi bir fay koluna (ikinci sürüm ağında güney/orta kol, İmralı,
+Armutlu dahil) 10 km'den yakın olaylar özümsenir. Daha uzaktaki olaylar modelde fay olmadığı
+için yerleştirilemez; sayıları ve toplam momentleri raporda ayrıca listelenir.
