@@ -123,3 +123,9 @@ olanı seç.
 - Aday sayısı kuralı (15:07 UTC): aday kutu sayısı hata payının km cinsinden yuvarlanmış
   değeri kadardır (1 km hata → 1 kutu, 4 km → 4 kutu, 5 km → 5 kutu), 1 km aralıkla hata
   elipsinin uzun ekseni boyunca dizilir; 10 km'yi aşan hatalarda en çok 10 aday.
+- Olasılıklı adaylar (15:08 UTC): ayar döneminde tek aday seçilmez. Her aday kutu için
+  "deprem burada oldu" olasılığı = katalog hata elipsinden gelen önsel × modelin o andaki
+  doluluğundan gelen olabilirlik (doluluk sınıra ne kadar yakınsa o kadar olası), normalize.
+  Özümseme güncellemeleri bu olasılıklarla ağırlıklandırılır ve olasılıklar saklanır; raporda
+  belirsiz depremler için aday dağılımları gösterilir. Sınav döneminde yalnız katalog önseli
+  kullanılır (model doluluğu olasılığa girmez, döngüsellik olmasın).
