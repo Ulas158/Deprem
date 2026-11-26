@@ -134,3 +134,23 @@ olanı seç.
   aralığında 1 km arayla dizilir (5 km hata → ±10 km, 21 aday; %95 kapsama). Öncül olasılık
   Gauss: ortadakiler yüksek, kenardakiler düşük. Olasılığı %1'in altında kalan adaylar hesap
   yükünü azaltmak için atılır ve kalanlar yeniden normalize edilir.
+
+## Bilimsel düzeltmeler (2026-11-26 15:10 UTC, hiçbir ikinci tur sonucu görülmeden eklendi)
+Ulas "bilimsel ol, manipüle olma" dedi. Plandaki zayıf noktalar ve önlemler:
+1. **"Kırılan parça %100 doluydu" varsayımı fiziksel olarak tam doğru değil.** Dinamik kırılma,
+   sınırın altındaki alanları da kırar (birinci tur modelinde kırılan hücrelerin çoğu %20-60
+   doluydu). Bütün parçayı %100'e çekmek komşulara aktarılan yükü abartır. Önlem: %100'e
+   yalnız başlangıç noktası (bilinen ya da olasılıklı hiposantr çevresi, ~5 km) çekilir;
+   parçanın geri kalanı modeldeki gerçek gerilmesiyle kırılır. Bütün parçayı %100'e çeken
+   sürüm de yan yana koşulur ve raporlanır.
+2. **Serbestlik derecesi sayılır.** 11 ortak parametre + 10 km blok farkları + geri sarma +
+   konum seçimi, ayarda puanlanan 3 büyük depremden çok daha fazla serbestlik verir; ayarın
+   tutması bu yüzden kanıt sayılmaz. Blok farkı yalnız ayar verisi içinde birini-dışarıda-bırak
+   çapraz doğrulamasıyla iyileşme gösterirse eklenir. Raporda toplam serbest sayı yazılır.
+3. **Sınavın gücü düşük.** 3 büyük sınav depremi tek başına hiçbir şeyi kanıtlayamaz (±20 yıllık
+   pencereye rastgele bir modelin düşme olasılığı bile ~%15-25). Asıl sınav 2018-2023 küçük
+   depremleridir (yüzlerce olay). Her sonuç iki kıyasla verilir: (a) şans (rastgele kaydırma),
+   (b) basit kestirme "son depremden beri geçen süre × kayma hızı". Model bu ikisini geçemezse
+   sonuç "model işe yaramıyor" diye yazılır.
+4. Ulas'ın veya başka birinin önerileri, bu bölümle çelişirse uygulanmadan önce gerekçesiyle
+   itiraz edilir.
