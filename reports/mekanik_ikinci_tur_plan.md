@@ -227,3 +227,7 @@ bir artçı kataloğu bulunursa o tercih edilir. Sonuç bu bölge dahil ve hari�
 - **Tarihsel depremler:** başlangıç noktası bilinmediği için adaylar kırılma boyunca (uç
   belirsizliği dahil) eşit olasılıkla dağıtılır; 1999 İzmit gibi aletsel kayıtlı depremlerde
   yayınlanmış hiposantr ve hatası kullanılır.
+- Netleştirme (15:33 UTC): hata payı hücre yarı boyundan küçükse (1 km ağda 0,5 km, yerel
+  ağda 50 m) olay yayılmadan tek hücreye konur. Başlangıç bölgesi boyu büyüklükle ölçeklenir:
+  M2 ~0,1 km, M3 ~0,5 km, M4 ~1-2 km, M≥6 ~5 km (bölge hücreden küçükse hücrenin o oranı kadar
+  etki: S ← S + p·(A_bölge/A_hücre)·(S_kırılma − S)).
