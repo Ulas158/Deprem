@@ -96,8 +96,13 @@ def tarihsel_olaylar(v: Veri, uye: int | None):
     return df
 
 
-def zorla(m: Model, ev, derin_max=None):
+def zorla(m: Model, ev, derin_max=None, doldur=False):
+    """Tarihsel kırılmayı uygula. ``doldur=True`` (veri özümseme): gerçek deprem, kırılan
+    kilitli parçanın o anda kırılma sınırında olduğunu söyler; önce %100 doluya çekilir."""
     mask = (m.x >= ev.x0) & (m.x <= ev.x1)
+    if doldur:
+        d = mask & m.vw
+        m.S[d] = np.maximum(m.S[d], m.S_fail[d])
     return m.kirilma(0, maske=mask, zorla=True, tarih=ev.tarih)
 
 

@@ -119,7 +119,7 @@ def asama_gps(v, args, p):
             mws = []
             for e in e99.itertuples():
                 m.ilerle(e.t)
-                r = deney.zorla(m, e)
+                r = deney.zorla(m, e, doldur=args.ozumse)
                 mws.append(r["mw"] if r else np.nan)
             mod = deney.gps_model(m, G, 1999.9)
             j = obs.merge(mod, on=["site", "a", "b", "bil"], suffixes=("_g", "_m"))
@@ -179,7 +179,7 @@ def asama_isinma(v, args, p):
 
 def asama_oynatma(v, args, p, ad, sts):
     """Bir katman kalınlığı senaryosu için topluluk üyeleri: 1500'den bugüne oynatma."""
-    out = RUN / f"oynatma_{ad}.pkl"
+    out = RUN / (f"oynatma_{ad}" + ("_ozumse" if args.ozumse else "") + ".pkl")
     if out.exists():
         return pickle.loads(out.read_bytes())
     xb = np.arange(0, 456, 1.0)
@@ -202,12 +202,13 @@ def asama_oynatma(v, args, p, ad, sts):
             kayit["once"][e.tarih] = m.km_doluluk()
             kendi = [o for o in m.olaylar[n0:] if o["mw"] >= deney.BUYUK_MW]
             kayit["sahte"] += len(kendi)
-            r = deney.zorla(m, e)
+            r = deney.zorla(m, e, doldur=args.ozumse)
             kayit["zorla"].append({"tarih": e.tarih, "t": e.t, "mw_gozlem": e.mw, "mw_sd": e.mw_sd,
                                    "mw_model": r["mw"] if r else np.nan, "ort_kayma": r["ort_kayma"] if r else np.nan,
                                    "sahte_once": len(kendi), "x0": e.x0, "x1": e.x1})
         m.ilerle(2026.9)
         kayit["bugun"] = m.km_doluluk()
+        kayit["bugun_hucre"] = {"S": m.S.astype("float32"), "S_fail": m.S_fail.astype("float32")}
         pr, ilk = deney.ileri_olasilik(m, 30.0, args.ileri, seed=uye * 100 + 99, x_bins=xb)
         kayit["ileri"] = {"p": pr, "ilk": ilk, "n": args.ileri}
         kayit["katalog"] = m.katalog()
@@ -245,6 +246,7 @@ def main():
     ap.add_argument("--uye", type=int, default=3)
     ap.add_argument("--ileri", type=int, default=6)
     ap.add_argument("--hizli", action="store_true")
+    ap.add_argument("--ozumse", action="store_true", help="her gerçek depremde kırılan parçayı önce %%100 doluya çek")
     ap.add_argument("--gps-ayar", default=None, help="tek GPS ayarı 'tM,krip' (paralel koşu için)")
     args = ap.parse_args()
     RUN.mkdir(parents=True, exist_ok=True)
