@@ -80,6 +80,22 @@ hatalarıyla 10 kez yeniden örneklenip yürüyüşün baştan yapılmasıyla he
 eski dönemlerde daha geniştir. Rapor: `reports/training_turkey_v4_long.md`. Yöntem:
 `src/deprem/longwalk.py`.
 
+### Fay fay biriken enerji (moment açığı, b-değeri, komşu fay zinciri, 1 km parçalar)
+
+```bash
+pip install -e ".[walk]"
+python scripts/fetch_catalogs.py            # sonra uzun katalog (train_long.py ilk adımı)
+python scripts/faultwalk.py --prepare etas partial partial_deficit partial_bval partial_chain partial_energy \
+    partial_deficit_km partial_chain_km partial_energy_km --jobs 4    # ~1,5 saat (4 çekirdek)
+python scripts/faultwalk.py --energy-nulls 10                        # şans kontrolü
+python scripts/fault_energy_report.py                                 # reports/fault_energy.md
+```
+
+Her fay segmenti ve her 1 km fay parçası için, yalnız o andan önceki depremlerle: biriken moment
+açığı (kayma hızıyla birikim − her büyüklükteki depremin boşalımı), son 5 yılın yerel b-değeri ve
+yüklü komşu faylardan oluşan zincirin boyu. Göstergeler sıralı fay modeline eklenip ETAS'a karşı
+sınanır; Marmara için ayrı profil ve sınama. Yöntem: `src/deprem/fault_energy.py`.
+
 ### Parametre kombinasyonu araması ve fay doluluk oranı
 
 ```bash

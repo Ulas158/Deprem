@@ -456,6 +456,27 @@ def main():
              "değişebilir. Gerilme düşümünü fay fay ölçmek için dalga biçimi spektrumları gerekir; bu sürümde yok.\n"
              "- Yüklülük eşiği (R ≥ 0,5) ve b penceresi (5 yıl, 30 km, ≥ 50 olay) sonuçlara bakılmadan önceden "
              "seçildi.\n")
+    summary = [
+        "## Kısa özet (sade dille)\n",
+        f"- **Küçük depremler fayı boşaltmıyor.** Faylara düşen toplam deprem momentinin yalnız binde "
+        f"{1000 * tot_small / tot_all:.0f}'sı M<5,5 depremlerden geliyor. Biriken yük büyük depremlere kalıyor.\n"
+        "- **Fay fay biriken yük hesaplandı** (segment segment ve 1 km parça parça). Tablolar ve Marmara profili "
+        "aşağıda. Bu sayılar 1700'de sıfırdan başlayan bir saatle ve tek bir kaya dayanımı varsayımıyla "
+        "hesaplandı; kesin değil, göreli.\n"
+        "- **Bu göstergeler, depremin ne zaman ve nerede olacağını tahmin etmeye şimdilik katkı vermedi.** "
+        "Moment açığı, küçük/büyük deprem oranı (b-değeri), yüklü komşu fay zinciri ve 1 km parçalar; hiçbiri "
+        "ana modeli ya da ETAS'ı anlamlı biçimde geçmedi. Karıştırma testi de gerçek katkıyı şanstan ayıramadı.\n"
+        "- **\"Biri sınırdaysa yeter mi, boydan boya mı yüklü olmalı?\"** Bu veriyle ayırt edilemedi: ne tek "
+        "segmentin ne de yüklü komşu zincirinin uzunluğu, gelen depremin büyük (M≥6,5) olup olmayacağını "
+        "sabit orandan daha iyi söyledi.\n"
+        "- **Marmara:** 1 km hesabında Marmara Denizi altındaki ana fay 18. yüzyıldan beri büyük bir boşalım yaşamamış, yük biriktiriyor görünüyor "
+        "(bilimsel literatürdeki 'İstanbul sismik boşluğu' ile uyumlu); 1999 öncesinde de İzmit kırığı bölgesi "
+        "yüklü görünüyordu. Ancak bu tek tek örnekler kanıt sayılmaz: Marmara'daki 44 depremle yapılan sınamada "
+        "göstergeler modele katkı vermedi.\n"
+        "- **Sonuç:** Hipotez çürütülmedi ama desteklenmedi de. Asıl engel, fayların 1700'deki yükünü ve "
+        "geçmiş büyük kırıkların gerçek uzunluklarını bilmemek.\n",
+    ]
+    L[2:2] = summary
     REP.write_text("\n".join(L), encoding="utf-8")
     print(REP)
 

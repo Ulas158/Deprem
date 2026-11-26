@@ -2,6 +2,15 @@
 
 > Deneysel araştırma çıktısıdır, deprem tahmini değildir. Hiçbir gösterge kanıtsız doğrulanmış sayılmaz.
 
+## Kısa özet (sade dille)
+
+- **Küçük depremler fayı boşaltmıyor.** Faylara düşen toplam deprem momentinin yalnız binde 6'sı M<5,5 depremlerden geliyor. Biriken yük büyük depremlere kalıyor.
+- **Fay fay biriken yük hesaplandı** (segment segment ve 1 km parça parça). Tablolar ve Marmara profili aşağıda. Bu sayılar 1700'de sıfırdan başlayan bir saatle ve tek bir kaya dayanımı varsayımıyla hesaplandı; kesin değil, göreli.
+- **Bu göstergeler, depremin ne zaman ve nerede olacağını tahmin etmeye şimdilik katkı vermedi.** Moment açığı, küçük/büyük deprem oranı (b-değeri), yüklü komşu fay zinciri ve 1 km parçalar; hiçbiri ana modeli ya da ETAS'ı anlamlı biçimde geçmedi. Karıştırma testi de gerçek katkıyı şanstan ayıramadı.
+- **"Biri sınırdaysa yeter mi, boydan boya mı yüklü olmalı?"** Bu veriyle ayırt edilemedi: ne tek segmentin ne de yüklü komşu zincirinin uzunluğu, gelen depremin büyük (M≥6,5) olup olmayacağını sabit orandan daha iyi söyledi.
+- **Marmara:** 1 km hesabında Marmara Denizi altındaki ana fay 18. yüzyıldan beri büyük bir boşalım yaşamamış, yük biriktiriyor görünüyor (bilimsel literatürdeki 'İstanbul sismik boşluğu' ile uyumlu); 1999 öncesinde de İzmit kırığı bölgesi yüklü görünüyordu. Ancak bu tek tek örnekler kanıt sayılmaz: Marmara'daki 44 depremle yapılan sınamada göstergeler modele katkı vermedi.
+- **Sonuç:** Hipotez çürütülmedi ama desteklenmedi de. Asıl engel, fayların 1700'deki yükünü ve geçmiş büyük kırıkların gerçek uzunluklarını bilmemek.
+
 ## 1. Küçük depremler fayı boşaltıyor mu?
 
 1700'den 2025 sonuna kadar fay segmentlerine düşen toplam deprem momentinin yalnız **%0.60**'i M<5,5 depremlerden geliyor. Kayıtlı bütün küçük depremler (432,386 deprem) toplamda, Türkiye faylarının yalnız ≈1.3 yılda biriktirdiği yükü boşaltmış. Yani küçük depremler fayı boşaltmıyor, yük büyük depremlere kalıyor. Küçük depremler enerjiyi değil, gerilmenin nasıl değiştiğine dair ipucunu (b-değeri) taşıyabilir. (Küçük depremlerin kaydı 1998'den önce eksik; eksik olanlar eklense de bu oran birkaç kattan fazla değişmez, çünkü her büyüklük basamağı bir öncekinin ~30 katı enerji taşır.)
@@ -111,31 +120,54 @@ Fay üstündeki her M≥5,5 deprem için (1900-2025, ilk 60'ı yalnız eğitim, 
 
 Her deprem, yalnız önceki verilerle yeniden eğitilmiş modelle puanlandı (421 deprem 1900-2025; 97'i 2000-2025). Olay başına log olasılık farkı; GA yıl blokları bootstrap'ı; Holm düzeltmesi tablodaki tüm karşılaştırmalar için. b-değeri girdisi küçük deprem kaydı yeterli olan yıllarda (pratikte 1998 sonrası) doludur, öncesinde etkisizdir; bu yüzden 2000-2025 sütununa ayrıca bakın.
 
-| model                                     | karşı     |   1900-2025 | %95 GA           |   p |   1900-1959 |   1960-1999 |   2000-2025 |   M≥6,5 |   Holm p |
-|:------------------------------------------|:----------|------------:|:-----------------|----:|------------:|------------:|------------:|--------:|---------:|
-| Ana model + üçü birlikte                  | ETAS      |      -0.014 | [-0.053, +0.022] |   1 |      -0.034 |       0.011 |       0.001 |  -0.071 |        1 |
-| Ana model + üçü birlikte                  | ana model |      -0.003 | [-0.017, +0.009] |   1 |      -0.004 |       0.002 |      -0.005 |  -0.019 |        1 |
-| Ana model + üçü birlikte, 1 km parçalarla | ETAS      |      -0.015 | [-0.056, +0.021] |   1 |      -0.036 |       0.011 |       0.003 |  -0.074 |        1 |
-| Ana model + üçü birlikte, 1 km parçalarla | ana model |      -0.003 | [-0.018, +0.009] |   1 |      -0.006 |       0.002 |      -0.003 |  -0.022 |        1 |
+| model                                                  | karşı     |   1900-2025 | %95 GA           |     p |   1900-1959 |   1960-1999 |   2000-2025 |   M≥6,5 |   Holm p |
+|:-------------------------------------------------------|:----------|------------:|:-----------------|------:|------------:|------------:|------------:|--------:|---------:|
+| Ana model + moment açığı oranı (küçük depremler dahil) | ETAS      |      -0.011 | [-0.049, +0.022] | 1     |      -0.03  |       0.011 |       0.005 |  -0.052 |        1 |
+| Ana model + moment açığı oranı (küçük depremler dahil) | ana model |       0     | [-0.002, +0.002] | 0.453 |      -0     |       0.002 |      -0.001 |   0     |        1 |
+| Ana model + yerel b-değeri farkı (son 5 yıl)           | ETAS      |      -0.013 | [-0.051, +0.022] | 1     |      -0.03  |       0.01  |       0.001 |  -0.071 |        1 |
+| Ana model + yerel b-değeri farkı (son 5 yıl)           | ana model |      -0.001 | [-0.015, +0.010] | 1     |       0     |       0     |      -0.005 |  -0.019 |        1 |
+| Ana model + yüklü komşu fay zinciri uzunluğu           | ETAS      |      -0.011 | [-0.049, +0.024] | 1     |      -0.032 |       0.012 |       0.008 |  -0.051 |        1 |
+| Ana model + yüklü komşu fay zinciri uzunluğu           | ana model |       0     | [-0.002, +0.002] | 0.511 |      -0.002 |       0.003 |       0.002 |   0.001 |        1 |
+| Ana model + üçü birlikte                               | ETAS      |      -0.014 | [-0.052, +0.023] | 1     |      -0.034 |       0.011 |       0.001 |  -0.071 |        1 |
+| Ana model + üçü birlikte                               | ana model |      -0.003 | [-0.017, +0.009] | 1     |      -0.004 |       0.002 |      -0.005 |  -0.019 |        1 |
+| Ana model + moment açığı oranı, 1 km parçalarla        | ETAS      |      -0.01  | [-0.048, +0.024] | 1     |      -0.029 |       0.012 |       0.007 |  -0.05  |        1 |
+| Ana model + moment açığı oranı, 1 km parçalarla        | ana model |       0.001 | [-0.002, +0.005] | 0.246 |       0.001 |       0.003 |       0.001 |   0.002 |        1 |
+| Ana model + yüklü kesintisiz fay boyu, 1 km parçalarla | ETAS      |      -0.011 | [-0.050, +0.024] | 1     |      -0.032 |       0.01  |       0.011 |  -0.055 |        1 |
+| Ana model + yüklü kesintisiz fay boyu, 1 km parçalarla | ana model |       0     | [-0.004, +0.004] | 0.464 |      -0.002 |       0     |       0.005 |  -0.003 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla              | ETAS      |      -0.015 | [-0.055, +0.022] | 1     |      -0.036 |       0.011 |       0.003 |  -0.074 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla              | ana model |      -0.003 | [-0.018, +0.009] | 1     |      -0.006 |       0.002 |      -0.003 |  -0.022 |        1 |
+
+b-değeri, yalnız 2000-2025 (97 deprem), ana modele göre: -0.005 [-0.068, +0.045], p = 1.000 (düzeltmesiz).
 
 Öğrenilen katsayılar (+ = gösterge yüksekken o fayda deprem daha olası). Girdiler: moment açığı log R; b farkı z; zincir log10(km/100).
 
-| model                         | girdi      |   katsayı (2025 sonu) |
-|:------------------------------|:-----------|----------------------:|
-| üçü birlikte                  | deficit    |                -0.029 |
-| üçü birlikte                  | bval       |                 0.185 |
-| üçü birlikte                  | chain      |                -0.173 |
-| üçü birlikte, 1 km parçalarla | deficit_km |                -0.076 |
-| üçü birlikte, 1 km parçalarla | bval       |                 0.184 |
-| üçü birlikte, 1 km parçalarla | chain_km   |                -0.192 |
+| model                                      | girdi      |   katsayı (2025 sonu) |
+|:-------------------------------------------|:-----------|----------------------:|
+| moment açığı oranı (küçük depremler dahil) | deficit    |                -0.1   |
+| yerel b-değeri farkı (son 5 yıl)           | bval       |                 0.183 |
+| yüklü komşu fay zinciri uzunluğu           | chain      |                -0.197 |
+| üçü birlikte                               | deficit    |                -0.029 |
+| üçü birlikte                               | bval       |                 0.185 |
+| üçü birlikte                               | chain      |                -0.173 |
+| moment açığı oranı, 1 km parçalarla        | deficit_km |                -0.159 |
+| yüklü kesintisiz fay boyu, 1 km parçalarla | chain_km   |                -0.266 |
+| üçü birlikte, 1 km parçalarla              | deficit_km |                -0.076 |
+| üçü birlikte, 1 km parçalarla              | bval       |                 0.184 |
+| üçü birlikte, 1 km parçalarla              | chain_km   |                -0.192 |
 
 ### Fayı 1 km'lik parçalara bölmek, segment bütününe göre işe yarıyor mu?
 
 Her fay 24,965 parçaya bölündü (1 km). Her parçada yük, kayma hızıyla her yıl artıyor; bir deprem o parçaya ulaştığında (merkezden kırık yarı boyu + 5 km) momenti kadar yük düşüyor, yük sıfırın altına inmiyor ("son kırılmadan beri biriken"). Pozitif = 1 km sürümü daha iyi.
 
-| gösterge     |   1 km − segment (1900-2025) | %95 GA           |   p |   M≥6,5 |
-|:-------------|-----------------------------:|:-----------------|----:|--------:|
-| üçü birlikte |                       -0.001 | [-0.003, +0.001] |   1 |  -0.002 |
+| gösterge     |   1 km − segment (1900-2025) | %95 GA           |     p |   M≥6,5 |
+|:-------------|-----------------------------:|:-----------------|------:|--------:|
+| moment açığı |                        0.001 | [-0.000, +0.003] | 0.063 |   0.002 |
+| yüklü zincir |                        0     | [-0.002, +0.002] | 0.455 |  -0.004 |
+| üçü birlikte |                       -0.001 | [-0.003, +0.001] | 1     |  -0.002 |
+
+### Şans kontrolü
+
+Üç gösterge fay birimleri arasında rastgele karıştırıldı (her fay başka bir fayın göstergesini aldı; model her 20 depremde bir eğitildi). Gerçek katkı -0.008; 10 karıştırmada ortalama -0.003, en yüksek +0.001. Şans p = 0.91.
 
 ## 6. Marmara bölgesi
 
@@ -169,12 +201,22 @@ Dikkat: katalog 1700'de başlıyor. Marmara'da 1509 ve daha önceki büyük depr
 
 Model sınaması yalnız Marmara depremleriyle (1900-2025, 44 deprem M≥5,5). Model tüm Türkiye verisiyle eğitildi, puan yalnız Marmara'daki depremlerden. Bu kadar az depremle küçük farklar şansla ayırt edilemez.
 
-| model                                     | karşı     |   Marmara 1900-2025 | %95 GA           |   p |   Holm p |
-|:------------------------------------------|:----------|--------------------:|:-----------------|----:|---------:|
-| Ana model + üçü birlikte                  | ETAS      |              -0.114 | [-0.198, -0.026] |   1 |        1 |
-| Ana model + üçü birlikte                  | ana model |              -0.025 | [-0.061, -0.003] |   1 |        1 |
-| Ana model + üçü birlikte, 1 km parçalarla | ETAS      |              -0.119 | [-0.205, -0.031] |   1 |        1 |
-| Ana model + üçü birlikte, 1 km parçalarla | ana model |              -0.031 | [-0.070, -0.004] |   1 |        1 |
+| model                                                  | karşı     |   Marmara 1900-2025 | %95 GA           |   p |   Holm p |
+|:-------------------------------------------------------|:----------|--------------------:|:-----------------|----:|---------:|
+| Ana model + moment açığı oranı (küçük depremler dahil) | ETAS      |              -0.094 | [-0.169, -0.011] |   1 |        1 |
+| Ana model + moment açığı oranı (küçük depremler dahil) | ana model |              -0.005 | [-0.015, +0.004] |   1 |        1 |
+| Ana model + yerel b-değeri farkı (son 5 yıl)           | ETAS      |              -0.102 | [-0.183, -0.013] |   1 |        1 |
+| Ana model + yerel b-değeri farkı (son 5 yıl)           | ana model |              -0.013 | [-0.045, +0.000] |   1 |        1 |
+| Ana model + yüklü komşu fay zinciri uzunluğu           | ETAS      |              -0.098 | [-0.177, -0.018] |   1 |        1 |
+| Ana model + yüklü komşu fay zinciri uzunluğu           | ana model |              -0.009 | [-0.024, +0.002] |   1 |        1 |
+| Ana model + üçü birlikte                               | ETAS      |              -0.114 | [-0.197, -0.027] |   1 |        1 |
+| Ana model + üçü birlikte                               | ana model |              -0.025 | [-0.062, -0.003] |   1 |        1 |
+| Ana model + moment açığı oranı, 1 km parçalarla        | ETAS      |              -0.097 | [-0.176, -0.014] |   1 |        1 |
+| Ana model + moment açığı oranı, 1 km parçalarla        | ana model |              -0.009 | [-0.021, +0.002] |   1 |        1 |
+| Ana model + yüklü kesintisiz fay boyu, 1 km parçalarla | ETAS      |              -0.102 | [-0.182, -0.017] |   1 |        1 |
+| Ana model + yüklü kesintisiz fay boyu, 1 km parçalarla | ana model |              -0.013 | [-0.033, +0.004] |   1 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla              | ETAS      |              -0.119 | [-0.205, -0.030] |   1 |        1 |
+| Ana model + üçü birlikte, 1 km parçalarla              | ana model |              -0.031 | [-0.069, -0.004] |   1 |        1 |
 
 ## Yöntem ve sınırlar
 
