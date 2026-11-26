@@ -183,3 +183,12 @@ ana kola çok yakın, kontrol edilecek), 1855 Bursa.
   matristen ölçülen fay boyu Coulomb değişimi (kırılma ucundan, 10 km derinlik): M5 5 km'de
   0,027 MPa, 10 km'de 0,004 MPa; M6 10 km'de 0,063, 20 km'de 0,014 MPa; M7 (50 km kırılma)
   20 km'de 0,17, 50 km'de 0,008 MPa. Etkiye dayalı kural (0,01 MPa) değişmez.
+
+## Birinci turdan sızıntı önlemi (2026-11-26 15:19 UTC)
+Birinci tur 1912 ve 1999 depremlerini de puanladı; bunlar ikinci turun sınav depremleri.
+Bu yüzden birinci tur sonuçları ikinci turda aralık daraltmak, senaryo seçmek ya da başlangıç
+değeri belirlemek için kullanılmaz; yalnız "ayarsız karşılaştırma" olarak raporlanır.
+Açıklama: bu plan yazılmadan önce birinci turun ilk 1-2 koşusunun ara sonuçları görüldü
+(13:53 ve 14:56 UTC; 8 test depreminde AUC ortalaması ~0,50 ve ~0,57). Başlangıç değerleri
+bu yüzden bilerek birinci tur ayarından değil literatürden alındı; aralıklar fiziksel olarak
+makul geniş tutuldu. Okuyucu bu bilgiyi göz önünde tutmalı.
