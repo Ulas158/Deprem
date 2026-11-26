@@ -257,3 +257,15 @@ Kural (Ulas): kesin ölçülen değer sabitlenir, hata çubuklu ölçüm arama a
    olaylarına eklenir.
 Serbest parametre sayısı değişmedi (kalınlık tek sayı yerine bölge aralıklarıyla; v_pl
 Marmara içinde aralıklı); toplam serbestlik raporda yeniden sayılır.
+
+## Sahte deprem cezası (2026-11-26 18:30 UTC)
+Gerekçe (açıkça belirtilir): birinci turun kalın senaryo koşularında model tarihte olmayan
+M≥6,8 depremler üretti (koşu başına ~11), bunların bir kısmı İstanbul önü parçalarında
+(ör. 1855, 1862, 1976, 1991, 2003, 2025). Bu sahte depremler o parçaları modelde boşaltıyor ve
+ileri bakışı anlamsız kılıyor. Bu bilgi ayar dönemini de kapsadığı için kurala dönüştürülür;
+sınav depremlerinin sonucu kullanılmaz.
+Kural: ikinci tur ayarında "tutma" şartlarına ek olarak, ayar döneminde (1719-1894) gerçek
+kayıtta olmayan her model M≥6,8 depremi bir ıska sayılır (tarihsel katalog M≥6,8 için bu
+dönemde tam kabul edilir). Sessizlik de veridir: 1766'dan bu yana İstanbul önünde M≥7 olmaması
+modelin uyması gereken bir gözlemdir. Sınav döneminde (1895-2025) sahte deprem sayısı ayrıca
+raporlanır.
