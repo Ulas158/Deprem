@@ -11,13 +11,16 @@ from . import hazirlik, tarih
 from .simulator import MU, Model, Parametreler
 
 BUYUK_MW = 6.8
+# DEPREM_MEKANIK_SURUM=v2: güney/orta kol ve deniz altı yan fayları içeren ağ
+SURUM = __import__("os").environ.get("DEPREM_MEKANIK_SURUM", "")
+VERI_DIZINI = "mekanik" + (f"_{SURUM}" if SURUM else "")
 
 
 class Veri:
     """Bir kez yüklenen ortak veri: hücreler, etkileşim matrisleri, D90 profili."""
 
     def __init__(self, root: Path):
-        d = Path(root) / "data" / "mekanik"
+        d = Path(root) / "data" / VERI_DIZINI
         self.cells = pd.read_parquet(d / "hucreler.parquet")
         self.Kt = np.load(d / "K_tau.npy", mmap_mode="r")
         self.Kn = np.load(d / "K_sn.npy", mmap_mode="r")

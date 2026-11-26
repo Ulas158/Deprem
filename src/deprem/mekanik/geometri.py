@@ -45,13 +45,30 @@ SEGMENTLER = [  # (GEM kimliği, ad, batı sınırı boylam)
     ("ME_TRCS010", "Düzce", None),
 ]
 
+# İkinci sürüm (yan kollar). Her kol kendi x başlangıcından sayılır; kollar
+# arasında büyük x boşluğu bırakılır ki kırılma komşuluğu kollar arasında
+# karışmasın (kollar arası etkileşim yine elastik matristen gelir).
+# (kol adı, x başlangıcı km, [(GEM kimliği, ad)])
+YAN_KOLLAR = [
+    ("Orta kol", 600.0, [("ME_TRCS024", "Biga-Bandırma"), ("ME_TRCS023", "Bandırma-Gemlik"),
+                         ("ME_TRCS022", "İznik-Geyve")]),
+    ("İmralı", 1000.0, [("ME_TRCS015", "İmralı")]),
+    ("Armutlu-Çınarcık güney", 1150.0, [("ME_TRCS014", "Armutlu-Çınarcık güney")]),
+]
+KOL_ANA_X_MAKS = 500.0  # x bundan küçükse ana (kuzey) kol
 
-def fay_izleri(gem_path: Path) -> list[dict]:
+
+def fay_izleri(gem_path: Path, yan_kollar: bool = False) -> list[dict]:
     """Segment izlerini batıdan doğuya sıralı (lon, lat) dizileri olarak döndür."""
-    r = Region("m", 40.0, 41.3, 25.0, 32.0)
+    r = Region("m", 39.9, 41.3, 25.0, 32.0)
     f = gem.load_faults(Path(gem_path), r).set_index("fault_id")
+    liste = [(fid, ad, lon_min, 0, None) for fid, ad, lon_min in SEGMENTLER]
+    if yan_kollar:
+        for k, (_, x_bas, segs) in enumerate(YAN_KOLLAR, start=1):
+            for j, (fid, ad) in enumerate(segs):
+                liste.append((fid, ad, None, k, x_bas if j == 0 else None))
     out = []
-    for fid, ad, lon_min in SEGMENTLER:
+    for fid, ad, lon_min, kol, x_bas in liste:
         c = np.asarray(f.loc[fid, "coords"], float)
         if c[0, 0] > c[-1, 0]:
             c = c[::-1]
@@ -62,7 +79,7 @@ def fay_izleri(gem_path: Path) -> list[dict]:
             a, b = c[i0], c[i0 + 1]
             t = (lon_min - a[0]) / (b[0] - a[0])
             c = np.vstack([a + t * (b - a), c[i0 + 1:]])
-        out.append({"fault_id": fid, "ad": ad, "coords": c,
+        out.append({"fault_id": fid, "ad": ad, "coords": c, "kol": kol, "x_bas": x_bas,
                     "gem_slip_rate": float(f.loc[fid, "slip_rate_mm_yr"])})
     return out
 
@@ -85,6 +102,8 @@ def hucreler(izler: list[dict], ds=1.0, z_kirilgan=20.0, dz=1.0,
     rows = []
     x_off = 0.0
     for si, iz in enumerate(izler):
+        if iz.get("x_bas") is not None:
+            x_off = float(iz["x_bas"])
         for (d_s, z0, z1, d_z, kat) in [(ds, 0.0, z_kirilgan, dz, "kabuk"),
                                         (ds_derin, z_kirilgan, z_sunek, dz_derin, "sunek")]:
             lon, lat, L = _yeniden_ornekle(iz["coords"], d_s)
@@ -95,7 +114,7 @@ def hucreler(izler: list[dict], ds=1.0, z_kirilgan=20.0, dz=1.0,
                 dy = la1 - la0
                 strike = (np.degrees(np.arctan2(dx, dy)) + 360) % 360
                 for z in np.arange(z0, z1, d_z):
-                    rows.append({"seg": si, "seg_ad": iz["ad"], "katman": kat,
+                    rows.append({"seg": si, "seg_ad": iz["ad"], "kol": iz.get("kol", 0), "katman": kat,
                                  "lon": (lo0 + lo1) / 2, "lat": (la0 + la1) / 2,
                                  "x_km": x_off + (k + 0.5) * seg_len,
                                  "z_ust": z, "z_km": z + d_z / 2, "L_km": seg_len, "W_km": d_z,

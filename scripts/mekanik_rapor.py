@@ -20,11 +20,18 @@ import pandas as pd  # noqa: E402
 from deprem.mekanik import deney, tarih  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "runs" / "mekanik"
+RUN = ROOT / "runs" / deney.VERI_DIZINI
 TAB = ROOT / "reports" / "tables"
 FIG = ROOT / "reports" / "figures"
 XB = np.arange(0, 456, 1.0)
 XC = XB[:-1] + 0.5
+# İstanbul'u doğrudan ilgilendiren deniz altı parçaları (boylam aralığı, yaklaşık)
+ISTANBUL_PARCALARI = {
+    "Orta Marmara çukuru": (27.75, 28.05),
+    "Kumburgaz (Silivri-Büyükçekmece önü)": (28.05, 28.60),
+    "Adalar (Prens Adaları önü)": (28.60, 29.10),
+    "İstanbul önü toplam": (27.75, 29.10),
+}
 
 
 def auc(icer, dis):
@@ -80,7 +87,7 @@ def main():
     zt = z.groupby(["tarih"]).agg(mw_gozlem=("mw_gozlem", "first"), mw_model_ort=("mw_model", "mean"),
                                   mw_model_min=("mw_model", "min"), mw_model_maks=("mw_model", "max"),
                                   kayma_ort_m=("ort_kayma", "mean"), sahte_once=("sahte_once", "mean")).reset_index()
-    zt.to_csv(TAB / "mekanik_tarihsel_buyukluk.csv", index=False)
+    zt.to_csv(TAB / f"{deney.VERI_DIZINI}_tarihsel_buyukluk.csv", index=False)
     ozet["mw_fark_ort"] = float((zt.mw_model_ort - zt.mw_gozlem).mean())
     ozet["mw_fark_rms"] = float(np.sqrt(((zt.mw_model_ort - zt.mw_gozlem) ** 2).mean()))
     ozet["sahte_buyuk_deprem_ort"] = float(np.mean([u["sahte"] for u in uyeler]))
@@ -101,7 +108,7 @@ def main():
                      "auc_model_maks": float(np.nanmax(aucs)),
                      "auc_zaman_kestirme": float(auc(zb[icer], zb[~icer]))})
     st = pd.DataFrame(rows)
-    st.to_csv(TAB / "mekanik_sinama.csv", index=False)
+    st.to_csv(TAB / f"{deney.VERI_DIZINI}_sinama.csv", index=False)
     ozet["auc_model_ort"] = float(st.auc_model_ort.mean())
     ozet["auc_zaman_ort"] = float(st.auc_zaman_kestirme.mean())
     ozet["model_zamani_gecti"] = int((st.auc_model_ort > st.auc_zaman_kestirme).sum())
@@ -130,13 +137,13 @@ def main():
     lon = cells[cells.z_ust == 0].sort_values("x_km")
     bug["lon"] = np.interp(XC, lon.x_km, lon.lon)
     bug["lat"] = np.interp(XC, lon.x_km, lon.lat)
-    bug.to_csv(TAB / "mekanik_bugun_km.csv", index=False)
+    bug.to_csv(TAB / f"{deney.VERI_DIZINI}_bugun_km.csv", index=False)
     ilk = pd.concat([u["ileri"]["ilk"].assign(uye=u["uye"]) for u in uyeler if len(u["ileri"]["ilk"])],
                     ignore_index=True) if any(len(u["ileri"]["ilk"]) for u in uyeler) else pd.DataFrame()
     deniz = (bug.lon >= 27.0) & (bug.lon <= 29.3)  # Marmara Denizi içi (Ganos doğusu - Hersek)
     xd0, xd1 = float(bug.x_km[deniz].min()), float(bug.x_km[deniz].max())
     if len(ilk):
-        ilk.to_csv(TAB / "mekanik_ileri_ilk_buyuk.csv", index=False)
+        ilk.to_csv(TAB / f"{deney.VERI_DIZINI}_ileri_ilk_buyuk.csv", index=False)
     p_tum, p_deniz, p_deniz7 = [], [], []
     for u in uyeler:
         r, nk = u["ileri"]["ilk"], u["ileri"].get("n", 6)
@@ -155,6 +162,36 @@ def main():
     if len(ilk):
         ozet["ileri_ilk_mw_medyan"] = float(ilk.mw.median())
     ozet["deniz_x"] = [xd0, xd1]
+
+    # 3b) İstanbul önündeki parçalar: doluluk, 30 yıllık olasılık, olası büyüklük
+    ist_rows = []
+    for ad, (la, lb) in ISTANBUL_PARCALARI.items():
+        sel = (bug.lon >= la) & (bug.lon <= lb)
+        xa, xb = float(bug.x_km[sel].min()), float(bug.x_km[sel].max())
+        dol_uye = np.nanmean(D[:, sel.to_numpy()], axis=1)  # her üye için parça ortalaması
+        p_u, p7_u, mws = [], [], []
+        for u in uyeler:
+            r, nk = u["ileri"]["ilk"], u["ileri"].get("n", 6)
+            if len(r):
+                ov = (r.x1 >= xa) & (r.x0 <= xb)
+                p_u.append(ov.sum() / nk)
+                p7_u.append((ov & (r.mw >= 7.0)).sum() / nk)
+                mws.extend(r.mw[ov].tolist())
+            else:
+                p_u.append(0.0)
+                p7_u.append(0.0)
+        ist_rows.append({
+            "parca": ad, "boylam": f"{la}-{lb}", "x0_km": xa, "x1_km": xb,
+            "doluluk_ort": float(np.mean(dol_uye)), "doluluk_min": float(np.min(dol_uye)),
+            "doluluk_maks": float(np.max(dol_uye)),
+            "p30_ort": float(np.mean(p_u)), "p30_min": float(np.min(p_u)), "p30_maks": float(np.max(p_u)),
+            "p30_m7_ort": float(np.mean(p7_u)),
+            "mw_p10": float(np.percentile(mws, 10)) if mws else np.nan,
+            "mw_medyan": float(np.median(mws)) if mws else np.nan,
+            "mw_p90": float(np.percentile(mws, 90)) if mws else np.nan, "n_kirilma": len(mws)})
+    ist = pd.DataFrame(ist_rows)
+    ist.to_csv(TAB / f"{deney.VERI_DIZINI}_istanbul.csv", index=False)
+    ozet["istanbul"] = ist.to_dict("records")
     json.dump(ozet, open(RUN / "ozet_ara.json", "w"), indent=1, default=float)
 
     # şekiller
@@ -174,7 +211,7 @@ def main():
                     (300, "İzmit"), (410, "Düzce")]:
         ax[0].text(xv, ax[0].get_ylim()[1] * 0.95, lab, fontsize=7, color="gray")
     fig.tight_layout()
-    fig.savefig(FIG / "mekanik_bugun_doluluk.png", dpi=130)
+    fig.savefig(FIG / f"{deney.VERI_DIZINI}_bugun_doluluk.png", dpi=130)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(6, 4.5))
@@ -189,7 +226,7 @@ def main():
     ax.set_ylabel("modelin ürettiği Mw (aynı kırık alanında)")
     ax.set_title("Tarihsel depremler: biriken enerji gözlenen büyüklüğü veriyor mu?")
     fig.tight_layout()
-    fig.savefig(FIG / "mekanik_tarihsel_mw.png", dpi=130)
+    fig.savefig(FIG / f"{deney.VERI_DIZINI}_tarihsel_mw.png", dpi=130)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(11, 3.2))
@@ -198,7 +235,7 @@ def main():
     ax.set_xlabel("fay boyunca uzaklık (km)")
     ax.set_title("Modelin 30 yıllık ileri bakışı (topluluk ortalaması; doğrulanmış tahmin değildir)")
     fig.tight_layout()
-    fig.savefig(FIG / "mekanik_30yil_olasilik.png", dpi=130)
+    fig.savefig(FIG / f"{deney.VERI_DIZINI}_30yil_olasilik.png", dpi=130)
     plt.close(fig)
 
     gps = sorted(RUN.glob("gps.csv"))
@@ -218,7 +255,7 @@ def main():
         axs[0].set_ylabel("mm/yıl (2015-2023 hızına göre)")
         axs[0].legend(fontsize=7)
         fig.tight_layout()
-        fig.savefig(FIG / "mekanik_gps_1999.png", dpi=130)
+        fig.savefig(FIG / f"{deney.VERI_DIZINI}_gps_1999.png", dpi=130)
         plt.close(fig)
         ozet["gps_en_iyi"] = {"tM_ref": float(best.tM_ref), "krip_carpan": float(best.krip_carpan),
                               "rms": float(best.rms), "rms_en_kotu": float(g.rms.max())}

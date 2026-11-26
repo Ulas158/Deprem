@@ -27,7 +27,7 @@ from deprem.mekanik import deney, geometri, hazirlik, tarih
 from deprem.mekanik.simulator import Model, Parametreler
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "runs" / "mekanik"
+RUN = ROOT / "runs" / deney.VERI_DIZINI
 log = logging.getLogger("mekanik")
 
 # gözlem hedefleri (uzun dönem): b-değeri bu çalışmanın Marmara kataloğundan (2000-2026,
@@ -102,8 +102,13 @@ def asama_gps(v, args, p):
     ev = tarih.tablo(v.cells)
     e99 = ev[ev.tarih.str.startswith("1999")]
     rows = []
-    for tM in (3.0, 10.0, 30.0):
-        for kc in (0.5, 2.0):
+    izgara = [(tM, kc) for tM in (3.0, 10.0, 30.0) for kc in (0.5, 2.0)]
+    if args.gps_ayar:
+        izgara = [tuple(float(x) for x in args.gps_ayar.split(","))]
+    for tM, kc in izgara:
+        if (RUN / f"gps_seri_{tM:g}_{kc:g}.csv").exists():
+            continue
+        if True:
             p2 = replace(p, tM_ref=tM, krip_carpan=kc)
             m, _ = model_senaryo(v, p2, "orta")
             # kilitli kısmın gerilmesini ısınmış durumdan al, krip kuşağı yeni ayarla dengede
@@ -120,8 +125,16 @@ def asama_gps(v, args, p):
             j = obs.merge(mod, on=["site", "a", "b", "bil"], suffixes=("_g", "_m"))
             rms = float(np.sqrt(np.mean((j.anomali_g - j.anomali_m) ** 2)))
             log.info("gps tM=%g krip=%g rms=%.2f mm/yıl Mw=%s", tM, kc, rms, np.round(mws, 2))
-            rows.append({"tM_ref": tM, "krip_carpan": kc, "rms": rms, "mw_izmit": mws[0], "mw_duzce": mws[1]})
-            j.assign(tM_ref=tM, krip_carpan=kc).to_csv(RUN / f"gps_seri_{tM:g}_{kc:g}.csv", index=False)
+            j.assign(tM_ref=tM, krip_carpan=kc, mw_izmit=mws[0], mw_duzce=mws[1]).to_csv(
+                RUN / f"gps_seri_{tM:g}_{kc:g}.csv", index=False)
+    if args.gps_ayar:
+        return None
+    for f in sorted(RUN.glob("gps_seri_*.csv")):
+        j = pd.read_csv(f)
+        rms = float(np.sqrt(np.mean((j.anomali_g - j.anomali_m) ** 2)))
+        rows.append({"tM_ref": j.tM_ref[0], "krip_carpan": j.krip_carpan[0], "rms": rms,
+                     "mw_izmit": j.get("mw_izmit", pd.Series([np.nan]))[0],
+                     "mw_duzce": j.get("mw_duzce", pd.Series([np.nan]))[0]})
     df = pd.DataFrame(rows)
     df.to_csv(out, index=False)
     return df
@@ -232,6 +245,7 @@ def main():
     ap.add_argument("--uye", type=int, default=3)
     ap.add_argument("--ileri", type=int, default=6)
     ap.add_argument("--hizli", action="store_true")
+    ap.add_argument("--gps-ayar", default=None, help="tek GPS ayarı 'tM,krip' (paralel koşu için)")
     args = ap.parse_args()
     RUN.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
@@ -244,6 +258,8 @@ def main():
     log.info("parametreler: %s", p)
     if args.asama == "gps":
         g = asama_gps(v, args, p)
+        if g is None:
+            return
         r = g.sort_values("rms").iloc[0]
         pj.update(tM_ref=float(r.tM_ref), krip_carpan=float(r.krip_carpan))
         (RUN / "secilen_parametreler.json").write_text(json.dumps(pj, indent=1))
