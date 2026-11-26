@@ -108,3 +108,15 @@ Ulas olabildiğince çok veri kullanılmasını istedi.
 - Ham AFAD/EMSC/USGS kataloğu yalnız toplu istatistikte (10 km blok başına sıklık, derinlik,
   b-değeri) kullanılır.
 - Sonuç ayrıca yalnız hatası 2 km'nin altındaki olaylarla da raporlanır (yan yana).
+
+### Konum adayları üzerinde iterasyon (2026-11-26 15:07 UTC, hiçbir sonuç görülmeden eklendi)
+Ulas'ın önerisi: hatası birkaç km olan depremde hata alanındaki aday kutuların her biri için
+ayrı "burada oldu" varsayımıyla ileri sar, geçmiş ve sonraki ayar depremleriyle en tutarlı
+olanı seç.
+- Yalnız ayar döneminde uygulanır, sıralı ve açgözlü: her olayda adaylar (hata elipsi içinde
+  1 km aralıklı, en çok 5-10 aday) denenir, o ana kadarki ayar olaylarıyla en tutarlı olan
+  seçilir. Hesap yükü olay başına aday sayısı kadar artar; büyük ağda yalnız M≥3 olaylara,
+  100 m'lik yerel ağlarda bütün olaylara uygulanır.
+- Sınav döneminde konum seçimi yapılmaz: adayların olasılık ağırlıklı ortalaması kullanılır
+  (modelin uygun kutuyu kendisinin seçmesi tutmayı neredeyse garanti ederdi).
+- Bu yöntem ile yumuşak (ağırlıklı) özümseme yan yana koşulur, ikisinin sınav sonucu raporlanır.
