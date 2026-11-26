@@ -67,3 +67,11 @@ Sabit (ölçümle bilinen): levha hızı (GPS), fay yeri ve yönü, elastik yük
    değişiklikten sonra yeniden kontrol edilir.
 5. Sınav depremleri bu döngüye hiç girmez; ayar bitince donmuş parametrelerle bir kez koşulur.
 Hız için döngü önce 2 km'lik kaba ağda koşar, bulunan ayar tam ağda doğrulanır.
+
+### Eşik güncellemesi (2026-11-26 15:03 UTC, hiçbir ikinci tur sonucu ve birinci tur kesin sonucu görülmeden eklendi)
+"Tuttu" eşiği veri kalitesine göre:
+- tarihsel (1719-1894, yer ve büyüklük yazılı kaynaklardan): parça en az %90 dolu
+- erken aletsel (1912, 1943, 1963): en az %95
+- modern (1999 ve sonrası; 2006 sonrası küçük depremler): en az %98
+Erken kendiliğinden kırılmama şartı (20 yıl; küçük depremlerde bir önceki tekrar aralığının yarısı) korunur.
+Sonuçlar ayrıca tek tip %90 eşiğiyle de raporlanır (eşik duyarlılığı).
