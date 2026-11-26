@@ -228,9 +228,6 @@ def main():
         ara("buyuk", "kaba", BUYUK_PAR, args.n_is, sabit=kucuk_en_iyiler(), n_lhs=args.n_lhs)
 
 
-if __name__ == "__main__":
-    main()
-
 
 # ------------------------------------------------------------------ sınav ve bugünkü durum
 ISTANBUL_PARCALARI = {"Orta Marmara çukuru": (27.75, 28.05), "Kumburgaz": (28.05, 28.60),
@@ -313,3 +310,7 @@ def sinav(args):
                                 "vw": m.vw, "vs": m.vs, "viskoz": m.viskoz}
             (out / f"{ad}.pkl").write_bytes(__import__("pickle").dumps(kay))
             log.info("sınav %s: %s", ad, res["ozet"])
+
+
+if __name__ == "__main__":
+    main()
