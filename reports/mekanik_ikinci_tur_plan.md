@@ -86,3 +86,13 @@ gerçek tarihten sonra en çok toleransın sonuna kadar beklenir).
 - modern (1999 ve sonrası): ±5 yıl
 - küçük depremler: aynı yerdeki iki deprem arasındaki gerçek sürenin ±%25'i
 "Tuttu" = doluluk eşiği VE zaman şartı birlikte sağlanırsa.
+
+### Yer şartı ve konum hatası (2026-11-26 15:05 UTC, hiçbir sonuç görülmeden eklendi)
+"Tuttu" = doğru yer VE doluluk eşiği VE zaman toleransı. Yer şartı: modelin kendiliğinden
+kırdığı alan gerçek kırılma alanıyla örtüşmeli (büyük depremlerde kırılma boyunun en az
+%50'si ortak; uç belirsizliği tablodaki uc_km kadar tolere edilir).
+- Büyük modern depremler (1999 İzmit, 1999 Düzce, 2022, 2025): kırılma izi yüzey kırığı,
+  InSAR ve GPS çalışmalarından alınır (uç belirsizliği 3-5 km).
+- Küçük depremler: yalnız GFZ'nin yeniden konumlanmış kataloglarından ve büyük eksen hatası
+  2 km'nin altında olan olaylar kullanılır; ham AFAD/EMSC/USGS kataloğu kullanılmaz. Her olay
+  için konum toleransı o olayın kendi hata elipsi kadardır.
