@@ -231,3 +231,29 @@ bir artçı kataloğu bulunursa o tercih edilir. Sonuç bu bölge dahil ve hari�
   ağda 50 m) olay yayılmadan tek hücreye konur. Başlangıç bölgesi boyu büyüklükle ölçeklenir:
   M2 ~0,1 km, M3 ~0,5 km, M4 ~1-2 km, M≥6 ~5 km (bölge hücreden küçükse hücrenin o oranı kadar
   etki: S ← S + p·(A_bölge/A_hücre)·(S_kırılma − S)).
+
+## Ölçüm verisiyle güncelleme (2026-11-26 15:45 UTC; "Sessiz fay kısımları için kaya verisi bul" çalışmasının bulguları; birinci tur sınav sonuçları kullanılmadı)
+Kural (Ulas): kesin ölçülen değer sabitlenir, hata çubuklu ölçüm arama aralığını daraltır.
+1. **Levha (fay kayma) hızı.** Modeldeki v_pl, fayın uzun dönem kayma hızıdır (derin kaymanın
+   yükleme hızı), uzak alan levha hızı değil. Birinci turdaki 18,5 mm/yıl tek kollu ağ için
+   toplam hareketin neredeyse hepsini ana kola veriyordu. Marmara içinde ölçülen faya paralel
+   hız 12,5-17 mm/yıl (Ergintav vd. 2014; Amemoutou vd. 2023). Birinci turdaki GPS ayarı
+   (2,7 mm/yıl sapma) 1999 sonrası hız *farklarına* uyduğu için mutlak kayma hızını sınırlamaz.
+   Karar: Marmara Denizi parçaları (Ganos doğusu - Hersek) için v_pl artık sabit değil,
+   12,5-17 mm/yıl aralığında aranır (başlangıç 15). İkinci sürüm ağında orta kol (3-6,4 mm/yıl)
+   farkın bir kısmını taşır. Ganos-Saros ve İzmit doğusu GPS profillerinden kalır (±2).
+2. **Deniz tabanı jeodezisi.** Kumburgaz iç kısmı kilitli (0,8 ± 1,25 mm/yıl; Lange vd. 2019)
+   → Kumburgaz'da sığ krip 0, sabit. Batı Yükselimi krip yapıyor (10,7 ± 4,7 mm/yıl; Yamamoto vd.
+   2019) ve Orta Çukurda krip oranı ~%50 (Becker vd. 2023) → sığ krip bölgesi 27,6-28,05°D'ye
+   genişletilir, derinlik aralığı 0-8 km yerine 3-8 km. Model kayma hızı bu ölçümlerle
+   (Batı Yükselimi ~6-15 mm/yıl, Kumburgaz <3 mm/yıl) ek sınav olarak karşılaştırılır.
+3. **Kırılgan katman kalınlığı** tek "AFAD→EMSC" parametresi yerine bölge aralıklarıyla:
+   Orta Marmara ve Kumburgaz 10-12 km, Adalar 10-18 km, batı (Ganos-Saros) 18-24 km;
+   diğer bölgeler eski AFAD-EMSC aralığında.
+4. **Kayma modülü** 30 GPa'dan 33 GPa'ya (6 km altı ölçümü 32-35). Üst 2-6 km'deki yumuşak
+   çökeller homojen yarı uzay matrisinde temsil edilemez; sınır olarak raporlanır.
+5. **Ek sınav:** 2025 Nisan Mw 6,2 Kumburgaz/Silivri ve 2022 Gölyaka depremleri GFZ kataloğunun
+   (2023 sonu) ve ayar döneminin dışında; ikinci turda görülmeden tahmin edilecek sınav
+   olaylarına eklenir.
+Serbest parametre sayısı değişmedi (kalınlık tek sayı yerine bölge aralıklarıyla; v_pl
+Marmara içinde aralıklı); toplam serbestlik raporda yeniden sayılır.
