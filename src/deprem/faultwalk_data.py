@@ -309,7 +309,7 @@ def rupture_len_km(mw):
     return 10 ** (-2.44 + 0.59 * np.asarray(mw, float))
 
 
-def fill_matrix(cat, f, units, tau) -> np.ndarray:
+def fill_matrix(cat, f, units, tau, mode: str = "fill") -> np.ndarray:
     """Her adım başında her fay biriminin log doluluğu.
 
     doluluk = kayma hızı × son kırılmadan beri geçen süre / karakteristik kayma.
@@ -334,8 +334,16 @@ def fill_matrix(cat, f, units, tau) -> np.ndarray:
         A = r["area_km2"] if np.isfinite(r["area_km2"]) and r["area_km2"] > 0 else 300.0
         d_char = mw_to_m0(mmax) / (3e10 * A * 1e6)               # m
         fill = r["slip_rate"] * 1e-3 * np.maximum(el_yr, 0.5) / max(d_char, 0.1)
+        if mode == "time":                                        # yalnız geçen süre
+            fill = np.maximum(el_yr, 0.5) / 100.0
         L[:, u] = np.clip(np.log(fill), -5.0, 2.0)
     return L
+
+
+def time_matrix(root: Path, W: "WalkData") -> np.ndarray:
+    """(S, U): yalnız son kırılmadan geçen süre (kayma hızı ve kapasite yok), log(yıl / 100)."""
+    f = load_fault_table(root)
+    return fill_matrix(W.cat, f, W.units, W.tau, mode="time")
 
 
 def coulomb_signs(cat, f, lat_c, lon_c, dist, mu_eff=0.4, scale_bar=0.1) -> np.ndarray:

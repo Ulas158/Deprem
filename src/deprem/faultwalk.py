@@ -93,6 +93,10 @@ class Variant:
     sd_B: float = 0.3
     sd_eps: float = 0.2
     cov: str = ""                   # W.extra["cov"][ad]: (S, U) ek girdi; virgülle en çok 3 ad (eksikte 0)
+    fast: bool = True               # hızlı (Omori, artçı) tetikleme
+    bmap: str = "both"              # arka plan haritası: "both" | "seis" (yalnız geçmiş sismisite) |
+                                    # "fault" (yalnız fay kayma hızı/moment) | "uniform" (alanla orantılı)
+    load_mode: str = "fill"         # "fill" (kayma hızı × süre / kapasite) | "time" (yalnız geçen süre)
 
 
 VARIANTS = {
@@ -110,6 +114,23 @@ VARIANTS = {
     "no_slow": Variant("no_slow", "Ana model − yavaş (yıllar-on yıllar) etki", slow=False),
     "no_far": Variant("no_far", "Ana model, 100 km ötesi etki kesik", rmax_km=100.0),
     "no_load": Variant("no_load", "Ana model − fay doluluğu", load=False),
+    # etki payı (drop-one) sürümleri: ana modelden tek bir parça çıkarılır
+    "uniform": Variant("uniform", "Sıfır noktası: sabit hız, alanla orantılı (hiçbir bilgi yok)", pooling="none",
+                       interaction=False, cfs=False, slow=False, load=False, fast=False, bmap="uniform"),
+    "no_fast": Variant("no_fast", "Ana model − artçı (hızlı Omori) tetikleme", fast=False),
+    "no_trig": Variant("no_trig", "Ana model − tüm tetikleme (hızlı + yavaş)", fast=False, slow=False,
+                       interaction=False, cfs=False),
+    "no_fmap": Variant("no_fmap", "Ana model − fay kayma hızı haritası (yalnız geçmiş sismisite)", bmap="seis"),
+    "no_smap": Variant("no_smap", "Ana model − geçmiş sismisite haritası (yalnız fay kayma hızı)", bmap="fault"),
+    "no_bmap": Variant("no_bmap", "Ana model − arka plan haritası (alanla orantılı)", bmap="uniform"),
+    "load_time": Variant("load_time", "Ana model, doluluk yerine yalnız son kırılmadan geçen süre",
+                         load_mode="time"),
+    "no_slip": Variant("no_slip", "Ana model − kayma hızı (harita ve doluluktan)", bmap="seis", load_mode="time"),
+    # elenmiş model: 1900-1999'da katkısı sıfırdan ayırt edilemeyen ya da zararlı çıkan parçalar çıkarıldı
+    "pruned": Variant("pruned", "Elenmiş model (ortak ayar; Coulomb, sistem çarpanları, doluluk yok)",
+                      pooling="pooled", interaction=False, cfs=False, load=False),
+    "pruned_noslow": Variant("pruned_noslow", "Elenmiş model, yavaş etki de yok", pooling="pooled",
+                             interaction=False, cfs=False, load=False, slow=False),
     "partial_dvv": Variant("partial_dvv", "Ana model + Doğu Marmara dv/v", cov="dvv"),
     # fay enerjisi göstergeleri (deprem.fault_energy)
     "partial_deficit": Variant("partial_deficit", "Ana model + moment açığı oranı (küçük depremler dahil)",
@@ -134,7 +155,7 @@ COV_PARAMS = ("k_cov", "k_cov1", "k_cov2")
 # ------------------------------------------------------------------ JAX modeli
 class Model:
     def __init__(self, W: WalkData, v: Variant, cfs_override: np.ndarray | None = None,
-                 unit_override: np.ndarray | None = None):
+                 unit_override: np.ndarray | None = None, region: np.ndarray | None = None):
         import jax
         import jax.numpy as jnp
         jax.config.update("jax_enable_x64", True)
@@ -153,14 +174,24 @@ class Model:
         maj = W.major
         cross = ((ev_sys[:, None] != cell_sys[None, :]) & maj[ev_sys][:, None] & maj[cell_sys][None, :]).astype(np.float32)
         cfs = W.cfs if cfs_override is None else cfs_override
-        # birim başına harita kütleleri
+        smap, fmap = W.smap, W.fmap
+        if v.bmap == "uniform":
+            fmap = W.area / W.area.sum()
+            smap = np.repeat(fmap[None, :], W.smap.shape[0], 0)
+        # birim başına harita kütleleri (ve bölge maskesi içindeki kısmı)
+        reg = np.ones(C, bool) if region is None else np.asarray(region, bool)
         BuS = np.zeros((W.smap.shape[0], U))
         BuF = np.zeros(U)
+        BuS_r = np.zeros((W.smap.shape[0], U))
+        BuF_r = np.zeros(U)
         for u in range(U):
             m = unit_of_cell == u
-            BuS[:, u] = W.smap[:, m].sum(1)
-            BuF[u] = W.fmap[m].sum()
-        Lm = W.L if v.load else np.zeros_like(W.L)
+            BuS[:, u] = smap[:, m].sum(1)
+            BuF[u] = fmap[m].sum()
+            BuS_r[:, u] = smap[:, m & reg].sum(1)
+            BuF_r[u] = fmap[m & reg].sum()
+        Lsrc = W.L if v.load_mode == "fill" else W.extra["Ltime"]
+        Lm = Lsrc if v.load else np.zeros_like(W.L)
         cov_names = [c for c in v.cov.split(",") if c] if v.cov else []
         assert len(cov_names) <= NCOV
         Xc = np.zeros(W.L.shape + (NCOV,))
@@ -201,12 +232,15 @@ class Model:
             for n in ("logK2", "alpha2", "log_tau2", "log_D2", "log_q2m1", "g_cross2", "g_cfs2"):
                 free[self.gi[n]] = False
         fix0 += list(COV_PARAMS[len(cov_names):])
+        if v.bmap in ("seis", "fault", "uniform"):     # karışım ağırlığı sabit: w = 1 (seis) / 0 (fault)
+            free[self.gi["w_logit"]] = False
+            mean[self.gi["w_logit"]] = -40.0 if v.bmap == "fault" else 40.0
         for n in fix0:
             free[self.gi[n]] = False
             mean[self.gi[n]] = 0.0
         self.mean, self.sd, self.free = mean, sd, free
         self.slow_on = v.slow
-        self.trig_on = v.name != "poisson"
+        self.trig_on = v.name != "poisson" and v.fast
         if not self.trig_on:
             for n in ("logK", "alpha", "log_c", "log_pm1", "log_D0", "gam_m", "log_qm1"):
                 free[self.gi[n]] = False
@@ -224,7 +258,8 @@ class Model:
                  ev_era=jnp.asarray(W.ev_era), ev_cell=jnp.asarray(W.ev_cell), ev_unit=jnp.asarray(self.ev_unit),
                  ev_step=jnp.asarray(np.clip(W.ev_step, 0, S - 1)), ev_year=jnp.asarray(W.step_year[np.clip(W.ev_step, 0, S - 1)]),
                  step_year=jnp.asarray(W.step_year), BuS=jnp.asarray(BuS), BuF=jnp.asarray(BuF),
-                 smap=jnp.asarray(W.smap), fmap=jnp.asarray(W.fmap), L=jnp.asarray(Lm), X=jnp.asarray(Xc),
+                 BuS_r=jnp.asarray(BuS_r), BuF_r=jnp.asarray(BuF_r), reg=jnp.asarray(reg.astype(float)),
+                 smap=jnp.asarray(smap), fmap=jnp.asarray(fmap), L=jnp.asarray(Lm), X=jnp.asarray(Xc),
                  unit_sys=jnp.asarray(unit_sys), unit_of_cell=jnp.asarray(unit_of_cell))
         self.a = a
         gi = self.gi
@@ -277,6 +312,8 @@ class Model:
             ex = jnp.exp(au[None, :] + bu[None, :] * a["L"] + a["X"] @ kc)  # S × U
             Bu = w * a["BuS"][a["step_year"]] + (1 - w) * a["BuF"][None, :]       # S × U
             bg_s = mu * a["dtau"] * (Bu * ex).sum(1)
+            Bu_r = w * a["BuS_r"][a["step_year"]] + (1 - w) * a["BuF_r"][None, :]
+            bg_r = mu * a["dtau"] * (Bu_r * ex).sum(1)
             # arka plan, olay başına
             exu = jnp.exp(au[a["ev_unit"]] + bu[a["ev_unit"]] * a["L"][a["ev_step"], a["ev_unit"]]
                           + a["X"][a["ev_step"], a["ev_unit"]] @ kc)
@@ -284,6 +321,7 @@ class Model:
             bg_e = mu * Bc * exu
             trig_e = jnp.zeros_like(bg_e)
             trig_s = jnp.zeros_like(bg_s)
+            trig_r = jnp.zeros_like(bg_s)
             dt = a["t"][None, :] - a["t"][:, None]                                 # j × i
             if trig_on:
                 K = jnp.exp(g["logK"] + jnp.clip(g["alpha"], 0, 3.5) * mm)
@@ -297,6 +335,7 @@ class Model:
                 tt = a["tau"][None, :] - a["t"][:, None]                           # N × (S+1)
                 Gd = Gc(tt[:, 1:]) - Gc(tt[:, :-1])
                 trig_s = ((K * H.sum(1))[:, None] * Gd).sum(0)
+                trig_r = ((K * (H @ a["reg"]))[:, None] * Gd).sum(0)
             if slow_on:
                 K2 = jnp.exp(g["logK2"] + jnp.clip(g["alpha2"], 0, 3.5) * mm)
                 tau2 = jnp.exp(g["log_tau2"])
@@ -306,15 +345,18 @@ class Model:
                 trig_e = trig_e + (K2[:, None] * g2 * H2[:, a["ev_cell"]]).sum(0)
                 tt = a["tau"][None, :] - a["t"][:, None]
                 G2 = lambda x: 1 - jnp.exp(-jnp.clip(x, 0) / tau2)
-                trig_s = trig_s + ((K2 * H2.sum(1))[:, None] * (G2(tt[:, 1:]) - G2(tt[:, :-1]))).sum(0)
+                G2d = G2(tt[:, 1:]) - G2(tt[:, :-1])
+                trig_s = trig_s + ((K2 * H2.sum(1))[:, None] * G2d).sum(0)
+                trig_r = trig_r + ((K2 * (H2 @ a["reg"]))[:, None] * G2d).sum(0)
             lam_e = pi[a["ev_era"]] * (bg_e + trig_e)
             comp_s = pi[a["era_s"]] * (bg_s + trig_s)
-            return jnp.log(lam_e + 1e-300), comp_s
+            comp_r = pi[a["era_s"]] * (bg_r + trig_r)
+            return jnp.log(lam_e + 1e-300), comp_s, comp_r
 
         mean_j, sd_j = jnp.asarray(mean), jnp.asarray(sd)
 
         def loss(th, ev_mask, st_mask, nE, nS):
-            ll, comp = parts(th, nE, nS)
+            ll, comp, _ = parts(th, nE, nS)
             prior = 0.5 * (((th - mean_j) / sd_j) ** 2).sum()
             return -(ll * ev_mask).sum() + (comp * st_mask).sum() + prior
 
@@ -385,7 +427,8 @@ class Model:
 
     def parts(self, th, n_ev: int | None = None, n_st: int | None = None):
         nE, nS = (self.N, self.S) if n_ev is None else self.buckets(n_ev, n_st)
-        ll, comp = self._parts(self.jnp.asarray(th), nE, nS)
+        ll, comp, comp_r = self._parts(self.jnp.asarray(th), nE, nS)
+        self._last_comp_r = np.asarray(comp_r)
         return np.asarray(ll), np.asarray(comp)
 
     def cell_probs(self, th, i):
@@ -399,14 +442,15 @@ class Model:
 # ------------------------------------------------------------------ sıralı yürüyüş
 def walk(W: WalkData, v: Variant, refit_every: int = 1, start_i: int = 0, freeze_at: float | None = None,
          maxiter: int = 60, first_maxiter: int = 300, cfs_override=None, unit_override=None,
-         keep_params_every: int = 50, cell_probs: bool = True, progress: str = "") -> tuple[pd.DataFrame, list]:
+         keep_params_every: int = 50, cell_probs: bool = True, progress: str = "",
+         region: np.ndarray | None = None) -> tuple[pd.DataFrame, list]:
     """Her olay için: önceki olaylarla eğit → bu olayı puanla → geçmişe ekle.
 
     ``freeze_at`` (gün): bu andan sonra ayar güncellenmez (sabit ayarlı model).
     Dönüş: olay başına puan tablosu ve ara ayar anlık görüntüleri.
     """
     import time as _time
-    M = Model(W, v, cfs_override=cfs_override, unit_override=unit_override)
+    M = Model(W, v, cfs_override=cfs_override, unit_override=unit_override, region=region)
     th = M.init()
     rows, snaps = [], []
     t_start = _time.time()
@@ -425,6 +469,9 @@ def walk(W: WalkData, v: Variant, refit_every: int = 1, start_i: int = 0, freeze
                "lon": W.cat["longitude"].iloc[i], "cell": int(W.ev_cell[i]), "unit": W.units["unit"].iloc[M.ev_unit[i]],
                "system": W.units["system"].iloc[M.ev_unit[i]], "loglam": float(ll[i]), "comp": float(time_comp),
                "score": float(ll[i] - time_comp)}
+        if region is not None:        # bölge puanı: bölgedeki olaylarda log λ, her aralıkta −∫Λ_bölge
+            row["in_region"] = bool(region[W.ev_cell[i]])
+            row["comp_region"] = float(M._last_comp_r[s_lo:s_hi].sum())
         if cell_probs:
             p = M.cell_probs(th, i)
             pc = p[W.ev_cell[i]]
