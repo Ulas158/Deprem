@@ -207,3 +207,11 @@ ama kayıtlarda hata payı bilgisi yok. Karar: ham AFAD kayıtları (EMSC ile ç
 bu bölgede σ = 5 km varsayılarak ±2σ aday kutularıyla özümsemeye girer, puanlamada ağırlıkları
 GFZ olaylarından düşük kalır (1/σ²). 1999 kırılma alanı için yayınlanmış yeniden konumlanmış
 bir artçı kataloğu bulunursa o tercih edilir. Sonuç bu bölge dahil ve hariç ayrı raporlanır.
+
+### Büyüklük sınırları (2026-11-26 15:24 UTC, hiçbir sonuç görülmeden eklendi)
+- Tamlık büyüklüğü (en çok eğrilik + 0,2): GFZ Becker kataloğu ~M1,9; Bentz Silivri ~M1,6
+  (yayında M1,1).
+- 1 km'lik büyük ağda tek tek özümseme yalnız M≥3 (kırılma ~0,5 km; 1 km hücrenin çözebildiği
+  en küçük olay). Fay 10 km içinde: Becker 327, Bentz 47 olay.
+- M_c ≤ M < 3 olaylar büyük ağda yalnız toplu istatistikte (10 km blok sıklık, derinlik).
+- 100 m'lik yerel ağlarda M ≥ M_c olayların hepsi tek tek özümsenir.
