@@ -71,14 +71,18 @@ def main():
     k = np.clip(np.floor(cells["x_km"].to_numpy()).astype(int), 0, len(XC) - 1)
     vpl_km = np.bincount(k, vpl, len(XC)) / np.maximum(np.bincount(k, minlength=len(XC)), 1)
 
-    uyeler = []
-    for f in sorted(RUN.glob("oynatma_*.pkl")):
-        if f.name.endswith(".parca.pkl"):
-            continue
-        uyeler += pickle.loads(f.read_bytes())["uyeler"]
-    if not uyeler:
-        for f in sorted(RUN.glob("oynatma_*.parca.pkl")):
-            uyeler += pickle.loads(f.read_bytes())["uyeler"]
+    # birinci tur (özümsemesiz) üyeleri: tam dosya varsa onu, yoksa parça dosyasını al;
+    # paralel tek-üye dosyaları (_uK) da eklenir; aynı üye iki kez sayılmaz
+    uyeler, gorulen = [], set()
+    dosyalar = [f for f in sorted(RUN.glob("oynatma_*.pkl")) if "_ozumse" not in f.name]
+    tam = [f for f in dosyalar if not f.name.endswith(".parca.pkl")]
+    parca = [f for f in dosyalar if f.name.endswith(".parca.pkl")]
+    for f in tam + parca:
+        for u in pickle.loads(f.read_bytes())["uyeler"]:
+            if u["uye"] not in gorulen:
+                gorulen.add(u["uye"])
+                uyeler.append(u)
+    uyeler.sort(key=lambda u: u["uye"])
     n = len(uyeler)
     ozet = {"uye_sayisi": n, "senaryolar": sorted({u["senaryo"] for u in uyeler})}
 

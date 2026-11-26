@@ -179,7 +179,8 @@ def asama_isinma(v, args, p):
 
 def asama_oynatma(v, args, p, ad, sts):
     """Bir katman kalınlığı senaryosu için topluluk üyeleri: 1500'den bugüne oynatma."""
-    out = RUN / (f"oynatma_{ad}" + ("_ozumse" if args.ozumse else "") + ".pkl")
+    out = RUN / (f"oynatma_{ad}" + ("_ozumse" if args.ozumse else "")
+                 + (f"_u{args.uye_sec}" if args.uye_sec is not None else "") + ".pkl")
     if out.exists():
         return pickle.loads(out.read_bytes())
     xb = np.arange(0, 456, 1.0)
@@ -187,6 +188,8 @@ def asama_oynatma(v, args, p, ad, sts):
     m, _ = model_senaryo(v, p, ad)
     secim = sts[-args.uye:]
     for k, st in enumerate(secim):
+        if args.uye_sec is not None and k != args.uye_sec:
+            continue
         uye = {"ince": 0, "orta": 100, "kalin": 200}[ad] + k
         t0 = time.time()
         m.yukle(st)
@@ -246,6 +249,7 @@ def main():
     ap.add_argument("--uye", type=int, default=3)
     ap.add_argument("--ileri", type=int, default=6)
     ap.add_argument("--hizli", action="store_true")
+    ap.add_argument("--uye-sec", type=int, default=None, help="yalnız bu sıradaki üyeyi koş (paralel)")
     ap.add_argument("--ozumse", action="store_true", help="her gerçek depremde kırılan parçayı önce %%100 doluya çek")
     ap.add_argument("--gps-ayar", default=None, help="tek GPS ayarı 'tM,krip' (paralel koşu için)")
     args = ap.parse_args()
