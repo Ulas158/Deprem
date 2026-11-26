@@ -75,3 +75,14 @@ Hız için döngü önce 2 km'lik kaba ağda koşar, bulunan ayar tam ağda doğ
 - modern (1999 ve sonrası; 2006 sonrası küçük depremler): en az %98
 Erken kendiliğinden kırılmama şartı (20 yıl; küçük depremlerde bir önceki tekrar aralığının yarısı) korunur.
 Sonuçlar ayrıca tek tip %90 eşiğiyle de raporlanır (eşik duyarlılığı).
+
+### Zaman şartı (2026-11-26 15:04 UTC, hiçbir sonuç görülmeden eklendi)
+Doluluk eşiğine ek olarak, modelin o parçayı kendiliğinden kıracağı tarih gerçek tarihe yakın
+olmalı. Kontrol: gerçek depremden önceki kayıttan model, o parça zorlanmadan ileri sarılır;
+parçanın kendiliğinden kırıldığı ilk tarih ölçülür (erken ya da geç, ikisi de sayılır;
+gerçek tarihten sonra en çok toleransın sonuna kadar beklenir).
+- tarihsel (1719-1894): ±20 yıl (tekrar aralığının yaklaşık %10'u)
+- erken aletsel (1912, 1943, 1963): ±10 yıl
+- modern (1999 ve sonrası): ±5 yıl
+- küçük depremler: aynı yerdeki iki deprem arasındaki gerçek sürenin ±%25'i
+"Tuttu" = doluluk eşiği VE zaman şartı birlikte sağlanırsa.
