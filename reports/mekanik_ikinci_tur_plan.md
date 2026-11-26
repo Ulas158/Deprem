@@ -161,3 +161,14 @@ işlenir; hiçbiri atlanmaz. Her biri sırası gelince yükünü elastik matrisl
 aktarır. Modellenmiş herhangi bir fay koluna (ikinci sürüm ağında güney/orta kol, İmralı,
 Armutlu dahil) 10 km'den yakın olaylar özümsenir. Daha uzaktaki olaylar modelde fay olmadığı
 için yerleştirilemez; sayıları ve toplam momentleri raporda ayrıca listelenir.
+
+### Model dışı büyük depremler (2026-11-26 15:15 UTC, hiçbir sonuç görülmeden eklendi)
+Coulomb gerilmesi kırılma boyuna göre azalır (uzakta kabaca (L/r)^3). Bu yüzden 10 km kesimi
+küçük depremler için yeterli ama büyük depremler için değil: M5 (L~3 km) 10 km'de birkaç
+yüzde, M6 (L~10 km) 10-20 km'de ~%5-15, M7 uzaklarda bile 0,1 bar'ı (tetikleme eşiği olarak
+anılan 0,01 MPa) aşabilir. Kural: modellenmiş faylara 10 km'den uzak, M≥5 olaylar dış kaynak
+olarak eklenir. Bilinen kırılma düzlemi (odak mekanizması, yayın) ya da büyüklük-boy
+bağıntısından yaklaşık düzlem kullanılır; modele binen gerilme cutde ile hesaplanır ve olay
+zamanında uygulanır. Hücrelerde 0,01 MPa'nın altında etki üretenler atlanır. Adaylar en az:
+1953 Yenice-Gönen, 1957 Abant, 1964 Manyas, 1967 Mudurnu (birinci tur tablosunda yok;
+ana kola çok yakın, kontrol edilecek), 1855 Bursa.
