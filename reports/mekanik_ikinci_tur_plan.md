@@ -192,3 +192,10 @@ Açıklama: bu plan yazılmadan önce birinci turun ilk 1-2 koşusunun ara sonu�
 (13:53 ve 14:56 UTC; 8 test depreminde AUC ortalaması ~0,50 ve ~0,57). Başlangıç değerleri
 bu yüzden bilerek birinci tur ayarından değil literatürden alındı; aralıklar fiziksel olarak
 makul geniş tutuldu. Okuyucu bu bilgiyi göz önünde tutmalı.
+- Uzlaşma (15:20 UTC, Ulas'ın isteği): birinci tur parametreleri ikinci tura alternatif
+  başlangıç noktası olarak girebilir, şu şartla: karar yalnız ikinci turun ayar depremlerindeki
+  (1766 Mayıs, 1766 Ağustos, 1894) puana göre verilir. Literatür başlangıcı ile birinci tur
+  başlangıcı bu üç depremde karşılaştırılır, iyi olan başlangıç alınır. 1912 ve 1999 sonuçları
+  hiçbir aşamada kullanılmaz. Aralıklar değişmez. Not: birinci tur ayarı genel tarih
+  istatistiklerine (tekrarlanma, büyüklük) göre yapıldığı için sınav depremlerinden zayıf bir
+  bilgi taşır; bu raporda belirtilir.
