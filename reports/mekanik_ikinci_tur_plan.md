@@ -129,3 +129,8 @@ olanı seç.
   Özümseme güncellemeleri bu olasılıklarla ağırlıklandırılır ve olasılıklar saklanır; raporda
   belirsiz depremler için aday dağılımları gösterilir. Sınav döneminde yalnız katalog önseli
   kullanılır (model doluluğu olasılığa girmez, döngüsellik olmasın).
+- Aday sayısı kuralı güncellendi (15:09 UTC; bir önceki "hata kadar aday" kuralının yerine):
+  katalog hatası 1σ (yaklaşık %68 güven) kabul edilir. Adaylar uzun eksen boyunca ±2σ
+  aralığında 1 km arayla dizilir (5 km hata → ±10 km, 21 aday; %95 kapsama). Öncül olasılık
+  Gauss: ortadakiler yüksek, kenardakiler düşük. Olasılığı %1'in altında kalan adaylar hesap
+  yükünü azaltmak için atılır ve kalanlar yeniden normalize edilir.
