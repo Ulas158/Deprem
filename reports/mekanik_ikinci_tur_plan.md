@@ -20,19 +20,22 @@ rastgele kaydırma) p-değeri.
 2. Büyük depremler: ayar 1509-1894 (7 olay), sınav 1912 Mürefte, 1999 İzmit, 1999 Düzce.
 
 ## Serbest parametreler ve arama aralıkları (11)
-| parametre | aralık | birinci tur değeri |
-|---|---|---|
-| etkin sürtünme mu_eff | 0,2 - 0,6 | 0,4 |
-| dayanım fazlası dtau0 | 10 - 50 MPa | 30 MPa |
-| dayanım rastgeleliği sigma_h | 0,05 - 0,5 | 0,1 |
-| dinamik zayıflama eta_dyn | 0 - 0,6 | 0,2 |
-| deprem sonu kalan seviye (-asiri) | -%20 ile +%50 | -%10 |
-| zayıflama kayma ölçeği kayma_ref | 0,5 - 4 m | 2 m |
-| sünek Maxwell zamanı tM_ref | 1 - 50 yıl | 3 yıl |
-| krip çarpanı | 0,3 - 5 | 2 |
-| normal gerilme artışı sigma_grad | 1 - 5 MPa/km | 2,5 MPa/km |
-| kırılgan kalınlık (AFAD→EMSC oranı u) | 0 - 1 | 0,5 / 1 |
-| Orta Marmara sığ krip derinliği | 0 - 8 km | 0-6 km |
+| parametre | aralık | başlangıç (tüm fayda ortak) | dayanak | birinci tur |
+|---|---|---|---|---|
+| etkin sürtünme mu_eff | 0,2 - 0,6 | 0,4 | King, Stein & Lin 1994; Coulomb çalışmalarının ortak değeri | 0,4 |
+| dayanım fazlası dtau0 | 5 - 50 MPa | 10 MPa | ölçülen gerilme düşüşleri 1-10 MPa (Allmann & Shearer 2009) | 30 MPa |
+| dayanım rastgeleliği sigma_h | 0,05 - 0,5 | 0,3 | büyük depremlerde kayma dağılımının pürüzlülüğü (Mai & Beroza 2002) | 0,1 |
+| dinamik zayıflama eta_dyn | 0 - 0,6 | 0,3 | hızlı kaymada sürtünme düşüşü deneyleri (Di Toro vd. 2011) | 0,2 |
+| deprem sonu kalan seviye | -%20 ile +%50 | -%10 | dinamik aşırı kayma %10-20 (Madariaga 1976) | -%10 |
+| zayıflama kayma ölçeği kayma_ref | 0,2 - 4 m | 1 m | büyük depremlerde kritik kayma 0,1-1 m (Tinti vd. 2005) | 2 m |
+| sünek Maxwell zamanı tM_ref | 1 - 50 yıl | 10 yıl | 1999 sonrası viskozite ~1e19 Pa·s (Hearn vd. 2009; Ergintav vd. 2009) | 3 yıl |
+| krip çarpanı | 0,3 - 5 | 1 | laboratuvar a-b değerleri olduğu gibi (Blanpied vd. 1995) | 2 |
+| normal gerilme artışı sigma_grad | 1 - 17 MPa/km | 5 MPa/km | fay zonunda yüksek gözenek basıncı (Rice 1992); 17 = hidrostatik | 2,5 MPa/km |
+| kırılgan kalınlık (AFAD→EMSC oranı u) | 0 - 1 | 0,5 | iki kurumun ortası | 0,5 / 1 |
+| Orta Marmara sığ krip derinliği | 0 - 8 km | 3 km | deniz tabanı ölçümleri ve tekrarlayan depremler (Schmittbuhl vd. 2016; Yamamoto vd. 2019) | 0-6 km |
+
+Başlangıç değerleri birinci tur ayarından değil, yalnız literatürden alındı. Başta her parametre
+bütün fay hücreleri için aynıdır; bölgesel farklar (10 km blok) yalnız ayar verisi gerektirirse eklenir.
 
 Sabit (ölçümle bilinen): levha hızı (GPS), fay yeri ve yönü, elastik yük aktarım matrisi.
 
