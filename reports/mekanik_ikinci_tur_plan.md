@@ -96,3 +96,15 @@ kırdığı alan gerçek kırılma alanıyla örtüşmeli (büyük depremlerde k
 - Küçük depremler: yalnız GFZ'nin yeniden konumlanmış kataloglarından ve büyük eksen hatası
   2 km'nin altında olan olaylar kullanılır; ham AFAD/EMSC/USGS kataloğu kullanılmaz. Her olay
   için konum toleransı o olayın kendi hata elipsi kadardır.
+
+### Veri kullanımı genişletildi (2026-11-26 15:06 UTC, hiçbir sonuç görülmeden eklendi)
+Ulas olabildiğince çok veri kullanılmasını istedi.
+- Tek tek özümsemede GFZ'nin yeniden konumlanmış bütün depremleri kullanılır (Becker 2006-2023
+  ~16.000, Bentz Silivri 2019, Martínez-Garzón Armutlu 2019), hata kesimi yok.
+- Konum belirsizliği yumuşak özümsemeyle işlenir: her deprem, hata elipsi içindeki hücreleri
+  konum olasılığıyla ağırlıklı olarak sınıra yaklaştırır (hassas olay dar alanı tam, hatalı
+  olay geniş alanı az etkiler).
+- Puanlamada her olayın ağırlığı 1/(hata²) ile orantılıdır.
+- Ham AFAD/EMSC/USGS kataloğu yalnız toplu istatistikte (10 km blok başına sıklık, derinlik,
+  b-değeri) kullanılır.
+- Sonuç ayrıca yalnız hatası 2 km'nin altındaki olaylarla da raporlanır (yan yana).
