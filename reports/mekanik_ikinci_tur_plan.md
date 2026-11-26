@@ -215,3 +215,15 @@ bir artçı kataloğu bulunursa o tercih edilir. Sonuç bu bölge dahil ve hari�
   en küçük olay). Fay 10 km içinde: Becker 327, Bentz 47 olay.
 - M_c ≤ M < 3 olaylar büyük ağda yalnız toplu istatistikte (10 km blok sıklık, derinlik).
 - 100 m'lik yerel ağlarda M ≥ M_c olayların hepsi tek tek özümsenir.
+
+### Başlangıç bölgesi ve konum hatası (2026-11-26 15:32 UTC, hiçbir sonuç görülmeden eklendi)
+"%100 dolu" yalnız kırılmanın başladığı bölgeye uygulanır (bilimsel düzeltme 1). İki ayrı
+şey birlikte işlenir:
+- **Boyut (fizik):** başlangıç bölgesinin büyüklüğü depremin büyüklüğüne bağlıdır: küçük
+  depremde kırılmanın kendisi (M3 ~0,5 km), büyük depremde ~5 km (çekirdeklenme boyu).
+- **Yer (hata payı):** bu bölge, hata elipsi içindeki ±2σ aday kutuların her birine konur ve
+  o adayın olasılığı p kadar uygulanır: S ← S + p·(S_kırılma − S). Hatası 1 km olan deprem tek
+  yere tam güçle, 5 km olan ~20 aday kutuya bölüştürülerek etki eder.
+- **Tarihsel depremler:** başlangıç noktası bilinmediği için adaylar kırılma boyunca (uç
+  belirsizliği dahil) eşit olasılıkla dağıtılır; 1999 İzmit gibi aletsel kayıtlı depremlerde
+  yayınlanmış hiposantr ve hatası kullanılır.
