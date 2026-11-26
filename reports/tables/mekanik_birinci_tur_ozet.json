@@ -1,0 +1,113 @@
+{
+ "uye_sayisi": 3,
+ "senaryolar": [
+  "kalin"
+ ],
+ "mw_fark_ort": -0.047552839345480144,
+ "mw_fark_rms": 0.24452879855917592,
+ "sahte_buyuk_deprem_ort": 11.0,
+ "sahte_buyuk_deprem_yil": 0.0208768267223382,
+ "auc_model_ort": 0.5518600576414477,
+ "auc_zaman_ort": 0.5044282082333266,
+ "model_zamani_gecti": 5,
+ "test_sayisi": 8,
+ "auc_sans_p": 0.11666666666666667,
+ "auc_sans_ort": 0.48778975447860373,
+ "p30_tum_fay": [
+  0.05555555555555555,
+  0.0,
+  0.16666666666666666
+ ],
+ "p30_marmara_denizi": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "p30_marmara_denizi_m7": [
+  0.0,
+  0.0,
+  0.0
+ ],
+ "ileri_kosu_toplam": 18,
+ "ileri_ilk_mw_medyan": 6.901300336047068,
+ "deniz_x": [
+  78.5,
+  270.5
+ ],
+ "istanbul": [
+  {
+   "parca": "Orta Marmara \u00e7ukuru",
+   "boylam": "27.75-28.05",
+   "x0_km": 144.5,
+   "x1_km": 166.5,
+   "doluluk_ort": 0.11598082807129101,
+   "doluluk_min": -0.008627089001247165,
+   "doluluk_maks": 0.1844151081762518,
+   "p30_ort": 0.0,
+   "p30_min": 0.0,
+   "p30_maks": 0.0,
+   "p30_m7_ort": 0.0,
+   "mw_p10": NaN,
+   "mw_medyan": NaN,
+   "mw_p90": NaN,
+   "n_kirilma": 0
+  },
+  {
+   "parca": "Kumburgaz (Silivri-B\u00fcy\u00fck\u00e7ekmece \u00f6n\u00fc)",
+   "boylam": "28.05-28.6",
+   "x0_km": 167.5,
+   "x1_km": 212.5,
+   "doluluk_ort": 0.08409615350928407,
+   "doluluk_min": 0.0671808095930379,
+   "doluluk_maks": 0.09368891648253397,
+   "p30_ort": 0.0,
+   "p30_min": 0.0,
+   "p30_maks": 0.0,
+   "p30_m7_ort": 0.0,
+   "mw_p10": NaN,
+   "mw_medyan": NaN,
+   "mw_p90": NaN,
+   "n_kirilma": 0
+  },
+  {
+   "parca": "Adalar (Prens Adalar\u0131 \u00f6n\u00fc)",
+   "boylam": "28.6-29.1",
+   "x0_km": 213.5,
+   "x1_km": 257.5,
+   "doluluk_ort": 0.1968550057928821,
+   "doluluk_min": 0.11322850725676586,
+   "doluluk_maks": 0.27936669048797563,
+   "p30_ort": 0.0,
+   "p30_min": 0.0,
+   "p30_maks": 0.0,
+   "p30_m7_ort": 0.0,
+   "mw_p10": NaN,
+   "mw_medyan": NaN,
+   "mw_p90": NaN,
+   "n_kirilma": 0
+  },
+  {
+   "parca": "\u0130stanbul \u00f6n\u00fc toplam",
+   "boylam": "27.75-29.1",
+   "x0_km": 144.5,
+   "x1_km": 257.5,
+   "doluluk_ort": 0.13503909971707415,
+   "doluluk_min": 0.10351347436646292,
+   "doluluk_maks": 0.18437114337559282,
+   "p30_ort": 0.0,
+   "p30_min": 0.0,
+   "p30_maks": 0.0,
+   "p30_m7_ort": 0.0,
+   "mw_p10": NaN,
+   "mw_medyan": NaN,
+   "mw_p90": NaN,
+   "n_kirilma": 0
+  }
+ ],
+ "gps_en_iyi": {
+  "tM_ref": 3.0,
+  "krip_carpan": 2.0,
+  "rms": 2.70666580826684,
+  "rms_en_kotu": 3.698073242996191
+ }
+}
