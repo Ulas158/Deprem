@@ -269,3 +269,10 @@ kayıtta olmayan her model M≥6,8 depremi bir ıska sayılır (tarihsel katalog
 dönemde tam kabul edilir). Sessizlik de veridir: 1766'dan bu yana İstanbul önünde M≥7 olmaması
 modelin uyması gereken bir gözlemdir. Sınav döneminde (1895-2025) sahte deprem sayısı ayrıca
 raporlanır.
+
+### Arama durdurma kuralı (2026-11-26 18:58 UTC; Ulas: "kaç kombinasyon gerekiyorsa o kadar")
+Sabit kombinasyon sınırı yok. Arama 200 Latin hiperküp örneğiyle başlar, ardından en iyi
+bölgelerin çevresinde 50'lik turlarla daralır (CMA-ES benzeri). Ardışık 3 turda ayar puanı
+%1'den fazla iyileşmezse arama durur. Geri saran döngüde parça başına 30 deneme sınırı da
+kaldırılır; aynı durdurma kuralı uygulanır. Deneme sayısı arttıkça ezberleme riski de
+arttığından toplam deneme sayısı raporda yazılır; karar yine yalnız bağımsız sınavla verilir.
