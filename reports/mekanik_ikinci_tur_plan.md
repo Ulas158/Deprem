@@ -179,3 +179,7 @@ ana kola çok yakın, kontrol edilecek), 1855 Bursa.
   0,1 bar'dan 2,5-10 kat daha kaba hem de ayarlanan bir parametreye bağlı (ayar değiştikçe
   hangi depremlerin girdiği değişirdi). Bu yüzden eşik sabit fiziksel birimde (0,01 MPa)
   tutulur; bu, %1 kuralının seçeceği bütün olayları da kapsar. Eklenen olay sayısı raporlanır.
+- Düzeltme (15:18 UTC): yukarıdaki "M5 10 km'de birkaç yüzde" tahmini yanlıştı. Elastik
+  matristen ölçülen fay boyu Coulomb değişimi (kırılma ucundan, 10 km derinlik): M5 5 km'de
+  0,027 MPa, 10 km'de 0,004 MPa; M6 10 km'de 0,063, 20 km'de 0,014 MPa; M7 (50 km kırılma)
+  20 km'de 0,17, 50 km'de 0,008 MPa. Etkiye dayalı kural (0,01 MPa) değişmez.
