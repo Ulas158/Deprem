@@ -58,6 +58,7 @@ class Parametreler:
     isi_akisi: np.ndarray | float = 0.075  # W/m², hücre başına veya sabit
     v_pl: np.ndarray | float = 0.020       # m/yıl, hücre başına veya sabit
     sig_kirilma_mw: float = 6.8    # "büyük deprem" eşiği (kayıt için)
+    mu_kayma: float = 3.0e10       # Pa, kayma modülü (moment için; ikinci tur 33 GPa)
     seed: int = 0
     extra: dict = field(default_factory=dict)
 
@@ -92,6 +93,8 @@ class Model:
         self.v_pl = np.broadcast_to(np.asarray(p.v_pl, float), (n,)).copy()
         self.alan = self.c["alan_m2"].to_numpy()
         self.x = self.c["x_km"].to_numpy()
+        kab = (self.c["katman"].to_numpy() == "kabuk") if "katman" in self.c else np.ones(n, bool)
+        self.h_kirilgan = float(np.median(self.c["W_km"].to_numpy()[kab])) if "W_km" in self.c else 1.0
         self.z = z
         rng = np.random.default_rng(p.seed)
         # dayanım ve gerilme düşümü (yalnız kilitli hücreler anlamlı)
@@ -111,9 +114,11 @@ class Model:
         self.v[self.ic] = self.v_pl[self.ic]
         self._kararli_baslangic()
         self.olaylar: list[dict] = []
+        self.son_kendi = np.full(n, -np.inf)  # her hücrenin en son kendiliğinden kırıldığı an
         self.kayit_slip = None  # isteğe bağlı: olay kayma haritaları
         self.dt_prev = 1e-3
         self.krip_dt = 0.5
+        self.tM_adim_alt = 0.0  # ikinci tur: 0,05 yıl (birinci tur davranışı: 0)
 
     def _kararli_baslangic(self):
         """Kilitli hücreler dururken krip hücrelerinin gerilmesini sabit tutan hızlar.
@@ -135,8 +140,8 @@ class Model:
 
     # ------------------------------------------------------------- durum
     def durum(self):
-        return {k: getattr(self, k).copy() for k in ("S", "S_ref", "slip", "v", "S_fail", "dtau")} | {
-            "t": self.t}
+        return {k: getattr(self, k).copy() for k in ("S", "S_ref", "slip", "v", "S_fail", "dtau", "son_kendi")
+                if hasattr(self, k)} | {"t": self.t, "dt_prev": self.dt_prev}
 
     def yukle(self, d):
         for k, val in d.items():
@@ -182,7 +187,12 @@ class Model:
             if vs.any():
                 lim = np.min(self.krip_dt * self.A[ic][vs] / (self.kself[ic][vs] * np.maximum(vc[vs], 1e-12)))
             if (~vs).any():
-                lim = min(lim, self.krip_dt * np.min(self.tM[ic][~vs]))
+                # ağdalı hücrelerin kendi geri beslemesi _adim'de üstel olarak tam çözülür; çok kısa
+                # Maxwell zamanlı (aşırı sıcak, fiilen anında gevşeyen) hücreler adımı sınırlamaz
+                tmv = self.tM[ic][~vs]
+                tmv = tmv[tmv >= self.tM_adim_alt]
+                if len(tmv):
+                    lim = min(lim, self.krip_dt * np.min(tmv))
             dt = min(max_dt, lim, self.dt_prev * 1.6, t_son - self.t)
             dt = max(dt, 1e-6)
             # adım içinde yükleme hızı donuk; kırılmalar analitik zamanlarında işlenir
@@ -291,9 +301,11 @@ class Model:
             fail[np.atleast_1d(baslangic)] = True
         it = 0
         from scipy.ndimage import maximum_filter
-        kb = np.floor(self.x).astype(int)
-        zb = np.minimum(np.floor(self.z).astype(int), 40)
-        grid = np.zeros((kb.max() + 1, 41))
+        h = self.h_kirilgan  # kilitli hücre boyu (km); komşuluk ~2 km
+        kb = np.floor((self.x - self.x.min()) / h).astype(int)
+        zb = np.floor(self.z / h).astype(int)
+        grid = np.zeros((kb.max() + 1, zb.max() + 1))
+        fs = 2 * max(int(round(2.0 / h)), 1) + 1
         target_all = -p.asiri * self.dtau
         cozuldu = 0
         while it < 600:
@@ -305,7 +317,7 @@ class Model:
                 np.maximum.at(grid, (kb[idx], zb[idx]), d_ev[idx])
             # kırık ucundaki dinamik gerilme yığması: 2 km komşuluktaki en büyük
             # kaymayla orantılı (büyük kırık daha güçlü iter, ince şerit itmez)
-            w = np.minimum(maximum_filter(grid, size=5)[kb, zb] / p.kayma_ref, 1.0)
+            w = np.minimum(maximum_filter(grid, size=fs)[kb, zb] / p.kayma_ref, 1.0)
             kayan = d_ev > 0
             if zorla:
                 yeni = np.zeros(self.n, bool)
@@ -329,7 +341,7 @@ class Model:
                 self.S += self.K[:, F] @ x.astype(np.float32)
                 np.maximum.at(grid, (kb[F], zb[F]), d_ev[F])
                 cozuldu += 1
-                w = np.minimum(maximum_filter(grid, size=5)[kb, zb] / p.kayma_ref, 1.0)
+                w = np.minimum(maximum_filter(grid, size=fs)[kb, zb] / p.kayma_ref, 1.0)
                 kayan = d_ev > 0
                 if zorla:
                     break
@@ -340,8 +352,10 @@ class Model:
             fail = yeni | (kayan & ok & (self.S > target_all + 0.02 * self.dtau))
             it += 1
         self.slip += d_ev
+        if not zorla and hasattr(self, "son_kendi"):
+            self.son_kendi[d_ev > 0] = self.t
         # kırık dışındaki krip hücreleri: S_ref sabit; art kayma doğal olarak çıkar
-        m0 = MU * float(np.sum(d_ev * self.alan))
+        m0 = p.mu_kayma * float(np.sum(d_ev * self.alan))
         if m0 <= 0:
             return None
         mw = (np.log10(m0) - 9.1) / 1.5

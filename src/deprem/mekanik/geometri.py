@@ -191,3 +191,74 @@ def yuzey_yerdegistirme(cells: pd.DataFrame, lat, lon) -> np.ndarray:
     M = hs.disp_matrix(np.ascontiguousarray(obs), src, NU)  # (no, 3, ntri, 3)
     G = np.einsum("aitk,tk->ait", M, slip_vec.reshape(-1, 3))
     return G.reshape(len(obs), 3, n, 2).sum(-1)
+
+
+# ---------------------------------------------------------------- yerel ince ağ
+def yerel_ag(lon_c: float, lat_c: float, strike: float, L_km: float, z_max: float, h: float,
+             x_merkez: float = 0.0, ad: str = "yerel"):
+    """Düz, düşey bir fay parçası üzerinde h km'lik kare hücreler (ör. 100 m).
+
+    Parça düzlemsel olduğundan etkileşim yalnız hücreler arası doğrultu farkına ve iki
+    derinliğe bağlıdır (öteleme simetrisi): bir sütun alıcı için hesaplanıp bütün matris
+    buradan kurulur. Aynı düzlemde normal gerilme değişimi sıfırdır, K = K_tau.
+    Dönen: (hücre tablosu, K_tau float32).
+    """
+    import cutde.halfspace as hs
+
+    nx = int(round(L_km / h))
+    nz = int(round(z_max / h))
+    phi = np.radians(strike)
+    sv = np.array([np.sin(phi), np.cos(phi), 0.0])
+    c0 = to_local_m(np.array([lat_c]), np.array([lon_c]), np.array([0.0]))[0]
+    # kaynaklar: -(nx-1)..(nx-1) sütun; alıcı sütunu 0
+    cols = np.arange(-(nx - 1), nx)
+    H = h * 1e3
+    tris = []
+    for ci in cols:
+        for k in range(nz):
+            top = c0 + sv * ci * H + np.array([0, 0, -k * H])
+            ts, tn = top - sv * H / 2, top + sv * H / 2
+            bs, bn = ts - np.array([0, 0, H]), tn - np.array([0, 0, H])
+            tris.append([[ts, tn, bn], [ts, bn, bs]])
+    tris = np.asarray(tris)  # (ncol*nz, 2, 3, 3)
+    ns = len(tris)
+    from ..faults.coulomb import MU_SHEAR, NU, _calibrate_slip, fault_vectors  # noqa: F811
+    obs_c = tris[(nx - 1) * nz:(nx - 1) * nz + nz].mean(axis=2)  # alıcı sütunu (nz, 2, 3)
+    cen = tris.mean(axis=(1, 2))
+    coef = _calibrate_slip(tris[0], cen[0], strike, 90.0, 180.0)
+    src = tris.reshape(-1, 3, 3)
+    slip_vec = np.zeros((ns * 2, 3))
+    slip_vec[:, 0], slip_vec[:, 1] = coef[0], coef[1]
+    nvec, svec, _ = fault_vectors(np.array([strike]), np.array([90.0]), np.array([180.0]))
+    Kcol = np.zeros((nz, ns), np.float32)
+    blok = 4
+    for i0 in range(0, nz, blok):
+        i1 = min(i0 + blok, nz)
+        o = np.ascontiguousarray(obs_c[i0:i1].reshape(-1, 3))
+        M = hs.strain_matrix(o, src, NU)
+        E = np.einsum("aitk,tk->ait", M, slip_vec).reshape(len(o), 6, ns, 2).sum(-1)
+        E = E.reshape(i1 - i0, 2, 6, ns).mean(1)
+        S = hs.strain_to_stress(np.moveaxis(E, 1, -1).reshape(-1, 6), MU_SHEAR, NU).reshape(i1 - i0, ns, 6)
+        xx, yy, zz, xy, xz, yz = np.moveaxis(S, -1, 0)
+        nv, s_ = nvec[0], svec[0]
+        t = np.stack([xx * nv[0] + xy * nv[1] + xz * nv[2], xy * nv[0] + yy * nv[1] + yz * nv[2],
+                      xz * nv[0] + yz * nv[1] + zz * nv[2]], -1)
+        Kcol[i0:i1] = (t * s_).sum(-1)
+    Kcol = Kcol.reshape(nz, len(cols), nz)  # (z alıcı, sütun farkı, z kaynak)
+    # hücre tablosu
+    ix, iz = np.meshgrid(np.arange(nx), np.arange(nz), indexing="ij")
+    ix, iz = ix.ravel(), iz.ravel()
+    off = (ix - (nx - 1) / 2) * H
+    xyz = c0[None, :] + off[:, None] * sv[None, :]
+    lon = LON0 + xyz[:, 0] / (KM_PER_DEG * 1e3 * np.cos(np.radians(LAT0)))
+    lat = LAT0 + xyz[:, 1] / (KM_PER_DEG * 1e3)
+    cells = pd.DataFrame({"seg": 0, "seg_ad": ad, "kol": 0, "katman": "kabuk", "lon": lon, "lat": lat,
+                          "x_km": x_merkez + off / 1e3, "z_ust": iz * h, "z_km": iz * h + h / 2,
+                          "L_km": h, "W_km": h, "strike": strike})
+    cells["alan_m2"] = h * h * 1e6
+    n = len(cells)
+    K = np.empty((n, n), np.float32)
+    for i in range(n):
+        d = ix - ix[i] + (nx - 1)
+        K[i] = Kcol[iz[i], d, iz]
+    return cells, K
