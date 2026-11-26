@@ -54,3 +54,16 @@ Sabit (ölçümle bilinen): levha hızı (GPS), fay yeri ve yönü, elastik yük
   Ayarda puanlanan: 1766 Mayıs, 1766 Ağustos, 1894. Sınav: 1912, 1999 İzmit, 1999 Düzce.
 - Küçük depremler: saat GFZ kataloğunun başında (2006-01-01) başlar; 2006-2017 ayar,
   2018-2023 sınav.
+
+## Geri saran sıralı ayar (Ulas'ın tarifi)
+1. Ortak başlangıç değerleriyle saat ileri sarılır; her gerçek depremden sonra model durumu kaydedilir.
+2. Bir sonraki gerçek deprem bir parçada gelince kontrol: "tuttu" sayılması için modelde o parça
+   gerçek tarihte en az %90 dolu olmalı ve model o parçayı gerçek tarihten 20 yıldan fazla önce
+   kendiliğinden kırmamış olmalı.
+3. Tutmadıysa: o parçanın önceki depreminden sonraki kayda geri dönülür, o parçanın (10 km
+   bloklar) ayarı yeni bir kombinasyonla değiştirilir, oradan yeniden ileri sarılır.
+   Kombinasyonlar aralık içinde Latin hiperküp ile seçilir, en çok 30 deneme.
+4. Tutunca bir sonraki depreme geçilir; daha önce tutmuş depremlerin bozulup bozulmadığı her
+   değişiklikten sonra yeniden kontrol edilir.
+5. Sınav depremleri bu döngüye hiç girmez; ayar bitince donmuş parametrelerle bir kez koşulur.
+Hız için döngü önce 2 km'lik kaba ağda koşar, bulunan ayar tam ağda doğrulanır.
