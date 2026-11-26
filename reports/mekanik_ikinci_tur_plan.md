@@ -120,3 +120,6 @@ olanı seç.
 - Sınav döneminde konum seçimi yapılmaz: adayların olasılık ağırlıklı ortalaması kullanılır
   (modelin uygun kutuyu kendisinin seçmesi tutmayı neredeyse garanti ederdi).
 - Bu yöntem ile yumuşak (ağırlıklı) özümseme yan yana koşulur, ikisinin sınav sonucu raporlanır.
+- Aday sayısı kuralı (15:07 UTC): aday kutu sayısı hata payının km cinsinden yuvarlanmış
+  değeri kadardır (1 km hata → 1 kutu, 4 km → 4 kutu, 5 km → 5 kutu), 1 km aralıkla hata
+  elipsinin uzun ekseni boyunca dizilir; 10 km'yi aşan hatalarda en çok 10 aday.
