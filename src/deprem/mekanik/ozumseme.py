@@ -217,7 +217,9 @@ YEREL_CHARTIER = {"silivri": (0.018, 15.0), "tekirdag": (0.018, 15.0), "ortacuku
                   "edincik": (0.003, 15.0), "gencali": (0.0053, 15.0), "imrali": (0.0008, 15.0),
                   "armutlu": (0.0008, 15.0), "duzce": (0.015, 15.0)}
 BUYUKLUK_TUT = GEOMETRI == "mta"  # zorlanan büyük deprem gözlenen büyüklükten fazla boşaltmaz
-BUYUK_AG = "mta_kaba" if GEOMETRI == "mta" else "kaba"  # büyük deprem aşamasının ağı
+# büyük deprem aşamasının ağı. Ulaş "önemli olan doğru, titiz olması": MTA'da büyük aşama 1 km'lik ağda
+# (mekanik_mta); kuyruk DEPREM_BUYUK_AG=mta ile koşar. Pencere düzeni ve izdüşüm 2 km'lik ağdan (aynı iz).
+BUYUK_AG = os.environ.get("DEPREM_BUYUK_AG", "mta_kaba" if GEOMETRI == "mta" else "kaba")
 
 
 def yerel_ag_yukle(root: Path, ad: str):

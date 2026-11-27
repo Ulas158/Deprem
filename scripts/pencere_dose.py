@@ -35,7 +35,7 @@ KX = 111.195 * np.cos(np.radians(40.7))
 
 
 def sayimlar():
-    ag = oz.Ag(ROOT, oz.BUYUK_AG)
+    ag = oz.Ag(ROOT, "mta_kaba")
     y = ag.cells[ag.cells.z_ust == 0]
     g = oz.gfz_katalog(ROOT)
     g = g[g.mw >= 2.0]
