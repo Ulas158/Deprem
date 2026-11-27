@@ -168,7 +168,8 @@ src/deprem/
     registry.py          özellik listesi, kanıt grubu, başlangıç etkisi ± belirsizlik
     gnss.py              GPS zaman serileri, gerinim hızı, geçici hareket
     repeaters.py         tekrarlayan deprem aileleri, derin kayma hızı
-    dvv.py               ortam gürültüsünden sismik hız değişimi
+    dvv.py               ortam gürültüsünden sismik hız değişimi (tek istasyon)
+    dvv_pairs.py         istasyon çifti korelasyonlarıyla dv/v (Doğu Marmara pilotu)
     mlcatalog.py         PhaseNet ile zengin katalog (pilot)
     insar.py, gonaf.py   InSAR hız ve kuyu gerinimi okuyucuları
     ionosphere.py        TEC anomalileri (hipotez)

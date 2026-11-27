@@ -23,7 +23,7 @@ kapsam dışıdır. Kuyu suyu ve gazlar ayrı çalışmadadır (`docs/akiskan_ve
 | GPS hız alanı, gerinim hızı | güçlü | Nevada Geodetic Lab, Türkiye ve çevresinde ~300 istasyon, günlük | çalışıyor |
 | GPS geçici hareket (yavaş kayma) | güçlü | aynı | çalışıyor |
 | Tekrarlayan depremler | güçlü | birleşik katalog (AFAD/EMSC/USGS) | çalışıyor (katalog adayı; dalga biçimi doğrulaması isteğe bağlı) |
-| Sismik hız değişimi (dv/v) | güçlü | KOERI KO ağı ham kayıtları (FDSN) | tamamlandı: 12 istasyon, 10 günde bir saat, 2012-2026; etki sıfırdan ayırt edilemiyor |
+| Sismik hız değişimi (dv/v) | güçlü | KOERI KO ağı ham kayıtları (FDSN) | istasyon çifti pilotu (Doğu Marmara, 66 çift, 2009-2026): ölçüm iyi, M6,2 sonrası düşüşü görüyor; deprem öncesi sinyal ve modele katkı yok |
 | Yapay zekâ ile zengin katalog | güçlü | KOERI ham kayıtları + PhaseNet | pilot: Marmara, 1 gün |
 | Uydu radarı (InSAR) | güçlü | COMET LiCSAR | **veri bekliyor**: açık arşivde hazır hız haritası yok |
 | GONAF kuyu gerinimi | güçlü | GFZ / AFAD | **veri bekliyor**: başvuru ile alınıyor |
@@ -135,6 +135,11 @@ değiştirilmedi; seçenekler (`mag_sampling`, `fit(fixed=...)`) kodda duruyor, 
   (M≥3: +0,029 → +0,027). İşe yaraması için sürekli kayıt ve istasyon çiftleri arası korelasyon
   gerekir. Çok seyrek gözlemlerde model "eksik" yerine "değer var" bayrağı kullanır; bu bayrağın
   pozitif katsayısı istasyonların zaten aktif bölgelerde kurulu olmasından gelir, öncü sinyal değildir.
+* **dv/v, istasyon çifti (sonuç):** Doğu Marmara'da 12 istasyon, 66 çift, 2009-2026, iki günde bir
+  4 saat sürekli kayıt (`scripts/fetch_dvv_pairs.py`, `scripts/eval_dvv_pairs.py`). Güvenilir ölçüm
+  %62, bölgesel gürültü ~%0,05. 2025 M6,2 Silivri açığı depreminden sonra yerel hız %0,85 düştü
+  (z = −2,7). Deprem öncesi değişim rastgele günlerden farksız; modele katkı sıfır
+  (pilot kutuda −0,016 [−0,070, 0,019] nat/olay). Ayrıntı: `reports/dvv_pairs_marmara.md`.
 * **ULF:** dakikalık veri klasik ULF bandını (10-100 mHz) içermez; bu hipotezin
   zayıflatılmış bir sınamasıdır.
 * **Termal:** NASA POWER bir yeniden analiz ürünüdür; gerçek uydu kızılötesi (MODIS)

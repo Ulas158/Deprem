@@ -186,3 +186,38 @@ def test_etas_fixed_alpha_and_empirical_magnitudes():
     m = e._sample_mag(1000, rng) + e.m0
     pool = set(np.round(cat.loc[cat["time"] >= pd.Timestamp("2011-01-01", tz="UTC"), "mag"], 9))
     assert set(np.round(m, 9)) <= pool
+
+
+def test_dvv_pairs_recovers_velocity_change_and_sigma():
+    from deprem.observations import dvv_pairs as dp
+    rng = np.random.default_rng(3)
+    lag = dp.lags()
+    base = np.convolve(rng.normal(size=len(lag)), np.hanning(9), "same") * np.exp(-np.abs(lag) / 60)
+    true = 0.002  # %0,2 hız artışı
+    days = pd.date_range("2010-01-01", periods=600, freq="2D")
+    C = []
+    for d in days:
+        e = true if d >= pd.Timestamp("2012-06-01") else 0.0
+        c = np.interp(lag * (1 + e), lag, base) + 0.3 * rng.normal(size=len(lag)) * np.exp(-np.abs(lag) / 60)
+        C.append(c)
+    df = dp.pair_dvv(days, np.array(C), d_km=40.0)
+    after = df[df["time"] >= "2012-08-01"]["dvv"]
+    before = df[df["time"] < "2012-05-01"]["dvv"]
+    assert abs(after.mean() - true) < 3e-4
+    assert abs(before.mean()) < 3e-4
+    assert (df["sigma"].dropna() < 1e-3).all()
+    # yalnız geçmiş: 2012-06-01 öncesindeki ölçümler değişimi görmemeli
+    assert abs(df[df["time"] < "2012-06-01"]["dvv"].iloc[-5:].mean()) < 3e-4
+
+
+def test_dvv_pairs_cell_features_use_only_past():
+    from deprem.observations import dvv_pairs as dp
+    t = pd.date_range("2010-01-01", "2014-12-31", freq="2D")
+    v = np.where(t >= pd.Timestamp("2013-07-01"), -0.001, 0.0)
+    pairs = pd.DataFrame({"time": t, "dvv": v, "a": "A", "b": "B", "lat": 40.5, "lon": 29.2})
+    cells = pd.DataFrame({"cell_id": [0, 1], "lat_c": [40.5, 38.0], "lon_c": [29.2, 35.0]})
+    f13 = dp.cell_features(pairs, cells, pd.Timestamp("2013-07-01"))
+    f14 = dp.cell_features(pairs, cells, pd.Timestamp("2014-01-01"))
+    assert abs(f13.loc[0, "dvv_pair_change_pct"]) < 1e-9          # gelecekteki düşüş görünmez
+    assert np.isclose(f14.loc[0, "dvv_pair_change_pct"], -0.1)    # %0,1 düşüş
+    assert np.isnan(f14.loc[1, "dvv_pair_change_pct"])            # uzak hücre: veri yok

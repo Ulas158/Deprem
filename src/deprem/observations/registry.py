@@ -96,6 +96,11 @@ reg("dvv_change_pct", "Sismik hız", "güçlü", "yıllık", "%", "clip3", -0.10
     "pilot", "Son 6 ay dv/v − önceki 2 yıl (ortam gürültüsü, tek istasyon)",
     "Hız düşüşü hasar/akışkan basıncı artışını gösterir (Brenguier vd. 2008); negatif öncül "
     "= hız düştükçe oran artar.", "KOERI KO ağı (FDSN)")
+reg("dvv_pair_change_pct", "Sismik hız", "güçlü", "yıllık", "%", "clip3", -0.10, 0.15,
+    "pilot", "Son 6 ay dv/v − önceki 2 yıl (istasyon çifti gürültü korelasyonu, Doğu Marmara)",
+    "Tek istasyon yönteminin (dvv_change_pct) yerine geçmesi hedeflenen standart yöntem: istasyon "
+    "çiftleri arası ZZ korelasyonu, 30 günlük yığın, kod penceresinde esneme (Brenguier vd. 2008, "
+    "2014). Öncül tek istasyon sürümüyle aynı tutuldu.", "KOERI KO ağı (FDSN), 12 istasyon / 66 çift")
 reg("mlcat_rate_ratio", "Yapay zekâ kataloğu", "güçlü", "yıllık", "-", "log1p", 0.10, 0.20,
     "pilot", "PhaseNet ile bulunan olay sayısı / AFAD olay sayısı",
     "Küçük depremler gerilme durumunu daha ayrıntılı gösterir (Ross vd. 2019).", "KOERI + PhaseNet")
