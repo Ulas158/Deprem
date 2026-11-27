@@ -165,6 +165,10 @@ def ara(asama, ag_ad, adlar, n_is, sabit=None, n_lhs=200, n_tur=50, ad_ek=""):
     """Latin hiperküp + CMA benzeri daralma; durdurma: ardışık 3 tur < %1 iyileşme."""
     oz.KALICI.mkdir(parents=True, exist_ok=True)
     f = oz.KALICI / f"ara_{asama}_{ag_ad}{ad_ek}.jsonl"
+    if (oz.KALICI / f"bitti_{asama}_{ag_ad}{ad_ek}").exists():
+        # yeniden başlatmada biten arama tekrar koşulmaz (kaldığı yerden devam)
+        log.info("%s %s zaten bitmiş, atlanıyor", asama, ag_ad)
+        return [json.loads(x) for x in f.read_text().splitlines()]
     sonuc = [json.loads(s) for s in f.read_text().splitlines()] if f.exists() else []
     d = len(adlar)
     rng = np.random.default_rng(12345)
