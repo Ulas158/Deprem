@@ -93,7 +93,8 @@ def kur(ag, th, seed, varsayim):
     p = Parametreler(mu_eff=th["mu_eff"], dtau0=th["dtau0"], sigma_h=th["sigma_h"], eta_dyn=th["eta_dyn"],
                      asiri=-th["kalan"], kayma_ref=th["kayma_ref"], sigma_grad=th["sigma_grad"],
                      tM_ref=th["tM_ref"], krip_carpan=th["krip_carpan"],
-                     isi_akisi=termal.isi_akisi_derinlikten(D), v_pl=v, seed=seed, mu_kayma=oz.MU_YENI)
+                     isi_akisi=termal.isi_akisi_derinlikten(D), v_pl=v, seed=seed, mu_kayma=oz.MU_YENI,
+                     zayif=th.get("zayif", 0.0), a_rs=th.get("a_rs", 0.0))
     m = Model(c, None, None, p, ek_krip=krip, K=ag.K(th["mu_eff"]))
     m.tM_adim_alt = 0.05
     m.sig_rahatla()

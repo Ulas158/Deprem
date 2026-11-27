@@ -43,7 +43,7 @@ import zaman_payi as Z  # noqa: E402
 
 Z.CIKTI = oz.KALICI / "zaman_ayar"
 ARANAN = ["mu_eff", "dtau0", "sigma_h", "eta_dyn", "kalan", "kayma_ref", "tM_ref", "krip_carpan",
-          "sigma_grad", "zayif"]
+          "sigma_grad", "zayif", "a_rs"]
 YANLIS_CEZA = 50.0
 ISKA = 3 * Z.T_ORT
 

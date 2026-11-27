@@ -54,14 +54,18 @@ ALFA_BPT = 0.5
 ISINMA = 400.0
 
 
-def hedefler(ol):
+def hedefler(ol, en_az_ortusme=0.5):
+    """(hedef, önceki) çiftleri. Önceki: hedef kırığının en az yarısını kaplayan en yakın M>=6,8 büyük
+    deprem (eskiden en ufak örtüşme yetiyordu: 1999 İzmit'in öncesi 1943 Hendek sayılıyordu, oysa
+    1943 1999 kırığının yalnız %24'ünü kaplar)."""
     out = []
     for i, o in enumerate(ol):
         if o.tip != "buyuk" or o.mw < 6.8:
             continue
+        L = max(o.x1 - o.x0, 1.0)
         for j in range(i - 1, -1, -1):
             q = ol[j]
-            if q.tip == "buyuk" and min(q.x1, o.x1) - max(q.x0, o.x0) > 0:
+            if q.tip == "buyuk" and q.mw >= 6.8 and (min(q.x1, o.x1) - max(q.x0, o.x0)) / L >= en_az_ortusme:
                 out.append((i, j))
                 break
     return out

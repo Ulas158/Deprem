@@ -54,6 +54,8 @@ PARAMETRELER = [
     ("kalinlik_u", 0.0, 1.0, 0.5, False),      # bölge aralıkları içinde konum
     ("sig_krip_z", 3.0, 8.0, 5.5, False),      # km, 27,6-28,05°D (Yamamoto vd. 2019; Becker vd. 2023)
     ("v_pl_marmara", 12.5e-3, 17e-3, 15e-3, False),  # m/yıl (Ergintav vd. 2014; Amemoutou vd. 2023)
+    ("a_rs", 0.002, 0.03, 0.01, True),         # gecikmeli tetiklenme, hız-durum a (Dieterich 1994;
+                                               # Marone 1998: 0,005-0,015); MTA sürümü
     ("zayif", 0.0, 2.0, 0.5, False),           # kaydıkça zayıflama, dtau katı (Di Toro vd. 2011);
                                                # yalnız üçüncü kural sürümü (eski kayıtlarda yok = 0)
 ]
@@ -156,6 +158,12 @@ YEREL_AGLAR = {
     "adalar": (28.625, 40.872, 85.9, 14.0, 14.0, 0.2),
 }
 GEOMETRI = "mta"  # "mta" | "gem": yerel ağ klasörü eki ve ana kol x/D90 kaynağı
+# MTA sürümünde yerel pencereler Chartier vd. 2021'e göre: kilitli, kayma hızı (m/yıl) ve kırılgan
+# kalınlık (km) sabit. Silivri-Tekirdağ-Orta Marmara: Kumburgaz/Tekirdağ kesimleri 18 mm/yıl, 15 km;
+# Adalar ve Çınarcık pencereleri Adalar kesiminde (28,875-29,345°D): 14,3 mm/yıl, 10 km.
+YEREL_CHARTIER = {"silivri": (0.018, 15.0), "tekirdag": (0.018, 15.0), "ortacukur": (0.018, 15.0),
+                  "ortadogu": (0.018, 15.0), "adalar": (0.0143, 10.0), "cinarcik": (0.0143, 10.0)}
+BUYUKLUK_TUT = GEOMETRI == "mta"  # zorlanan büyük deprem gözlenen büyüklükten fazla boşaltmaz
 BUYUK_AG = "mta_kaba" if GEOMETRI == "mta" else "kaba"  # büyük deprem aşamasının ağı
 
 
@@ -212,16 +220,23 @@ def levha_hizi(ag: Ag, v_marmara: float) -> np.ndarray:
 
 def model_kur(ag: Ag, th: dict, seed: int) -> Model:
     c = ag.cells
-    D = kalinlik(ag, th["kalinlik_u"])
-    q = termal.isi_akisi_derinlikten(D)
     lon = c["lon"].to_numpy()
-    ek = (c["kol"] == 0).to_numpy() & (lon >= SIG_KRIP_BOLGE[0]) & (lon <= SIG_KRIP_BOLGE[1]) & \
-        (c["z_km"].to_numpy() < th["sig_krip_z"])
+    if ag.yerel is not None and GEOMETRI == "mta":
+        v_y, D_y = YEREL_CHARTIER[ag.ad]
+        D = np.full(len(c), D_y)
+        v = np.full(len(c), v_y)
+        ek = np.zeros(len(c), bool)
+    else:
+        D = kalinlik(ag, th["kalinlik_u"])
+        v = levha_hizi(ag, th["v_pl_marmara"])
+        ek = (c["kol"] == 0).to_numpy() & (lon >= SIG_KRIP_BOLGE[0]) & (lon <= SIG_KRIP_BOLGE[1]) & \
+            (c["z_km"].to_numpy() < th["sig_krip_z"])
+    q = termal.isi_akisi_derinlikten(D)
     p = Parametreler(mu_eff=th["mu_eff"], dtau0=th["dtau0"], sigma_h=th["sigma_h"], eta_dyn=th["eta_dyn"],
                      asiri=-th["kalan"], kayma_ref=th["kayma_ref"], sigma_grad=th["sigma_grad"],
                      tM_ref=th["tM_ref"], krip_carpan=th["krip_carpan"], isi_akisi=q,
-                     zayif=th.get("zayif", 0.0),
-                     v_pl=levha_hizi(ag, th["v_pl_marmara"]), seed=seed, mu_kayma=MU_YENI)
+                     zayif=th.get("zayif", 0.0), a_rs=th.get("a_rs", 0.0),
+                     v_pl=v, seed=seed, mu_kayma=MU_YENI)
     m = Model(c, None, None, p, ek_krip=ek, K=ag.K(th["mu_eff"]))
     m.tM_adim_alt = 0.05
     m.sig_rahatla()
@@ -284,7 +299,8 @@ def gfz_katalog(root: Path) -> pd.DataFrame:
             j += 1
     df = df[keep].reset_index(drop=True)
     df["sigma"] = df["sigma"].clip(lower=0.05)
-    df["t"] = df.time.dt.year + (df.time.dt.dayofyear - 0.5 + df.time.dt.hour / 24) / 365.25
+    # dakika ve saniye dahil (eskiden yalnız saat: aynı saatteki depremler aynı ana düşüyordu)
+    df["t"] = [_ondalik(x) for x in df.time]
     return df
 
 
@@ -395,7 +411,10 @@ def dis_kaynak_etkisi(cells: pd.DataFrame, lon0, lat0, lon1, lat1, mw, dip, rake
 
 
 def _ondalik(ts: pd.Timestamp) -> float:
-    return ts.year + (ts.dayofyear - 0.5 + ts.hour / 24) / 365.25
+    # MTA sürümü düzeltmesi: eskiden yalnız saat kullanılıyordu (aynı saatteki depremler aynı ana düşüyor,
+    # aradaki süre 0 oluyordu); artık dakika ve saniye dahil
+    gun = ts.hour / 24 + ts.minute / 1440 + ts.second / 86400
+    return ts.year + (ts.dayofyear - 1 + gun) / (366.0 if ts.is_leap_year else 365.0)
 
 
 def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_kucuk: float,
@@ -589,7 +608,29 @@ def uygula(m: Model, o: Olay, ad: Aday, w: np.ndarray, mu_eff: float, tam_yama=F
         if tam_yama:  # yan yana koşulan sürüm: bütün parça %100
             d = mask & m.vw
             m.S[d] = np.maximum(m.S[d], m.S_fail[d])
-        return m.kirilma(0, maske=mask, zorla=True, tarih=o.ad)
+        if not BUYUKLUK_TUT:
+            return m.kirilma(0, maske=mask, zorla=True, tarih=o.ad)
+        # MTA sürümü: zorlanan deprem, birikmiş gerilmenin tamamını değil, gözlenen büyüklüğe yetecek
+        # kadarını boşaltır (eskiden her zorlanan deprem kırık alanını tamamen boşaltıyordu; 12-35 yıl
+        # arayla örtüşen 1719-1754-1766 gibi depremler için sonraki depremde gerilme kalmıyordu)
+        st, n0, s0 = m.durum(), len(m.olaylar), m.slip.copy()
+        ev = m.kirilma(0, maske=mask, zorla=True, tarih=o.ad)
+        if ev is None:
+            return None
+        m0_obs = 10 ** (1.5 * o.mw + 9.1)
+        if ev["m0"] <= m0_obs:
+            return ev
+        dslip = m.slip - s0
+        m.yukle(st)
+        del m.olaylar[n0:]
+        idx = np.flatnonzero(dslip > 0)
+        d = dslip[idx] * (m0_obs / ev["m0"])
+        m.S += m.K[:, idx] @ d.astype(np.float32)
+        m.slip[idx] += d
+        ev = dict(ev, m0=m0_obs, mw=o.mw, ort_kayma=ev["ort_kayma"] * m0_obs / ev["m0"],
+                  maks_kayma=float(d.max()), olcek=float(m0_obs / ev["m0"]))
+        m.olaylar.append(ev)
+        return ev
     # (2) küçük olay: adaylar üzerinden beklenen kayma (doğrusal üst üste binme)
     d = np.zeros(m.n)
     for wk, (ii, f) in zip(w, ad.yama):

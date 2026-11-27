@@ -38,6 +38,10 @@ log = logging.getLogger("ikinci_tur")
 GFZ_MC = {"becker": 1.9, "bentz": 1.6, "armutlu": 1.5}
 KUCUK_PAR = ["dtau0", "sigma_h", "eta_dyn", "kalan", "kayma_ref", "tM_ref", "krip_carpan", "sigma_grad",
              "kalinlik_u", "v_pl_marmara"]
+if oz.GEOMETRI == "mta":
+    # MTA sürümü: kayma hızı ve kalınlık Chartier'den sabit (YEREL_CHARTIER), gecikmeli tetiklenme aranır
+    KUCUK_PAR = ["dtau0", "sigma_h", "eta_dyn", "kalan", "kayma_ref", "tM_ref", "krip_carpan", "sigma_grad",
+                 "a_rs"]
 KURAL3_EK = "_k3"  # kaydıkça zayıflama (zayif) serbest; dosya adlarına eklenir  # mu_eff aynı düzlemde etkisiz; sığ krip bölgesi ağ dışında
 BUYUK_PAR = oz.P_AD
 
@@ -100,11 +104,20 @@ def _is(arg):
     if "zayif" not in adlar:
         th["zayif"] = 0.0  # eski kural
     th.update(oz.birim_to_theta(np.asarray(u), adlar))
+    import signal
+
+    def _sure_doldu(*_):
+        raise TimeoutError("deneme süresi aşıldı")
+    # takılan (aşırı yavaş) ayar bütün aramayı bekletmesin: küçük aşamada 10 dk sınır
+    signal.signal(signal.SIGALRM, _sure_doldu)
+    signal.alarm(600 if asama == "kucuk" else 0)
     try:
         r = degerlendir(asama, ag_ad, th, seed)
         o = r["ozet"]
-    except Exception as e:  # sayısal çöküş: en kötü puan, kayıt
+    except Exception as e:  # sayısal çöküş veya süre aşımı: en kötü puan, kayıt
         o = {"J": -1e9, "hata": repr(e)[:300]}
+    finally:
+        signal.alarm(0)
     return {"u": list(map(float, u)), "th": th, "seed": seed, **o}
 
 

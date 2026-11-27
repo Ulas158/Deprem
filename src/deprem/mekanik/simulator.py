@@ -41,6 +41,17 @@ from . import termal
 
 MU = 3.0e10
 YIL = 365.25 * 86400.0
+T_DIN = 1e-5  # yıl (~5 dk): bundan kısa sürede kararsızlaşan hücre kırılmaya anında katılır
+
+
+def dieterich_sure(t0, dtau, Asig, r):
+    """Dieterich (1994): sabit yükleme hızı r altında kırılmaya t0 kalmış hücreye dtau basamağı
+    gelince yeni kalan süre. Taşmasız biçim: ta·logaddexp(0, x − y + log1p(−e^{−x})), x = t0/ta."""
+    ta = Asig / r
+    x = np.maximum(t0, 0.0) / ta
+    y = dtau / Asig
+    with np.errstate(divide="ignore"):
+        return ta * np.logaddexp(0.0, x - y + np.log1p(-np.exp(-x)))
 
 
 @dataclass
@@ -54,6 +65,12 @@ class Parametreler:
     zayif: float = 0.0             # kaydıkça zayıflama: kayan hücrenin indiği gerilme düzeyi,
                                    # kayma kayma_ref'e ulaşınca ek olarak zayif·dtau kadar düşer
                                    # (Di Toro vd. 2011; 0 = birinci/ikinci turdaki kural)
+    a_rs: float = 0.0              # gecikmeli tetiklenme (Dieterich 1994): hız-durum sürtünmesinin a'sı.
+                                   # 0 = eski kural (eşiği aşan anında kırılır, aşmayan yükleme hızıyla).
+                                   # >0: bir deprem komşu hücreye Δτ bindirince kırılmaya kalan süre
+                                   # t' = ta·ln(1 + (e^{t/ta} − 1)·e^{−Δτ/aσ}), ta = aσ/τ̇ olur;
+                                   # yalnız t' < T_DIN olan hücreler depreme anında katılır, diğerleri
+                                   # gecikmeyle (Omori benzeri artçılar) kırılır.
     sigma_grad: float = 2.5e6      # Pa/km, efektif normal gerilme artışı (yüksek gözenek basıncı)
     sigma_cap: float = 60e6        # Pa
     tM_ref: float = 20.0           # yıl, 500 °C'de Maxwell zamanı
@@ -312,6 +329,14 @@ class Model:
         target_taban = -p.asiri * self.dtau
         target_all = target_taban
         cozuldu = 0
+        rs = p.a_rs > 0
+        if rs:
+            if not hasattr(self, "_Asig"):
+                sig = np.minimum(p.sigma_grad * np.maximum(self.z, 0.5), p.sigma_cap)
+                self._Asig = np.maximum(p.a_rs * sig, 1e3)
+                r0 = np.where(self.vw, self.r0, np.nan)
+                self._r = np.maximum(self.r0, 0.1 * np.nanmedian(r0[r0 > 0]))
+            t0 = np.maximum(thr - S0, 0.0) / self._r
         while it < 600:
             if p.zayif > 0:
                 # kaydıkça zayıflama: hücrenin kendi kayması arttıkça indiği düzey düşer
@@ -329,7 +354,7 @@ class Model:
             if zorla:
                 yeni = np.zeros(self.n, bool)
             else:
-                yeni = ok & ~kayan & (self.S >= thr - p.eta_dyn * self.dtau * w) & (self.S > 0)
+                yeni = self._yeni(ok, kayan, thr, S0, w, t0 if rs else None)
             if not yeni.any():
                 # büyüme durdu: kırılan alanın tamamında gerilmeyi dinamik sürtünme düzeyine
                 # indiren kaymayı tam çöz (yarı-statik çatlak; Jacobi'nin yavaş yakınsamasını atlar)
@@ -353,13 +378,19 @@ class Model:
                 kayan = d_ev > 0
                 if zorla:
                     break
-                yeni = ok & ~kayan & (self.S >= thr - p.eta_dyn * self.dtau * w) & (self.S > 0)
+                yeni = self._yeni(ok, kayan, thr, S0, w, t0 if rs else None)
                 if not yeni.any():
                     break
             # kaymaya başlamış hücre, gerilmesi dinamik düzeyin üstünde kaldıkça kaymayı sürdürür
             fail = yeni | (kayan & ok & (self.S > target_all + 0.02 * self.dtau))
             it += 1
         self.slip += d_ev
+        if rs:
+            # kaymayan kilitli hücreler: basamak Dieterich kuralıyla kalan süreye çevrilir; S, aynı kalan
+            # süreyi doğrusal yüklemeyle veren eşdeğer düzeye konur (_ilk_kirilma değişmeden çalışır)
+            j = self.vw & (d_ev == 0) & (self.S != S0)
+            tn = dieterich_sure(t0[j], self.S[j] - S0[j], self._Asig[j], self._r[j])
+            self.S[j] = thr[j] - self._r[j] * tn
         if not zorla and hasattr(self, "son_kendi"):
             self.son_kendi[d_ev > 0] = self.t
         # kırık dışındaki krip hücreleri: S_ref sabit; art kayma doğal olarak çıkar
@@ -380,6 +411,21 @@ class Model:
         if self.kayit_slip is not None and mw >= self.kayit_slip[0]:
             self.kayit_slip[1].append((self.t, mw, d_ev.astype(np.float32)))
         return ev
+
+    def _yeni(self, ok, kayan, thr, S0, w, t0):
+        """Kırılmaya yeni katılan hücreler. Eski kural: S + dinamik itme >= eşik. Dieterich: basamak
+        (dinamik itme dahil) sonrası kalan süre T_DIN'den kısa."""
+        itme = self.p.eta_dyn * self.dtau * w
+        if t0 is None:
+            return ok & ~kayan & (self.S >= thr - itme) & (self.S > 0)
+        aday = ok & ~kayan & (self.S > 0) & (self.S + itme > S0)
+        if not aday.any():
+            return aday
+        i = np.flatnonzero(aday)
+        tn = dieterich_sure(t0[i], self.S[i] + itme[i] - S0[i], self._Asig[i], self._r[i])
+        out = np.zeros(self.n, bool)
+        out[i[tn < T_DIN]] = True
+        return out
 
     def katalog(self) -> pd.DataFrame:
         return pd.DataFrame(self.olaylar)
