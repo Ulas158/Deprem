@@ -27,7 +27,7 @@ def main():
     a = ap.parse_args()
     fs = sorted((oz.KALICI / "sinav").glob(a.desen))
     assert fs, "sınav dosyası yok"
-    ag = oz.Ag(ROOT, "kaba")
+    ag = oz.Ag(ROOT, oz.BUYUK_AG)
     c = ag.cells
     kol = c.kol.to_numpy()
     km = np.floor(c.x_km.to_numpy()).astype(int)

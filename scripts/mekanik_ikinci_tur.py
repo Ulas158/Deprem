@@ -158,7 +158,7 @@ def ara(asama, ag_ad, adlar, n_is, sabit=None, n_lhs=200, n_tur=50, ad_ek=""):
                 fh.write(json.dumps(r, default=float) + "\n")
                 fh.flush()
                 log.info("%s %d: J=%.3f %s", asama, len(sonuc), r["J"],
-                         {k: r.get(k) for k in ("ardisik", "tuttu", "p_tuttu", "auc", "sahte", "sure_s", "hata")
+                         {k: r.get(k) for k in ("ardisik", "tuttu", "p_tuttu", "auc", "sahte", "sure_s", "hata", "zaman_hata")
                           if k in r})
 
     yapilan = {tuple(np.round(r["u"], 9)) for r in sonuc}
@@ -214,9 +214,12 @@ def main():
     ap.add_argument("--ileri", type=int, default=20)
     ap.add_argument("--surum", default="ana", choices=["ana", "tam_yama", "oncul"])
     ap.add_argument("--ek", default="")
+    ap.add_argument("--olcut", default="eski", choices=["eski", "zaman"],
+                    help="küçük aşama ayar ölçütü; 'zaman' = göreli zaman hatası en az")
     ap.add_argument("--sira", type=int, nargs="*", default=None, help="yalnız bu ayar sıraları")
     ap.add_argument("--cikti-ek", default="", help="sınav çıktı dosya adına ek (yeniden koşular için)")
     args = ap.parse_args()
+    oz.KUCUK_OLCUT = args.olcut
     oz.KALICI.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
                         handlers=[logging.FileHandler(oz.KALICI / f"log_{args.asama}_{args.ag}.txt"),
@@ -236,7 +239,7 @@ def main():
     if args.asama == "kucuk":
         ara("kucuk", args.ag, kucuk_par(args.ek), args.n_is, n_lhs=args.n_lhs, ad_ek=args.ek)
     elif args.asama == "buyuk":
-        ara("buyuk", "kaba", buyuk_par(args.ek), args.n_is, sabit=kucuk_en_iyiler(args.ek), n_lhs=args.n_lhs,
+        ara("buyuk", oz.BUYUK_AG, buyuk_par(args.ek), args.n_is, sabit=kucuk_en_iyiler(args.ek), n_lhs=args.n_lhs,
             ad_ek=args.ek)
 
 
@@ -313,7 +316,7 @@ def sinav(args):
     out = oz.KALICI / "sinav"
     out.mkdir(parents=True, exist_ok=True)
     asama = "kucuk" if args.ag in oz.YEREL_AGLAR else "buyuk"
-    f = oz.KALICI / f"ara_{asama}_{args.ag if asama == 'kucuk' else 'kaba'}{args.ek}.jsonl"
+    f = oz.KALICI / f"ara_{asama}_{args.ag if asama == 'kucuk' else oz.BUYUK_AG}{args.ek}.jsonl"
     rs = [json.loads(s) for s in f.read_text().splitlines()]
     rs = sorted([r for r in rs if r["J"] > -1e8], key=lambda r: -r["J"])[:args.en_iyi]
     ag_ad = args.ag

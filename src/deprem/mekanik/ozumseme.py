@@ -35,7 +35,9 @@ from .simulator import Model, Parametreler
 
 MU_YENI = 3.3e10           # Pa (6 km altı ölçümleri 32-35 GPa)
 MU_MATRIS = 3.0e10         # etkileşim matrisinin hesaplandığı değer
-KALICI = Path(os.environ.get("DEPREM_KALICI", "/mnt/project-files/deprem/mekanik_ikinci_tur"))
+# Kalıcı çıktılar. MTA geometrisiyle her şey baştan: yeni klasör; eski (GEM) sonuçlar KALICI_GEM'de kalır.
+KALICI_GEM = Path("/mnt/project-files/deprem/mekanik_ikinci_tur")
+KALICI = Path(os.environ.get("DEPREM_KALICI", "/mnt/project-files/deprem/mekanik_mta"))
 
 # ------------------------------------------------------------------ parametreler
 # (ad, alt, üst, başlangıç, logaritmik)  -- başlangıçlar yalnız literatürden
@@ -88,14 +90,18 @@ def baslangic_theta() -> dict:
 
 
 # ------------------------------------------------------------------ ağlar
+# büyük ağlar: ad -> data/ altındaki klasör. "mta_*": MTA Türkiye Diri Fay Haritası 2026 izi (mta.py)
+AG_KLASOR = {"kaba": "mekanik_v2_kaba", "tam": "mekanik_v2", "mta_kaba": "mekanik_mta_kaba", "mta": "mekanik_mta"}
+
+
 class Ag:
     """Hücreler + etkileşim matrisi. ``ad``: 'kaba' (2 km, yan kollar) | 'tam' (1 km, yan kollar)
     | yerel ağ adı ('silivri', 'cinarcik')."""
 
     def __init__(self, root: Path, ad: str):
         self.root, self.ad = Path(root), ad
-        if ad in ("kaba", "tam"):
-            d = self.root / "data" / ("mekanik_v2_kaba" if ad == "kaba" else "mekanik_v2")
+        if ad in AG_KLASOR:
+            d = self.root / "data" / AG_KLASOR[ad]
             self.cells = pd.read_parquet(d / "hucreler.parquet")
             self.Kt = np.load(d / "K_tau.npy", mmap_mode="r")
             self.Kn = np.load(d / "K_sn.npy", mmap_mode="r")
@@ -104,7 +110,8 @@ class Ag:
         else:
             self.cells, Kt, self.yerel = yerel_ag_yukle(self.root, ad)
             self.Kt, self.Kn = Kt, None
-            self.d90 = pd.read_csv(self.root / "data" / "mekanik_v2" / "d90_profil.csv")
+            self.d90 = pd.read_csv(self.root / "data" / ("mekanik_mta_kaba" if GEOMETRI == "mta" else "mekanik_v2")
+                                   / "d90_profil.csv")
         self._K = {}
         self.h = float(np.median(self.cells.loc[self.cells.katman == "kabuk", "W_km"]))
 
@@ -121,23 +128,45 @@ class Ag:
         return self._K[key]
 
 
-YEREL_AGLAR = {
+YEREL_AGLAR_GEM = {  # eski (GEM izi) pencereler; ara kayıtları bunlarla
+
     # ad: (merkez boylam, enlem, doğrultu, boy km, derinlik km, hücre km). Plan 100 m idi; ayar
     # dönemindeki GFZ olaylarının konum hatası >= 2 km olduğu ve 100 m ağda arama ~48 saat CPU
     # gerektirdiği için 200 m kullanıldı (raporda belirtilir).
     # Silivri önü: 2019 dizisi (Kumburgaz parçası); Çınarcık: Adalar-Çınarcık geçişi
     "silivri": (28.20, 40.865, 82.0, 14.0, 14.0, 0.2),
     "cinarcik": (29.05, 40.78, 110.0, 14.0, 14.0, 0.2),
+    # kesim kesim eğitim (Chartier vd. 2021 kesimleri; GFZ kataloğunun yoğun olduğu 27,2-29,3°D).
+    # Ganos, İzmit ve Düzce'de 2006-2023 M>=2 olay sayısı eğitim ve sınav için yetersiz.
+    "tekirdag": (27.356, 40.758, 69.5, 14.0, 14.0, 0.2),
+    "ortacukur": (27.705, 40.808, 88.0, 14.0, 14.0, 0.2),
+    "ortadogu": (27.943, 40.808, 94.0, 14.0, 14.0, 0.2),
+    "adalar": (28.629, 40.868, 86.5, 14.0, 14.0, 0.2),
 }
+
+
+# MTA Türkiye Diri Fay Haritası 2026 izine göre (mta.py): merkez, izin 14 km'lik kirişinin ortası;
+# doğrultu, bu kirişin doğrultusu. Silivri eski merkezi izden 3,4 km kuzeydeydi.
+YEREL_AGLAR = {
+    "silivri": (28.206, 40.832, 76.7, 14.0, 14.0, 0.2),
+    "cinarcik": (29.055, 40.788, 120.1, 14.0, 14.0, 0.2),
+    "tekirdag": (27.352, 40.758, 67.0, 14.0, 14.0, 0.2),
+    "ortacukur": (27.706, 40.807, 85.0, 14.0, 14.0, 0.2),
+    "ortadogu": (27.945, 40.809, 94.8, 14.0, 14.0, 0.2),
+    "adalar": (28.625, 40.872, 85.9, 14.0, 14.0, 0.2),
+}
+GEOMETRI = "mta"  # "mta" | "gem": yerel ağ klasörü eki ve ana kol x/D90 kaynağı
+BUYUK_AG = "mta_kaba" if GEOMETRI == "mta" else "kaba"  # büyük deprem aşamasının ağı
 
 
 def yerel_ag_yukle(root: Path, ad: str):
     from . import geometri
-    d = Path(root) / "data" / f"mekanik_yerel_{ad}"
-    lon, lat, strike, L, zmax, h = YEREL_AGLAR[ad]
+    mta_ = GEOMETRI == "mta"
+    d = Path(root) / "data" / (f"mekanik_yerel_{ad}" + ("_mta" if mta_ else ""))
+    lon, lat, strike, L, zmax, h = (YEREL_AGLAR if mta_ else YEREL_AGLAR_GEM)[ad]
     if not (d / "K.npy").exists():
         d.mkdir(parents=True, exist_ok=True)
-        ana = pd.read_parquet(Path(root) / "data" / "mekanik_v2" / "hucreler.parquet")
+        ana = pd.read_parquet(Path(root) / "data" / ("mekanik_mta_kaba" if mta_ else "mekanik_v2") / "hucreler.parquet")
         ana = ana[(ana.kol == 0) & (ana.z_ust == 0)]
         xm = float(np.interp(lon, ana.sort_values("lon").lon, ana.sort_values("lon").x_km))
         c, K = geometri.yerel_ag(lon, lat, strike, L, zmax, h, x_merkez=xm, ad=ad)
@@ -759,9 +788,16 @@ class Kosu:
             r["p_tuttu_90"] = float(np.sum(p * ((~erken) & (zam | ((np.nan_to_num(fz, nan=-1) >= 0.9) & (kalan <= tol))))))
             r["p_erken"] = float(np.sum(p * erken))
             r["dT"] = dT
+            # sürekli zaman hatası (Ulaş: "zaman hatası en az"): modelin bu noktaya biçtiği kırılma anı.
+            # Önceki olaydan sonra kendiliğinden kırıldıysa o an; yoksa bugünkü yükleme hızıyla
+            # dolmaya kalan süre. Hata, önceki olaydan bu yana geçen süreye oranla (en çok 3).
+            t_tah = np.where(sk > t_prev, sk, o.t + kalan)
+            hata = np.minimum(np.abs(t_tah - o.t) / dT, 3.0)
+            r["zaman_hata"] = float(np.sum(p * np.where(np.isfinite(hata), hata, 3.0)))
         else:
             r["p_tuttu"] = r["p_tuttu_90"] = r["p_erken"] = np.nan
             r["dT"] = np.nan
+            r["zaman_hata"] = np.nan
         r["u_model"], r["u_sure"] = self._sira(m, dol, ad, o, rng)
         return r
 
@@ -789,6 +825,9 @@ class Kosu:
 
 
 
+KUCUK_OLCUT = "eski"  # "eski" (tutma olasılığı + sıra) | "zaman" (göreli zaman hatası en az)
+
+
 def ozet_puan(kayit: list[dict], sahte: int, tur: str) -> dict:
     """Ayar puanı. Büyük: önce ardışık tutan sayısı (geri sarma), sonra toplam, sonra yumuşak puan,
     sahte büyük depremler ıska sayılır. Küçük: 1/σ² ağırlıklı tutma olasılığı ve sıra (AUC)."""
@@ -813,8 +852,15 @@ def ozet_puan(kayit: list[dict], sahte: int, tur: str) -> dict:
     um = a.u_model.to_numpy()
     okm = np.isfinite(um)
     auc = float(np.sum(w[okm] * um[okm]) / w[okm].sum()) if okm.any() else 0.5
-    J = 100 * pt + 10 * (auc - 0.5) - 1.0 * sahte
-    return {"J": float(J), "p_tuttu": pt, "auc": auc, "n": int(len(a)), "n_zaman": int(ok.sum()),
+    zh = a.zaman_hata.to_numpy() if "zaman_hata" in a else np.full(len(a), np.nan)
+    okz = np.isfinite(zh)
+    zh_med = float(np.median(zh[okz])) if okz.any() else 3.0
+    if KUCUK_OLCUT == "zaman":
+        # medyan göreli zaman hatası (0 = tam zamanında, 1 = bir tekrar aralığı kadar sapma); sahte cezalı
+        J = -100 * zh_med - 1.0 * sahte
+    else:
+        J = 100 * pt + 10 * (auc - 0.5) - 1.0 * sahte
+    return {"J": float(J), "zaman_hata": zh_med, "p_tuttu": pt, "auc": auc, "n": int(len(a)), "n_zaman": int(ok.sum()),
             "sahte": int(sahte)}
 
 
