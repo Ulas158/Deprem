@@ -825,6 +825,28 @@ def _ortusme(e, o: Olay):
     return min(ort / L, 1.0)
 
 
+# Pencerelerin başlangıç durumu: büyük modelin bu yıldaki doluluğu (scripts/baslangic_dolulugu.py).
+# 1964 öncesi depremlerin (1509'dan) bıraktığı gerilme böylece pencerelere geçer. None: kapalı.
+PENCERE_BASLANGIC = 1964.0
+
+
+def pencere_baslangici(m: Model, ag: Ag, t_bas: float):
+    if ag.yerel is None or PENCERE_BASLANGIC is None or abs(t_bas - PENCERE_BASLANGIC) > 1e-6:
+        return
+    f = Path(__file__).resolve().parents[3] / "data" / "mekanik_mta_kaba" / f"doluluk_{int(PENCERE_BASLANGIC)}.parquet"
+    if not f.exists():
+        raise FileNotFoundError(f"{f} yok: önce scripts/baslangic_dolulugu.py")
+    b = pd.read_parquet(f)
+    b = b[b.kol == ag.yerel.get("kol", 0)]
+    c = ag.cells
+    from scipy.spatial import cKDTree
+    tr = cKDTree(np.column_stack([b.x_km.to_numpy(), b.z_km.to_numpy()]))
+    _, j = tr.query(np.column_stack([c.x_km.to_numpy(), c.z_km.to_numpy()]))
+    dol = np.minimum(b.doluluk.to_numpy()[j], 0.99)
+    v = m.vw
+    m.S[v] = dol[v] * np.maximum(m.S_fail[v], 1.0)
+
+
 class Kosu:
     """Bir parametre takımı ve bir topluluk üyesiyle baştan sona özümseme koşusu."""
 
@@ -876,6 +898,7 @@ class Kosu:
             m.t = self.t_bas - self.isinma
             m.ilerle(self.t_bas)
             m.olaylar = []
+            pencere_baslangici(m, self.ag, self.t_bas)
             i0, kayit = 0, []
         else:
             m, i0, kayit = durum
