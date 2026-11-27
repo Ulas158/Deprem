@@ -156,13 +156,26 @@ YEREL_AGLAR = {
     "ortacukur": (27.706, 40.807, 85.0, 14.0, 14.0, 0.2),
     "ortadogu": (27.945, 40.809, 94.8, 14.0, 14.0, 0.2),
     "adalar": (28.625, 40.872, 85.9, 14.0, 14.0, 0.2),
+    # pencere dışı kesimler (Ulaş: "pencerede olmayan yerlerde deprem olmadı mı"): 2018 öncesi faya 5 km
+    # içindeki olayın en yoğun olduğu 14 km. 7. alan: kol (1 orta, 2 İmralı, 3 Armutlu).
+    "edincik": (27.874, 40.369, 58.0, 14.0, 14.0, 0.2, 1),
+    "gencali": (29.069, 40.374, 77.2, 14.0, 14.0, 0.2, 1),
+    "imrali": (28.876, 40.589, 65.0, 14.0, 14.0, 0.2, 2),
+    "armutlu": (29.155, 40.671, 79.8, 14.0, 14.0, 0.2, 3),
+    # Düzce: GFZ kapsamı dışı; yalnız EMSC (konum hatası ~5 km), kaba pencere
+    "duzce": (31.293, 40.771, 93.5, 14.0, 14.0, 0.2),
 }
+KABA_PENCERE = {"duzce"}  # GFZ yok: 1998-2026 bütün dönem EMSC (2024 sonrası çapraz denetimli)
 GEOMETRI = "mta"  # "mta" | "gem": yerel ağ klasörü eki ve ana kol x/D90 kaynağı
 # MTA sürümünde yerel pencereler Chartier vd. 2021'e göre: kilitli, kayma hızı (m/yıl) ve kırılgan
 # kalınlık (km) sabit. Silivri-Tekirdağ-Orta Marmara: Kumburgaz/Tekirdağ kesimleri 18 mm/yıl, 15 km;
 # Adalar ve Çınarcık pencereleri Adalar kesiminde (28,875-29,345°D): 14,3 mm/yıl, 10 km.
 YEREL_CHARTIER = {"silivri": (0.018, 15.0), "tekirdag": (0.018, 15.0), "ortacukur": (0.018, 15.0),
-                  "ortadogu": (0.018, 15.0), "adalar": (0.0143, 10.0), "cinarcik": (0.0143, 10.0)}
+                  "ortadogu": (0.018, 15.0), "adalar": (0.0143, 10.0), "cinarcik": (0.0143, 10.0),
+                  # orta kol ve yan kollar: GEM kayma hızları (hazirlik.V_PL_SEGMENT; Chartier: Armutlu < 1),
+                  # Düzce: Chartier 15 mm/yıl
+                  "edincik": (0.003, 15.0), "gencali": (0.0053, 15.0), "imrali": (0.0008, 15.0),
+                  "armutlu": (0.0008, 15.0), "duzce": (0.015, 15.0)}
 BUYUKLUK_TUT = GEOMETRI == "mta"  # zorlanan büyük deprem gözlenen büyüklükten fazla boşaltmaz
 BUYUK_AG = "mta_kaba" if GEOMETRI == "mta" else "kaba"  # büyük deprem aşamasının ağı
 
@@ -171,11 +184,12 @@ def yerel_ag_yukle(root: Path, ad: str):
     from . import geometri
     mta_ = GEOMETRI == "mta"
     d = Path(root) / "data" / (f"mekanik_yerel_{ad}" + ("_mta" if mta_ else ""))
-    lon, lat, strike, L, zmax, h = (YEREL_AGLAR if mta_ else YEREL_AGLAR_GEM)[ad]
+    lon, lat, strike, L, zmax, h, *kol_ = (YEREL_AGLAR if mta_ else YEREL_AGLAR_GEM)[ad]
+    kol = kol_[0] if kol_ else 0
     if not (d / "K.npy").exists():
         d.mkdir(parents=True, exist_ok=True)
         ana = pd.read_parquet(Path(root) / "data" / ("mekanik_mta_kaba" if mta_ else "mekanik_v2") / "hucreler.parquet")
-        ana = ana[(ana.kol == 0) & (ana.z_ust == 0)]
+        ana = ana[(ana.kol == kol) & (ana.z_ust == 0)]
         xm = float(np.interp(lon, ana.sort_values("lon").lon, ana.sort_values("lon").x_km))
         c, K = geometri.yerel_ag(lon, lat, strike, L, zmax, h, x_merkez=xm, ad=ad)
         c.to_parquet(d / "hucreler.parquet")
@@ -184,7 +198,7 @@ def yerel_ag_yukle(root: Path, ad: str):
         del K
     c = pd.read_parquet(d / "hucreler.parquet")
     K = np.load(d / "K.npy", mmap_mode="r")
-    return c, K, {"lon": lon, "lat": lat, "strike": strike, "L": L, "h": h}
+    return c, K, {"lon": lon, "lat": lat, "strike": strike, "L": L, "h": h, "kol": kol}
 
 
 # ------------------------------------------------------------------ model kurulumu
@@ -472,7 +486,8 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
     if ag.yerel is not None and GEOMETRI == "mta":
         # MTA sürümü: GFZ (2006) öncesi de kullanılır (Ulaş: "elimizdeki ilk verilerden"). EMSC 1998-2005
         # ve USGS, M>=2,5; konum hatası ~5 km (pencere genişliğinin üçte biri) adaylarla dağıtılır
-        h = raw[(raw.t < 2006.0) & (raw.m >= 2.5) & raw.source.isin(["emsc", "usgs"])].sort_values(["t", "source"])
+        t_kaba = 2024.0 if ag.ad in KABA_PENCERE else 2006.0
+        h = raw[(raw.t < t_kaba) & (raw.m >= 2.5) & raw.source.isin(["emsc", "usgs"])].sort_values(["t", "source"])
         son = []
         for r in h.itertuples():
             if any(abs(r.t - a) * 365.25 * 86400 < 20 and abs(r.lat - b) < 0.2 and abs(r.lon - cc) < 0.25
@@ -524,7 +539,7 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
                 Ag._tam_yuzey = _YuzeyAg(pd.read_parquet(
                     Path(root) / "data" / ("mekanik_mta_kaba" if GEOMETRI == "mta" else "mekanik_v2") / "hucreler.parquet"))
             _, d_t, kol_t = izdusum(Ag._tam_yuzey, s.lon, s.lat)
-            s = s[(kol_t == 0)]
+            s = s[(kol_t == ag.yerel.get("kol", 0))]
         uzak = s[s.d > 10.0]
         say["uzak_olay"] = int(len(uzak))
         say["uzak_m0"] = float((10 ** (1.5 * uzak.mw + 9.1)).sum())
