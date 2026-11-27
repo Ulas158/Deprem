@@ -181,15 +181,31 @@ def _kesim_hizi(kol, lon):
     return 0.0008, 15.0
 
 
-# boşlukları dolduran pencereler (scripts/pencere_doldur.py: 14 km'de 1998-2017 en az 30 deprem)
+# Pencere düzeni. DOSEME: fayın tamamı boşluksuz, veri yoğunluğuna göre 7-40 km'lik pencerelerle
+# (scripts/pencere_dose.py; her pencerede ~100 eğitim depremi). Eski düzen (11 adlı + 32 sabit 14 km'lik
+# ek pencere, scripts/pencere_doldur.py) YEREL_AGLAR_43'te kalır.
+DOSEME = True
+PENCERE_KESIM, PENCERE_ZAYIF = {}, set()
+YEREL_AGLAR_43 = dict(YEREL_AGLAR)
 _EK = Path(__file__).with_name("pencereler_ek.json")
-PENCERE_KESIM = {}
 if _EK.exists():
     for _ad, _v in json.loads(_EK.read_text()).items():
+        YEREL_AGLAR_43[_ad] = tuple(_v["v"])
+        PENCERE_KESIM[_ad] = _v["kesim"]
+        if _v["kaba"]:
+            KABA_PENCERE.add(_ad)
+_DOS = Path(__file__).with_name("pencereler_doseme.json")
+if DOSEME and _DOS.exists():
+    YEREL_AGLAR = {}
+    for _ad, _v in json.loads(_DOS.read_text()).items():
         YEREL_AGLAR[_ad] = tuple(_v["v"])
         PENCERE_KESIM[_ad] = _v["kesim"]
         if _v["kaba"]:
             KABA_PENCERE.add(_ad)
+        if _v["zayif"]:
+            PENCERE_ZAYIF.add(_ad)
+else:
+    YEREL_AGLAR = YEREL_AGLAR_43
 GEOMETRI = "mta"  # "mta" | "gem": yerel ağ klasörü eki ve ana kol x/D90 kaynağı
 # MTA sürümünde yerel pencereler Chartier vd. 2021'e göre: kilitli, kayma hızı (m/yıl) ve kırılgan
 # kalınlık (km) sabit. Silivri-Tekirdağ-Orta Marmara: Kumburgaz/Tekirdağ kesimleri 18 mm/yıl, 15 km;
@@ -208,7 +224,7 @@ def yerel_ag_yukle(root: Path, ad: str):
     from . import geometri
     mta_ = GEOMETRI == "mta"
     d = Path(root) / "data" / (f"mekanik_yerel_{ad}" + ("_mta" if mta_ else ""))
-    lon, lat, strike, L, zmax, h, *kol_ = (YEREL_AGLAR if mta_ else YEREL_AGLAR_GEM)[ad]
+    lon, lat, strike, L, zmax, h, *kol_ = (YEREL_AGLAR if mta_ and ad in YEREL_AGLAR else YEREL_AGLAR_43 if mta_ else YEREL_AGLAR_GEM)[ad]
     kol = kol_[0] if kol_ else 0
     if not (d / "K.npy").exists():
         d.mkdir(parents=True, exist_ok=True)

@@ -92,14 +92,19 @@ def degerlendir(asama, ag_ad, th, seed, sinav=False, tam_yama=False, sonsal=True
     oz_ = oz.ozet_puan(kayit, len(sahte_ayar), "buyuk" if asama == "buyuk" else "kucuk")
     oz_["sure_s"] = round(time.time() - t0, 1)
     kat = pd.DataFrame([e for e in m.olaylar if not e.get("zorla")])
-    if asama == "kucuk" and oz.KUCUK_OLCUT == "yer":
+    if asama == "kucuk" and oz.KUCUK_OLCUT in ("yer", "zaman"):
         # yer ve sıklık: (1) gerçek depremlerin model doluluk sırası (AUC, 0,5 = şans), (2) modelin
         # kendiliğinden M>=2 deprem sayısının ayar dönemindeki gerçek sayıya oranı (log10 sapma), (3) sahte
         n_obs = sum(1 for o in ol if o.tip == "kucuk" and o.mw >= 2.0 and a["t_bas"] <= o.t < a["ayar_bitis"])
         n_mod = int(((kat.mw >= 2.0) & (kat.t >= a["t_bas"]) & (kat.t < a["ayar_bitis"])).sum()) if len(kat) else 0
         sap = abs(np.log10((n_mod + 1) / (n_obs + 1)))
         oz_["n_gercek_M2"], oz_["n_model_M2"], oz_["siklik_sapma"] = n_obs, n_mod, float(sap)
-        oz_["J"] = float(100 * (oz_["auc"] - 0.5) - 20 * sap - 1.0 * len(sahte_ayar))
+        if oz.KUCUK_OLCUT == "yer":
+            oz_["J"] = float(100 * (oz_["auc"] - 0.5) - 20 * sap - 1.0 * len(sahte_ayar))
+        else:
+            # zaman hatası + sıklık: sessiz pencerede (az deprem) modelin de az deprem üretmesi istenir;
+            # 10 kat fazla/eksik deprem, 0,2 tekrar aralığı kadar zaman hatasına denk
+            oz_["J"] = float(oz_["J"] - 20 * sap)
     oz_["n_kendi"] = int(len(kat))
     oz_["mw_maks_kendi"] = float(kat.mw.max()) if len(kat) else None
     out = {"ozet": oz_, "kayit": kayit}

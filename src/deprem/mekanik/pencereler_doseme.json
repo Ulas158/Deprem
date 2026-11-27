@@ -1,0 +1,850 @@
+{
+ "d0_001": {
+  "v": [
+   26.444,
+   40.487,
+   72.6,
+   40.0,
+   14.0,
+   0.338,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Saros Fayı",
+  "zayif": true,
+  "n_egitim": 29,
+  "n_sinav": 5
+ },
+ "d0_041": {
+  "v": [
+   26.886,
+   40.617,
+   67.7,
+   40.0,
+   14.0,
+   0.338,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Ganos Fayı",
+  "zayif": true,
+  "n_egitim": 37,
+  "n_sinav": 1
+ },
+ "d0_081": {
+  "v": [
+   27.238,
+   40.722,
+   70.8,
+   24.0,
+   14.0,
+   0.262,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Ganos Fayı",
+  "zayif": false,
+  "n_egitim": 128,
+  "n_sinav": 28
+ },
+ "d0_105": {
+  "v": [
+   27.408,
+   40.773,
+   60.4,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Ganos Fayı",
+  "zayif": false,
+  "n_egitim": 214,
+  "n_sinav": 109
+ },
+ "d0_112": {
+  "v": [
+   27.483,
+   40.797,
+   84.7,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Ganos Fayı",
+  "zayif": false,
+  "n_egitim": 111,
+  "n_sinav": 46
+ },
+ "d0_119": {
+  "v": [
+   27.565,
+   40.794,
+   85.3,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tekirdağ Fayı",
+  "zayif": false,
+  "n_egitim": 131,
+  "n_sinav": 21
+ },
+ "d0_126": {
+  "v": [
+   27.664,
+   40.808,
+   81.9,
+   10.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tekirdağ Fayı",
+  "zayif": false,
+  "n_egitim": 109,
+  "n_sinav": 31
+ },
+ "d0_136": {
+  "v": [
+   27.764,
+   40.812,
+   89.6,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tekirdağ Fayı",
+  "zayif": false,
+  "n_egitim": 294,
+  "n_sinav": 42
+ },
+ "d0_143": {
+  "v": [
+   27.853,
+   40.814,
+   86.7,
+   8.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tekirdağ Fayı",
+  "zayif": false,
+  "n_egitim": 110,
+  "n_sinav": 18
+ },
+ "d0_151": {
+  "v": [
+   27.942,
+   40.815,
+   96.4,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Kumburgaz Fayı",
+  "zayif": false,
+  "n_egitim": 142,
+  "n_sinav": 49
+ },
+ "d0_158": {
+  "v": [
+   28.029,
+   40.805,
+   91.8,
+   8.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Kumburgaz Fayı",
+  "zayif": false,
+  "n_egitim": 107,
+  "n_sinav": 47
+ },
+ "d0_166": {
+  "v": [
+   28.116,
+   40.816,
+   74.5,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Kumburgaz Fayı",
+  "zayif": false,
+  "n_egitim": 118,
+  "n_sinav": 43
+ },
+ "d0_173": {
+  "v": [
+   28.288,
+   40.847,
+   79.9,
+   23.0,
+   14.0,
+   0.256,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Kumburgaz Fayı",
+  "zayif": false,
+  "n_egitim": 105,
+  "n_sinav": 573
+ },
+ "d0_196": {
+  "v": [
+   28.562,
+   40.868,
+   85.6,
+   24.0,
+   14.0,
+   0.262,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Avcılar Fayı",
+  "zayif": false,
+  "n_egitim": 103,
+  "n_sinav": 39
+ },
+ "d0_220": {
+  "v": [
+   28.746,
+   40.878,
+   89.1,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Avcılar Fayı",
+  "zayif": false,
+  "n_egitim": 102,
+  "n_sinav": 19
+ },
+ "d0_227": {
+  "v": [
+   28.928,
+   40.851,
+   113.6,
+   25.0,
+   14.0,
+   0.267,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Adalar Fayı",
+  "zayif": false,
+  "n_egitim": 107,
+  "n_sinav": 26
+ },
+ "d0_252": {
+  "v": [
+   29.099,
+   40.772,
+   120.1,
+   9.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Adalar Fayı",
+  "zayif": false,
+  "n_egitim": 100,
+  "n_sinav": 37
+ },
+ "d0_261": {
+  "v": [
+   29.182,
+   40.739,
+   108.1,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Adalar Fayı",
+  "zayif": false,
+  "n_egitim": 140,
+  "n_sinav": 9
+ },
+ "d0_268": {
+  "v": [
+   29.457,
+   40.726,
+   89.0,
+   40.0,
+   14.0,
+   0.338,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Darıca Fayı",
+  "zayif": true,
+  "n_egitim": 99,
+  "n_sinav": 3
+ },
+ "d0_308": {
+  "v": [
+   29.827,
+   40.724,
+   94.9,
+   23.0,
+   14.0,
+   0.256,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Gölcük Fayı",
+  "zayif": false,
+  "n_egitim": 106,
+  "n_sinav": 3
+ },
+ "d0_331": {
+  "v": [
+   29.988,
+   40.722,
+   88.4,
+   8.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tepetarla Fayı",
+  "zayif": false,
+  "n_egitim": 107,
+  "n_sinav": 4
+ },
+ "d0_339": {
+  "v": [
+   30.159,
+   40.719,
+   91.0,
+   21.0,
+   14.0,
+   0.245,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Tepetarla Fayı",
+  "zayif": false,
+  "n_egitim": 107,
+  "n_sinav": 0
+ },
+ "d0_360": {
+  "v": [
+   30.371,
+   40.709,
+   97.5,
+   15.0,
+   14.0,
+   0.207,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Arifiye Fayı",
+  "zayif": false,
+  "n_egitim": 106,
+  "n_sinav": 1
+ },
+ "d0_375": {
+  "v": [
+   30.524,
+   40.696,
+   93.0,
+   11.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Arifiye Fayı",
+  "zayif": false,
+  "n_egitim": 109,
+  "n_sinav": 1
+ },
+ "d0_386": {
+  "v": [
+   30.634,
+   40.692,
+   97.2,
+   8.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": false,
+  "kesim": "Arifiye Fayı",
+  "zayif": false,
+  "n_egitim": 102,
+  "n_sinav": 2
+ },
+ "d0_394": {
+  "v": [
+   30.754,
+   40.713,
+   70.3,
+   14.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Karadere Fayı",
+  "zayif": false,
+  "n_egitim": 104,
+  "n_sinav": 2
+ },
+ "d0_408": {
+  "v": [
+   30.91,
+   40.754,
+   62.8,
+   14.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Karadere Fayı",
+  "zayif": false,
+  "n_egitim": 130,
+  "n_sinav": 27
+ },
+ "d0_422": {
+  "v": [
+   31.006,
+   40.772,
+   118.6,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Düzce Fayı",
+  "zayif": false,
+  "n_egitim": 116,
+  "n_sinav": 50
+ },
+ "d0_429": {
+  "v": [
+   31.117,
+   40.765,
+   82.9,
+   13.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Düzce Fayı",
+  "zayif": false,
+  "n_egitim": 102,
+  "n_sinav": 17
+ },
+ "d0_442": {
+  "v": [
+   31.246,
+   40.775,
+   88.1,
+   9.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Düzce Fayı",
+  "zayif": false,
+  "n_egitim": 115,
+  "n_sinav": 0
+ },
+ "d0_451": {
+  "v": [
+   31.341,
+   40.774,
+   99.6,
+   7.0,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Düzce Fayı",
+  "zayif": false,
+  "n_egitim": 119,
+  "n_sinav": 4
+ },
+ "d0_458": {
+  "v": [
+   31.451,
+   40.748,
+   104.4,
+   12.5,
+   14.0,
+   0.2,
+   0
+  ],
+  "kaba": true,
+  "kesim": "Düzce Fayı",
+  "zayif": false,
+  "n_egitim": 123,
+  "n_sinav": 21
+ },
+ "d1_601": {
+  "v": [
+   27.44,
+   40.245,
+   69.1,
+   20.0,
+   14.0,
+   0.239,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Sinekçi Fayı",
+  "zayif": false,
+  "n_egitim": 101,
+  "n_sinav": 53
+ },
+ "d1_621": {
+  "v": [
+   27.662,
+   40.304,
+   73.0,
+   22.0,
+   14.0,
+   0.251,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Sinekçi Fayı",
+  "zayif": false,
+  "n_egitim": 103,
+  "n_sinav": 16
+ },
+ "d1_643": {
+  "v": [
+   27.819,
+   40.344,
+   56.8,
+   7.0,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Edincik Fayı",
+  "zayif": false,
+  "n_egitim": 157,
+  "n_sinav": 4
+ },
+ "d1_650": {
+  "v": [
+   27.992,
+   40.419,
+   80.2,
+   27.0,
+   14.0,
+   0.278,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Edincik Fayı",
+  "zayif": false,
+  "n_egitim": 100,
+  "n_sinav": 19
+ },
+ "d1_677": {
+  "v": [
+   28.333,
+   40.408,
+   95.7,
+   35.0,
+   14.0,
+   0.316,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Bandırma Fayı",
+  "zayif": false,
+  "n_egitim": 100,
+  "n_sinav": 34
+ },
+ "d1_712": {
+  "v": [
+   28.679,
+   40.367,
+   86.4,
+   29.0,
+   14.0,
+   0.288,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Zeytinbağı Fayı",
+  "zayif": false,
+  "n_egitim": 105,
+  "n_sinav": 70
+ },
+ "d1_741": {
+  "v": [
+   28.913,
+   40.373,
+   102.0,
+   12.0,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Gençali Fayı",
+  "zayif": false,
+  "n_egitim": 107,
+  "n_sinav": 80
+ },
+ "d1_753": {
+  "v": [
+   29.048,
+   40.364,
+   78.6,
+   12.0,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Gençali Fayı",
+  "zayif": false,
+  "n_egitim": 102,
+  "n_sinav": 16
+ },
+ "d1_765": {
+  "v": [
+   29.155,
+   40.388,
+   75.4,
+   7.0,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Gençali Fayı",
+  "zayif": false,
+  "n_egitim": 114,
+  "n_sinav": 6
+ },
+ "d1_772": {
+  "v": [
+   29.233,
+   40.409,
+   75.3,
+   7.0,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Gençali Fayı",
+  "zayif": false,
+  "n_egitim": 192,
+  "n_sinav": 25
+ },
+ "d1_779": {
+  "v": [
+   29.501,
+   40.388,
+   91.8,
+   40.0,
+   14.0,
+   0.338,
+   1
+  ],
+  "kaba": false,
+  "kesim": "İznik - Mekece Fayı",
+  "zayif": true,
+  "n_egitim": 31,
+  "n_sinav": 5
+ },
+ "d1_819": {
+  "v": [
+   29.966,
+   40.439,
+   78.9,
+   40.0,
+   14.0,
+   0.338,
+   1
+  ],
+  "kaba": false,
+  "kesim": "İznik - Mekece Fayı",
+  "zayif": true,
+  "n_egitim": 26,
+  "n_sinav": 4
+ },
+ "d1_859": {
+  "v": [
+   30.426,
+   40.512,
+   75.9,
+   40.0,
+   14.0,
+   0.338,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Geyve Fayı",
+  "zayif": true,
+  "n_egitim": 40,
+  "n_sinav": 5
+ },
+ "d1_899": {
+  "v": [
+   30.713,
+   40.568,
+   82.2,
+   10.4,
+   14.0,
+   0.2,
+   1
+  ],
+  "kaba": false,
+  "kesim": "Geyve Fayı",
+  "zayif": true,
+  "n_egitim": 15,
+  "n_sinav": 0
+ },
+ "d2_1001": {
+  "v": [
+   28.498,
+   40.609,
+   120.4,
+   40.0,
+   14.0,
+   0.338,
+   2
+  ],
+  "kaba": false,
+  "kesim": "İmralı",
+  "zayif": true,
+  "n_egitim": 16,
+  "n_sinav": 7
+ },
+ "d2_1041": {
+  "v": [
+   28.833,
+   40.574,
+   66.2,
+   23.0,
+   14.0,
+   0.256,
+   2
+  ],
+  "kaba": false,
+  "kesim": "İmralı",
+  "zayif": true,
+  "n_egitim": 84,
+  "n_sinav": 119
+ },
+ "d2_1064": {
+  "v": [
+   28.991,
+   40.63,
+   65.0,
+   6.4,
+   14.0,
+   0.2,
+   2
+  ],
+  "kaba": false,
+  "kesim": "İmralı",
+  "zayif": false,
+  "n_egitim": 252,
+  "n_sinav": 79
+ },
+ "d3_1151": {
+  "v": [
+   28.911,
+   40.666,
+   106.0,
+   30.0,
+   14.0,
+   0.293,
+   3
+  ],
+  "kaba": false,
+  "kesim": "Armutlu",
+  "zayif": false,
+  "n_egitim": 108,
+  "n_sinav": 15
+ },
+ "d3_1181": {
+  "v": [
+   29.114,
+   40.666,
+   79.6,
+   7.0,
+   14.0,
+   0.2,
+   3
+  ],
+  "kaba": false,
+  "kesim": "Armutlu",
+  "zayif": false,
+  "n_egitim": 308,
+  "n_sinav": 29
+ },
+ "d3_1188": {
+  "v": [
+   29.196,
+   40.677,
+   80.0,
+   7.0,
+   14.0,
+   0.2,
+   3
+  ],
+  "kaba": false,
+  "kesim": "Armutlu",
+  "zayif": false,
+  "n_egitim": 190,
+  "n_sinav": 25
+ },
+ "d3_1195": {
+  "v": [
+   29.341,
+   40.698,
+   78.8,
+   18.0,
+   14.0,
+   0.227,
+   3
+  ],
+  "kaba": false,
+  "kesim": "Armutlu",
+  "zayif": false,
+  "n_egitim": 113,
+  "n_sinav": 28
+ }
+}
