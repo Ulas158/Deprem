@@ -594,8 +594,9 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
                    for a, b, cc in son[-20:]):
                 continue  # aynı depremin iki kaynaktaki kaydı
             son.append((r.t, r.lat, r.lon))
+            # 1990 öncesi USGS kayıtları kaba (Ulaş: "yıl eski olsun ki çok veri olsun"): konum hatası ~10 km
             secim.append((r.t, f"{r.source.upper()} M{r.m:.1f} {str(r.time)[:19]}", r.lon, r.lat, r.z, r.m,
-                          5.0, "erken_" + str(r.source)))
+                          10.0 if r.t < 1990.0 else 5.0, "erken_" + str(r.source)))
     if ag.yerel is not None and GEOMETRI == "mta" and t1 > 2024.0:
         # 2024 sonrası (GFZ kataloğu 2023'te bitiyor), yalnız sınav: EMSC, ISC'deki AFAD çözümleriyle çapraz
         # denetlenir (2024-2025: iki kaynakta da olan, 20 s ve 20 km içinde; konum AFAD'dan). 2026: ISC

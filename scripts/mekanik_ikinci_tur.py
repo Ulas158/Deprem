@@ -51,7 +51,7 @@ if oz.GEOMETRI == "mta":
     # MTA sürümü: saat 1500'de başlar, 1509 İstanbul ve 1659 Tekirdağ da işlenir (Ulaş: "daha önceki
     # depremlere niye bakmıyorsun"). Konum güveni düşük; uç belirsizliği 25 km (tarih.py).
     AYAR["buyuk"]["t_bas"] = 1500.0
-    AYAR["kucuk"]["t_bas"] = 1998.0  # EMSC 1998'den, GFZ 2006'dan
+    AYAR["kucuk"]["t_bas"] = 1964.0  # USGS 1964'ten (1990 öncesi σ=10 km), EMSC 1998'den, GFZ 2006'dan
     AYAR["kucuk"]["t_son_sinav"] = 2026.9  # sınav 2018-2026 (2024 sonrası EMSC+AFAD çapraz denetimli)
 
 _G = {}  # süreç başına önbellek
