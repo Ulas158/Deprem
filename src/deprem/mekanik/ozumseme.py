@@ -481,6 +481,27 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
             son.append((r.t, r.lat, r.lon))
             secim.append((r.t, f"{r.source.upper()} M{r.m:.1f} {str(r.time)[:19]}", r.lon, r.lat, r.z, r.m,
                           5.0, "erken_" + str(r.source)))
+    if ag.yerel is not None and GEOMETRI == "mta" and t1 > 2024.0:
+        # 2024 sonrası (GFZ kataloğu 2023'te bitiyor), yalnız sınav: EMSC, ISC'deki AFAD çözümleriyle çapraz
+        # denetlenir (2024-2025: iki kaynakta da olan, 20 s ve 20 km içinde; konum AFAD'dan). 2026: ISC
+        # henüz yayımlamadı, yalnız EMSC. AFAD'ın açık API'si yalnız son ~2 haftayı veriyor.
+        e = raw[(raw.source == "emsc") & (raw.t >= 2024.0) & (raw.m >= 1.5)]
+        fi = Path(root) / "data" / "mekanik" / "isc_afad_2024_2026.parquet"
+        ia = pd.read_parquet(fi) if fi.exists() else raw.iloc[:0]
+        ia = ia.assign(t=ia["time"].map(_ondalik), lon=ia.longitude.astype(float), lat=ia.latitude.astype(float),
+                       z=ia.depth_km.astype(float).fillna(10.0))
+        t_ia, isc_son = ia.t.to_numpy(), float(ia.t.max()) if len(ia) else 2024.0
+        for r in e.itertuples():
+            if r.t <= isc_son:
+                j = np.flatnonzero(np.abs(t_ia - r.t) * 365.25 * 86400 < 20)
+                j = [k for k in j if abs(ia.lat.iat[k] - r.lat) * 111 < 20 and abs(ia.lon.iat[k] - r.lon) * 84 < 20]
+                if not j:
+                    continue  # çapraz denetimden geçmedi
+                k = j[0]
+                secim.append((r.t, f"EMSC+AFAD M{r.m:.1f} {str(r.time)[:19]}", ia.lon.iat[k], ia.lat.iat[k],
+                              ia.z.iat[k], r.m, 3.0, "capraz"))
+            else:
+                secim.append((r.t, f"EMSC M{r.m:.1f} {str(r.time)[:19]}", r.lon, r.lat, r.z, r.m, 5.0, "emsc_2026"))
     # 3) GFZ hassas katalogları
     g = gfz_katalog(root)
     if isinstance(gfz_mw_min, dict):  # kaynak başına tamlık büyüklüğü

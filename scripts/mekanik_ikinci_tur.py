@@ -52,6 +52,7 @@ if oz.GEOMETRI == "mta":
     # depremlere niye bakmıyorsun"). Konum güveni düşük; uç belirsizliği 25 km (tarih.py).
     AYAR["buyuk"]["t_bas"] = 1500.0
     AYAR["kucuk"]["t_bas"] = 1998.0  # EMSC 1998'den, GFZ 2006'dan
+    AYAR["kucuk"]["t_son_sinav"] = 2026.9  # sınav 2018-2026 (2024 sonrası EMSC+AFAD çapraz denetimli)
 
 _G = {}  # süreç başına önbellek
 
