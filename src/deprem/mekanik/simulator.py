@@ -51,6 +51,9 @@ class Parametreler:
     eta_dyn: float = 0.5           # dinamik zayıflama (0: yok, 1: çok güçlü)
     asiri: float = 0.1             # kayma aşımı (overshoot)
     kayma_ref: float = 1.0         # m; komşu kayması bu düzeye ulaşınca dinamik zayıflama tam etkili
+    zayif: float = 0.0             # kaydıkça zayıflama: kayan hücrenin indiği gerilme düzeyi,
+                                   # kayma kayma_ref'e ulaşınca ek olarak zayif·dtau kadar düşer
+                                   # (Di Toro vd. 2011; 0 = birinci/ikinci turdaki kural)
     sigma_grad: float = 2.5e6      # Pa/km, efektif normal gerilme artışı (yüksek gözenek basıncı)
     sigma_cap: float = 60e6        # Pa
     tM_ref: float = 20.0           # yıl, 500 °C'de Maxwell zamanı
@@ -306,9 +309,13 @@ class Model:
         zb = np.floor(self.z / h).astype(int)
         grid = np.zeros((kb.max() + 1, zb.max() + 1))
         fs = 2 * max(int(round(2.0 / h)), 1) + 1
-        target_all = -p.asiri * self.dtau
+        target_taban = -p.asiri * self.dtau
+        target_all = target_taban
         cozuldu = 0
         while it < 600:
+            if p.zayif > 0:
+                # kaydıkça zayıflama: hücrenin kendi kayması arttıkça indiği düzey düşer
+                target_all = target_taban - p.zayif * self.dtau * np.minimum(d_ev / p.kayma_ref, 1.0)
             if fail.any():
                 idx = np.flatnonzero(fail)
                 d = np.maximum((self.S[idx] - target_all[idx]) / self.kself[idx], 0.0)

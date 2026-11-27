@@ -37,7 +37,8 @@ log = logging.getLogger("ikinci_tur")
 
 GFZ_MC = {"becker": 1.9, "bentz": 1.6, "armutlu": 1.5}
 KUCUK_PAR = ["dtau0", "sigma_h", "eta_dyn", "kalan", "kayma_ref", "tM_ref", "krip_carpan", "sigma_grad",
-             "kalinlik_u", "v_pl_marmara"]  # mu_eff aynı düzlemde etkisiz; sığ krip bölgesi ağ dışında
+             "kalinlik_u", "v_pl_marmara"]
+KURAL3_EK = "_k3"  # kaydıkça zayıflama (zayif) serbest; dosya adlarına eklenir  # mu_eff aynı düzlemde etkisiz; sığ krip bölgesi ağ dışında
 BUYUK_PAR = oz.P_AD
 
 AYAR = {"kucuk": dict(t_bas=2006.0, ayar_bitis=2018.0, t_son_sinav=2024.0, isinma=30.0),
@@ -96,9 +97,9 @@ def degerlendir(asama, ag_ad, th, seed, sinav=False, tam_yama=False, sonsal=True
 def _is(arg):
     asama, ag_ad, u, adlar, seed = arg
     th = oz.baslangic_theta()
+    if "zayif" not in adlar:
+        th["zayif"] = 0.0  # eski kural
     th.update(oz.birim_to_theta(np.asarray(u), adlar))
-    if asama == "buyuk" and _G.get("kucuk_en_iyi") is None:
-        pass
     try:
         r = degerlendir(asama, ag_ad, th, seed)
         o = r["ozet"]
@@ -107,17 +108,25 @@ def _is(arg):
     return {"u": list(map(float, u)), "th": th, "seed": seed, **o}
 
 
-def kucuk_en_iyiler():
+def kucuk_par(ek=""):
+    return KUCUK_PAR + (["zayif"] if ek == KURAL3_EK else [])
+
+
+def buyuk_par(ek=""):
+    return [a for a in oz.P_AD if a != "zayif" or ek == KURAL3_EK]
+
+
+def kucuk_en_iyiler(ek=""):
     """Biten küçük deprem aramalarının en iyi ayarı (büyük aşama için başlangıç noktası)."""
     out = []
     for ag_ad in oz.YEREL_AGLAR:
-        f = oz.KALICI / f"ara_kucuk_{ag_ad}.jsonl"
-        if f.exists() and (oz.KALICI / f"bitti_kucuk_{ag_ad}").exists():
+        f = oz.KALICI / f"ara_kucuk_{ag_ad}{ek}.jsonl"
+        if f.exists() and (oz.KALICI / f"bitti_kucuk_{ag_ad}{ek}").exists():
             rs = [json.loads(s) for s in f.read_text().splitlines()]
             b = max(rs, key=lambda r: r["J"])
             th = oz.baslangic_theta()
-            th.update({k: b["th"][k] for k in KUCUK_PAR})
-            out.append(oz.theta_to_birim(th, BUYUK_PAR))
+            th.update({k: b["th"][k] for k in kucuk_par(ek) if k in b["th"]})
+            out.append(oz.theta_to_birim(th, buyuk_par(ek)))
     return out
 
 
@@ -162,7 +171,7 @@ def ara(asama, ag_ad, adlar, n_is, sabit=None, n_lhs=200, n_tur=50, ad_ek=""):
         if asama == "buyuk":
             # küçük deprem aşamasının en iyileri sonradan bitmişse, daralmadan önce başlangıç
             # noktası olarak eklenir (plan sırası: küçükler önce)
-            ek = [u for u in kucuk_en_iyiler() if tuple(np.round(u, 9)) not in
+            ek = [u for u in kucuk_en_iyiler(ad_ek) if tuple(np.round(u, 9)) not in
                   {tuple(np.round(r["u"], 9)) for r in sonuc}]
             if ek:
                 kos(ek, 3000 + len(sonuc))
@@ -225,9 +234,10 @@ def main():
         sinav(args)
         return
     if args.asama == "kucuk":
-        ara("kucuk", args.ag, KUCUK_PAR, args.n_is, n_lhs=args.n_lhs)
+        ara("kucuk", args.ag, kucuk_par(args.ek), args.n_is, n_lhs=args.n_lhs, ad_ek=args.ek)
     elif args.asama == "buyuk":
-        ara("buyuk", "kaba", BUYUK_PAR, args.n_is, sabit=kucuk_en_iyiler(), n_lhs=args.n_lhs)
+        ara("buyuk", "kaba", buyuk_par(args.ek), args.n_is, sabit=kucuk_en_iyiler(args.ek), n_lhs=args.n_lhs,
+            ad_ek=args.ek)
 
 
 

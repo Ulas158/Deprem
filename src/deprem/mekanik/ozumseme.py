@@ -52,6 +52,8 @@ PARAMETRELER = [
     ("kalinlik_u", 0.0, 1.0, 0.5, False),      # bölge aralıkları içinde konum
     ("sig_krip_z", 3.0, 8.0, 5.5, False),      # km, 27,6-28,05°D (Yamamoto vd. 2019; Becker vd. 2023)
     ("v_pl_marmara", 12.5e-3, 17e-3, 15e-3, False),  # m/yıl (Ergintav vd. 2014; Amemoutou vd. 2023)
+    ("zayif", 0.0, 2.0, 0.5, False),           # kaydıkça zayıflama, dtau katı (Di Toro vd. 2011);
+                                               # yalnız üçüncü kural sürümü (eski kayıtlarda yok = 0)
 ]
 P_AD = [p[0] for p in PARAMETRELER]
 
@@ -189,6 +191,7 @@ def model_kur(ag: Ag, th: dict, seed: int) -> Model:
     p = Parametreler(mu_eff=th["mu_eff"], dtau0=th["dtau0"], sigma_h=th["sigma_h"], eta_dyn=th["eta_dyn"],
                      asiri=-th["kalan"], kayma_ref=th["kayma_ref"], sigma_grad=th["sigma_grad"],
                      tM_ref=th["tM_ref"], krip_carpan=th["krip_carpan"], isi_akisi=q,
+                     zayif=th.get("zayif", 0.0),
                      v_pl=levha_hizi(ag, th["v_pl_marmara"]), seed=seed, mu_kayma=MU_YENI)
     m = Model(c, None, None, p, ek_krip=ek, K=ag.K(th["mu_eff"]))
     m.tM_adim_alt = 0.05
