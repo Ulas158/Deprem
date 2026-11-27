@@ -90,16 +90,20 @@ def bir_hedef(arg):
         diger = [_sessiz(o) for k, o in enumerate(ol) if k != i and o.t < E.t]
         k_onceki = next(k for k, o in enumerate(diger) if o.ad == P.ad and abs(o.t - P.t) < 1e-6)
         t_son = min(P.t + 3 * T_ORT, 2026.9)
-        bas = oz.Kosu(ag, th, diger[:k_onceki + 1], 4242, ISINMA, 1719.0, P.t + 1e-4, 0.0, sonsal=False,
+        bas = oz.Kosu(ag, th, diger[:k_onceki + 1], 4242, ISINMA, M.AYAR["buyuk"]["t_bas"], P.t + 1e-4, 0.0, sonsal=False,
                       karsi_olgu=False)
         m, _ = bas.calistir()
         st, n0 = m.durum(), len(m.olaylar)
+        # büyüklük uyumu: işlenen gerçek büyük depremlerde modelin ürettiği büyüklük
+        gmw = {o.ad: o.mw for o in ol if o.tip == "buyuk"}
+        mw_uyum = [(e["tarih"], float(e["mw"]), gmw[e["tarih"]]) for e in m.olaylar
+                   if e.get("zorla") and e.get("tarih") in gmw]
         tahmin, sahte, alarmlar = [], [], []
         for r in range(n):
             m.yukle(st)
             del m.olaylar[n0:]
             m.dayanimi_yenile(10_000 + r)
-            ileri = oz.Kosu(ag, th, diger, 4242, ISINMA, 1719.0, t_son, 0.0, sonsal=False, karsi_olgu=False)
+            ileri = oz.Kosu(ag, th, diger, 4242, ISINMA, M.AYAR["buyuk"]["t_bas"], t_son, 0.0, sonsal=False, karsi_olgu=False)
             ileri.m = m
             # bas koşusunun durumundan devam: model_kur'u atlamak için calistir'a durum verilir
             m2, _ = ileri.calistir(durum=(m, k_onceki + 1, []))
@@ -125,7 +129,7 @@ def bir_hedef(arg):
         oz.model_kur = asil
     out = {"varsayim": varsayim, "ayar": ayar_ad, "hedef": E.ad, "t_gercek": E.t, "mw": E.mw, "onceki": P.ad,
            "t_onceki": P.t, "tahmin": np.array(tahmin), "sahte": pd.DataFrame(sahte), "n": n,
-           "alarmlar": pd.DataFrame(alarmlar), "t_son": t_son,
+           "alarmlar": pd.DataFrame(alarmlar), "t_son": t_son, "mw_uyum": mw_uyum,
            "gercek": [{"ad": o.ad, "t": o.t, "x0": o.x0, "x1": o.x1, "uc_km": o.uc_km}
                       for o in ol if o.tip == "buyuk" and o.mw >= 6.5],
            "sn": round(time.time() - t0, 1)}

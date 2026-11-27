@@ -469,6 +469,18 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
                 continue
             secim.append((r.t, f"{r.source.upper()} M{r.m:.1f} {str(r.time)[:10]}", r.lon, r.lat, r.z, r.m,
                           5.0, str(r.source)))
+    if ag.yerel is not None and GEOMETRI == "mta":
+        # MTA sürümü: GFZ (2006) öncesi de kullanılır (Ulaş: "elimizdeki ilk verilerden"). EMSC 1998-2005
+        # ve USGS, M>=2,5; konum hatası ~5 km (pencere genişliğinin üçte biri) adaylarla dağıtılır
+        h = raw[(raw.t < 2006.0) & (raw.m >= 2.5) & raw.source.isin(["emsc", "usgs"])].sort_values(["t", "source"])
+        son = []
+        for r in h.itertuples():
+            if any(abs(r.t - a) * 365.25 * 86400 < 20 and abs(r.lat - b) < 0.2 and abs(r.lon - cc) < 0.25
+                   for a, b, cc in son[-20:]):
+                continue  # aynı depremin iki kaynaktaki kaydı
+            son.append((r.t, r.lat, r.lon))
+            secim.append((r.t, f"{r.source.upper()} M{r.m:.1f} {str(r.time)[:19]}", r.lon, r.lat, r.z, r.m,
+                          5.0, "erken_" + str(r.source)))
     # 3) GFZ hassas katalogları
     g = gfz_katalog(root)
     if isinstance(gfz_mw_min, dict):  # kaynak başına tamlık büyüklüğü
@@ -488,7 +500,8 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
         if ag.yerel is not None:
             # yerel ağ yalnız ana kolu temsil eder: büyük ağda en yakın kolu ana kol olmayanlar atılır
             if not hasattr(Ag, "_tam_yuzey"):
-                Ag._tam_yuzey = _YuzeyAg(pd.read_parquet(Path(root) / "data" / "mekanik_v2" / "hucreler.parquet"))
+                Ag._tam_yuzey = _YuzeyAg(pd.read_parquet(
+                    Path(root) / "data" / ("mekanik_mta_kaba" if GEOMETRI == "mta" else "mekanik_v2") / "hucreler.parquet"))
             _, d_t, kol_t = izdusum(Ag._tam_yuzey, s.lon, s.lat)
             s = s[(kol_t == 0)]
         uzak = s[s.d > 10.0]

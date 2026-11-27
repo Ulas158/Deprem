@@ -47,6 +47,11 @@ BUYUK_PAR = oz.P_AD
 
 AYAR = {"kucuk": dict(t_bas=2006.0, ayar_bitis=2018.0, t_son_sinav=2024.0, isinma=30.0),
         "buyuk": dict(t_bas=1719.0, ayar_bitis=1895.0, t_son_sinav=2026.9, isinma=400.0)}
+if oz.GEOMETRI == "mta":
+    # MTA sürümü: saat 1500'de başlar, 1509 İstanbul ve 1659 Tekirdağ da işlenir (Ulaş: "daha önceki
+    # depremlere niye bakmıyorsun"). Konum güveni düşük; uç belirsizliği 25 km (tarih.py).
+    AYAR["buyuk"]["t_bas"] = 1500.0
+    AYAR["kucuk"]["t_bas"] = 1998.0  # EMSC 1998'den, GFZ 2006'dan
 
 _G = {}  # süreç başına önbellek
 
@@ -86,6 +91,14 @@ def degerlendir(asama, ag_ad, th, seed, sinav=False, tam_yama=False, sonsal=True
     oz_ = oz.ozet_puan(kayit, len(sahte_ayar), "buyuk" if asama == "buyuk" else "kucuk")
     oz_["sure_s"] = round(time.time() - t0, 1)
     kat = pd.DataFrame([e for e in m.olaylar if not e.get("zorla")])
+    if asama == "kucuk" and oz.KUCUK_OLCUT == "yer":
+        # yer ve sıklık: (1) gerçek depremlerin model doluluk sırası (AUC, 0,5 = şans), (2) modelin
+        # kendiliğinden M>=2 deprem sayısının ayar dönemindeki gerçek sayıya oranı (log10 sapma), (3) sahte
+        n_obs = sum(1 for o in ol if o.tip == "kucuk" and o.mw >= 2.0 and a["t_bas"] <= o.t < a["ayar_bitis"])
+        n_mod = int(((kat.mw >= 2.0) & (kat.t >= a["t_bas"]) & (kat.t < a["ayar_bitis"])).sum()) if len(kat) else 0
+        sap = abs(np.log10((n_mod + 1) / (n_obs + 1)))
+        oz_["n_gercek_M2"], oz_["n_model_M2"], oz_["siklik_sapma"] = n_obs, n_mod, float(sap)
+        oz_["J"] = float(100 * (oz_["auc"] - 0.5) - 20 * sap - 1.0 * len(sahte_ayar))
     oz_["n_kendi"] = int(len(kat))
     oz_["mw_maks_kendi"] = float(kat.mw.max()) if len(kat) else None
     out = {"ozet": oz_, "kayit": kayit}
@@ -171,7 +184,7 @@ def ara(asama, ag_ad, adlar, n_is, sabit=None, n_lhs=200, n_tur=50, ad_ek=""):
                 fh.write(json.dumps(r, default=float) + "\n")
                 fh.flush()
                 log.info("%s %d: J=%.3f %s", asama, len(sonuc), r["J"],
-                         {k: r.get(k) for k in ("ardisik", "tuttu", "p_tuttu", "auc", "sahte", "sure_s", "hata", "zaman_hata")
+                         {k: r.get(k) for k in ("ardisik", "tuttu", "p_tuttu", "auc", "sahte", "sure_s", "hata", "zaman_hata", "siklik_sapma")
                           if k in r})
 
     yapilan = {tuple(np.round(r["u"], 9)) for r in sonuc}
@@ -227,7 +240,7 @@ def main():
     ap.add_argument("--ileri", type=int, default=20)
     ap.add_argument("--surum", default="ana", choices=["ana", "tam_yama", "oncul"])
     ap.add_argument("--ek", default="")
-    ap.add_argument("--olcut", default="eski", choices=["eski", "zaman"],
+    ap.add_argument("--olcut", default="eski", choices=["eski", "zaman", "yer"],
                     help="küçük aşama ayar ölçütü; 'zaman' = göreli zaman hatası en az")
     ap.add_argument("--sira", type=int, nargs="*", default=None, help="yalnız bu ayar sıraları")
     ap.add_argument("--cikti-ek", default="", help="sınav çıktı dosya adına ek (yeniden koşular için)")

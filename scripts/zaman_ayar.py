@@ -3,12 +3,13 @@
 Ulaş: "bana en az zaman hatası veren parametreleri ayarla".
 
 Düzen
-  - Hedefler: zaman_payi.hedefler() ile seçilen 5 büyük deprem (1754, 1766 Mayıs, 1894, 1912, 1999).
-  - Her ayar takımı için 5 depremin her biri zaman_payi.bir_hedef ile koşulur (N tekrar).
+  - Hedefler: zaman_payi.hedefler() ile seçilen 4 büyük deprem (1754, 1894, 1912, 1999).
+  - Her ayar takımı için 4 depremin her biri zaman_payi.bir_hedef ile koşulur (N tekrar).
   - Ayar puanı (küçük = iyi), bir deprem için:
         zaman hatası = tekrarların medyanı |tahmin - gerçek| (deprem üretilmezse 3·T = 750 yıl)
         + YANLIS_CEZA yıl × tekrar başına yanlış alarm (±%30 içinde gerçek depremle eşleşmeyen M>=6,8)
-  - Birini dışarıda bırak: her deprem için ayar, yalnız kalan 4 depremin ortalama puanıyla seçilir;
+        + MW_CEZA yıl × işlenen gerçek büyük depremlerde ortalama büyüklük eksiği (model çok zayıf kalmasın)
+  - Birini dışarıda bırak: her deprem için ayar, yalnız kalan 3 depremin ortalama puanıyla seçilir;
     seçilen ayarın dışarıdaki depremdeki hatası raporlanır. Dışarıdaki deprem seçimi hiç etkilemez.
   - Kıyas: aynı aralıkta şans (Poisson) ve basit tekrarlama (BPT) modelinin pencereye düşme olasılığı;
     ayrıca ayarsız "literatur" başlangıç takımı.
@@ -45,6 +46,7 @@ Z.CIKTI = oz.KALICI / "zaman_ayar"
 ARANAN = ["mu_eff", "dtau0", "sigma_h", "eta_dyn", "kalan", "kayma_ref", "tM_ref", "krip_carpan",
           "sigma_grad", "zayif", "a_rs"]
 YANLIS_CEZA = 50.0
+MW_CEZA = 200.0  # yıl / büyüklük birimi: işlenen gerçek depremlerde model büyüklüğünün eksik kalması
 ISKA = 3 * Z.T_ORT
 
 
@@ -91,8 +93,10 @@ def puanla(r):
     yanlis = 0
     if A is not None and len(A):
         yanlis = sum(not any(Z._eslesir(a, g, w) for g in r["gercek"]) for a in A.to_dict("records"))
-    return {"hata_medyan": float(np.median(hata)), "yanlis_tekrar_basi": yanlis / r["n"],
-            "puan": float(np.median(hata)) + YANLIS_CEZA * yanlis / r["n"],
+    mu = r.get("mw_uyum") or []
+    mw_eksik = float(np.mean([max(g - mm, 0.0) for _, mm, g in mu])) if mu else 0.0
+    return {"hata_medyan": float(np.median(hata)), "yanlis_tekrar_basi": yanlis / r["n"], "mw_eksik": mw_eksik,
+            "puan": float(np.median(hata)) + YANLIS_CEZA * yanlis / r["n"] + MW_CEZA * mw_eksik,
             **{f"tuttu_{int(p * 100)}": float(np.mean(np.abs(t - r["t_gercek"]) <= p * Z.T_ORT))
                for p in Z.PAYLAR}}
 
@@ -109,7 +113,7 @@ def ozet(args):
     P = d.pivot(index="ayar", columns="hedef", values="puan")
     tak = json.loads((Z.CIKTI / "takimlar.json").read_text())
 
-    # tüm 5 depremle en iyi takım (Ulaş'ın istediği "en az zaman hatası"; bu eğitim puanıdır)
+    # tüm 4 depremle en iyi takım (Ulaş'ın istediği "en az zaman hatası"; bu eğitim puanıdır)
     en_iyi = P.mean(axis=1).idxmin()
     # birini dışarıda bırak
     loo = []
