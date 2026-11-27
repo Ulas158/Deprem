@@ -335,7 +335,8 @@ class Model:
                     neg = x < 0
                     if not neg.any() or neg.all():
                         break
-                    F = F[~neg]
+                    if _ < 2:  # son turda F'yi kırpma: x ile F aynı boyda kalmalı
+                        F = F[~neg]
                 x = np.maximum(x, 0.0)
                 d_ev[F] += x
                 self.S += self.K[:, F] @ x.astype(np.float32)

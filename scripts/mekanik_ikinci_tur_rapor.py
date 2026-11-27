@@ -54,7 +54,9 @@ def kucuk_ozet():
     for f in sorted((oz.KALICI / "sinav").glob("kucuk_*.pkl")):
         r = pickle.loads(f.read_bytes())
         k = pd.DataFrame(r["kayit"])
-        _, ag, _ek, sira, seed, surum = (f.stem.split("_") + [""] * 6)[:6]
+        # ad: kucuk_{ag}{ek}_{sira}_{tohum}_{surum}; ek boşsa alan düşer, o yüzden sondan oku
+        par = f.stem.split("_")
+        ag, sira, seed, surum = par[1], par[-3], par[-2], par[-1]
         for bol in ("ayar", "sinav"):
             for kesim in ("hepsi", "<2km"):
                 a = k[(k.puan == bol) & (k.tip == "kucuk")]
@@ -79,7 +81,40 @@ def kucuk_ozet():
     return df
 
 
+def buyuk_ozet():
+    """Büyük deprem sınavı: her sürüm × ayar × tohum için olay olay sonuçlar ve sahte depremler."""
+    rows, sah = [], []
+    for f in sorted((oz.KALICI / "sinav").glob("buyuk_kaba_*.pkl")):
+        par = f.stem.split("_")
+        sira, seed, surum = par[2], par[3], "_".join(par[4:])
+        if surum == "ana":  # ana_v2 ile aynı koşu (yalnız 30 yıllık bakışı düzeltilmiş)
+            continue
+        r = pickle.loads(f.read_bytes())
+        k = pd.DataFrame(r["kayit"])
+        for _, e in k[k.tip == "buyuk"].iterrows():
+            rows.append({"surum": surum.replace("_v2", ""), "ayar_sirasi": sira, "tohum": seed, "olay": e["ad"],
+                         "bolum": e["puan"], "doluluk": e["doluluk"], "esik_ok": bool(e["dolu_ok"]),
+                         "yer_ok": bool(e["yer_ok"]), "zaman_ok": bool(e["zaman_ok"]), "tuttu": bool(e["tuttu"]),
+                         "kendiliginden_ortusme": e["ortusme"], "sira_model": e["u_model"],
+                         "sira_sure": e["u_sure"]})
+        sah.append({"surum": surum.replace("_v2", ""), "ayar_sirasi": sira, "tohum": seed,
+                    "sahte_ayar_1719_1894": len(r["sahte_ayar"]), "sahte_sinav_1895_2026": len(r["sahte_sinav"])})
+    d, s = pd.DataFrame(rows), pd.DataFrame(sah)
+    d.to_csv(REP / "tables" / "mekanik2_buyuk_sinav.csv", index=False, float_format="%.3f")
+    s.to_csv(REP / "tables" / "mekanik2_sahte.csv", index=False)
+    return d, s
+
+
 if __name__ == "__main__":
+    pd.set_option("display.width", 250)
+    b, s = buyuk_ozet()
+    print(b.groupby(["surum", "bolum", "olay"])[["doluluk", "tuttu", "kendiliginden_ortusme", "sira_model",
+                                                 "sira_sure"]].mean().round(3).to_string())
+    t = b[b.bolum == "sinav"]
+    for su, g in t.groupby("surum"):
+        m, p, n = sira_testi(g.groupby("olay").sira_model.mean(), np.ones(g.olay.nunique()))
+        print(su, "sınav sırası", round(m, 3), "p", round(p, 3), "n", n, "tuttu", g.tuttu.mean())
+    print(s.groupby("surum").mean(numeric_only=True))
     d = kucuk_ozet()
     pd.set_option("display.width", 250)
     g = d.groupby(["ag", "bolum", "kesim"])[["n", "sira_model", "sira_sure", "model_eksi_sure", "tuttu_oran_agirlikli",

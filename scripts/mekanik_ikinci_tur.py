@@ -205,6 +205,8 @@ def main():
     ap.add_argument("--ileri", type=int, default=20)
     ap.add_argument("--surum", default="ana", choices=["ana", "tam_yama", "oncul"])
     ap.add_argument("--ek", default="")
+    ap.add_argument("--sira", type=int, nargs="*", default=None, help="yalnız bu ayar sıraları")
+    ap.add_argument("--cikti-ek", default="", help="sınav çıktı dosya adına ek (yeniden koşular için)")
     args = ap.parse_args()
     oz.KALICI.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
@@ -256,30 +258,43 @@ def km_tablosu(m, ag, ileri_p=None):
 
 
 def ileri_bakis(m, ufuk=30.0, n=20, seed=0, mw_min=6.8):
-    """Bugünden ileri: her km için ``ufuk`` yıl içinde M>=mw_min kırılmasına girme olasılığı."""
+    """Bugünden ileri: her kol ve km için ``ufuk`` yıl içinde M>=mw_min kırılmasına girme olasılığı.
+
+    Bir km'nin "vurulması": o kol ve km'deki kilitli kutulardan en az birinin o depremde
+    en büyük kaymanın %5'inden fazla kayması (hücre hücre; x0-x1 aralığı kollar arasında
+    karıştığı için kullanılmaz).
+    """
     st = m.durum()
     n0 = len(m.olaylar)
+    kol = m.c["kol"].to_numpy()
+    km = np.floor(m.x).astype(int)
     hits = {}
     ilk = []
+    eski = m.kayit_slip
     for r in range(n):
         m.yukle(st)
         m.dayanimi_yenile(seed * 1000 + r)
         k0 = len(m.olaylar)
+        m.kayit_slip = (mw_min, [])
         t0 = m.t
         while m.t < t0 + ufuk - 1e-9:
             m.ilerle(min(m.t + 1.0, t0 + ufuk))
         vurulan = set()
-        for e in m.olaylar[k0:]:
-            if e["mw"] >= mw_min and not e.get("zorla"):
-                ilk.append({"tekrar": r, "t": e["t"], "mw": e["mw"], "x0": e["x0"], "x1": e["x1"]})
-                for k in range(int(np.floor(e["x0"])), int(np.floor(e["x1"])) + 1):
-                    vurulan.add(k)
+        for t, mw, d in m.kayit_slip[1]:
+            h = d > 0.05 * d.max()
+            kk = set(zip(kol[h].tolist(), km[h].tolist()))
+            ilk.append({"tekrar": r, "t": t, "mw": mw, "kollar": sorted({a for a, _ in kk}),
+                        "x0": float(m.x[h & (kol == 0)].min()) if (h & (kol == 0)).any() else np.nan,
+                        "x1": float(m.x[h & (kol == 0)].max()) if (h & (kol == 0)).any() else np.nan})
+            vurulan |= kk
         for k in vurulan:
             hits[k] = hits.get(k, 0) + 1
         del m.olaylar[k0:]
+    m.kayit_slip = eski
     m.yukle(st)
     del m.olaylar[n0:]
-    p = pd.DataFrame({"km": list(hits), "p_30yil": [v / n for v in hits.values()]})
+    p = pd.DataFrame([{"kol": a, "km": b, "p_30yil": v / n} for (a, b), v in hits.items()],
+                     columns=["kol", "km", "p_30yil"])
     return p, pd.DataFrame(ilk)
 
 
@@ -293,8 +308,10 @@ def sinav(args):
     rs = sorted([r for r in rs if r["J"] > -1e8], key=lambda r: -r["J"])[:args.en_iyi]
     ag_ad = args.ag
     for k, r in enumerate(rs):
+        if args.sira is not None and k not in args.sira:
+            continue
         for seed in range(args.tohum):
-            ad = f"{asama}_{ag_ad}{args.ek}_{k}_{seed}_{args.surum}"
+            ad = f"{asama}_{ag_ad}{args.ek}_{k}_{seed}_{args.surum}{args.cikti_ek}"
             if (out / f"{ad}.pkl").exists():
                 continue
             th = r["th"]
@@ -304,8 +321,9 @@ def sinav(args):
             kay = {"th": th, "J_ayar_arama": r["J"], "seed": seed, "surum": args.surum, **res}
             if asama == "buyuk":
                 p, ilk = ileri_bakis(m, 30.0, args.ileri, seed=seed)
-                kay["km"] = km_tablosu(m, _G[(asama, ag_ad, True)][0], None)
+                kay["km"] = km_tablosu(m, _G[(asama, ag_ad, True)][0], p)
                 kay["ileri_p"], kay["ileri_ilk"] = p, ilk
+                kay["durum"] = m.durum()
                 kay["hucre"] = {"S": m.S.astype("float32"), "S_fail": m.S_fail.astype("float32"),
                                 "vw": m.vw, "vs": m.vs, "viskoz": m.viskoz}
             (out / f"{ad}.pkl").write_bytes(__import__("pickle").dumps(kay))

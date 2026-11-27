@@ -1,0 +1,106 @@
+{
+ "kosu_sayisi": 15,
+ "tekrar": 50,
+ "m68_30yil_ort": 0.5199999999999999,
+ "m68_30yil_aralik": [
+  0.0,
+  2.6
+ ],
+ "p_en_az_bir_ort": 0.36,
+ "p_en_az_bir_aralik": [
+  0.0,
+  1.0
+ ],
+ "kosular": [
+  {
+   "dosya": "buyuk_kaba_0_0_ana_v2.pkl",
+   "J_ayar": 1.8172598876692807,
+   "m68_30yil": 2.6,
+   "p_en_az_bir": 1.0
+  },
+  {
+   "dosya": "buyuk_kaba_0_1_ana_v2.pkl",
+   "J_ayar": 1.8172598876692807,
+   "m68_30yil": 0.9,
+   "p_en_az_bir": 0.76
+  },
+  {
+   "dosya": "buyuk_kaba_0_2_ana_v2.pkl",
+   "J_ayar": 1.8172598876692807,
+   "m68_30yil": 1.08,
+   "p_en_az_bir": 0.78
+  },
+  {
+   "dosya": "buyuk_kaba_1_0_ana_v2.pkl",
+   "J_ayar": 1.2832120951047075,
+   "m68_30yil": 0.2,
+   "p_en_az_bir": 0.2
+  },
+  {
+   "dosya": "buyuk_kaba_1_1_ana_v2.pkl",
+   "J_ayar": 1.2832120951047075,
+   "m68_30yil": 0.9,
+   "p_en_az_bir": 0.76
+  },
+  {
+   "dosya": "buyuk_kaba_1_2_ana_v2.pkl",
+   "J_ayar": 1.2832120951047075,
+   "m68_30yil": 0.48,
+   "p_en_az_bir": 0.4
+  },
+  {
+   "dosya": "buyuk_kaba_2_0_ana_v2.pkl",
+   "J_ayar": 1.045593998163131,
+   "m68_30yil": 0.06,
+   "p_en_az_bir": 0.06
+  },
+  {
+   "dosya": "buyuk_kaba_2_1_ana_v2.pkl",
+   "J_ayar": 1.045593998163131,
+   "m68_30yil": 0.12,
+   "p_en_az_bir": 0.12
+  },
+  {
+   "dosya": "buyuk_kaba_2_2_ana_v2.pkl",
+   "J_ayar": 1.045593998163131,
+   "m68_30yil": 0.2,
+   "p_en_az_bir": 0.18
+  },
+  {
+   "dosya": "buyuk_kaba_3_0_ana_v2.pkl",
+   "J_ayar": 1.014102237159524,
+   "m68_30yil": 0.0,
+   "p_en_az_bir": 0.0
+  },
+  {
+   "dosya": "buyuk_kaba_3_1_ana_v2.pkl",
+   "J_ayar": 1.014102237159524,
+   "m68_30yil": 0.0,
+   "p_en_az_bir": 0.0
+  },
+  {
+   "dosya": "buyuk_kaba_3_2_ana_v2.pkl",
+   "J_ayar": 1.014102237159524,
+   "m68_30yil": 0.26,
+   "p_en_az_bir": 0.22
+  },
+  {
+   "dosya": "buyuk_kaba_4_0_ana_v2.pkl",
+   "J_ayar": 0.9481737885908554,
+   "m68_30yil": 0.0,
+   "p_en_az_bir": 0.0
+  },
+  {
+   "dosya": "buyuk_kaba_4_1_ana_v2.pkl",
+   "J_ayar": 0.9481737885908554,
+   "m68_30yil": 0.48,
+   "p_en_az_bir": 0.46
+  },
+  {
+   "dosya": "buyuk_kaba_4_2_ana_v2.pkl",
+   "J_ayar": 0.9481737885908554,
+   "m68_30yil": 0.52,
+   "p_en_az_bir": 0.46
+  }
+ ]
+}

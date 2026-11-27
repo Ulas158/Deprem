@@ -30,13 +30,14 @@ p { margin: 0; color: var(--ink2); line-height: 1.5; max-width: 75ch; }
 
 <div class="wrap">
   <h1>Kuzey Anadolu Fayı, Marmara kolu: modelin 3B görünümü</h1>
-  <p>Fay, Saros'tan Düzce'ye 455 km boyunca 1 km × 1 km kutulara bölündü (yüzeyden 20 km derinliğe). Her kutunun rengi ne kadar dolu olduğunu, yani biriken gerilmenin kırılma sınırına oranını gösteriyor. Sürükleyerek döndürün, tekerlekle yakınlaşın, bir kutunun üstüne gelince değerini görün.</p>
+  <p>Fay, Saros'tan Düzce'ye 455 km boyunca 2 km × 2 km kutulara bölündü; güney kol, İmralı ve Armutlu kolları da var. Her kutunun rengi ne kadar dolu olduğunu, yani biriken gerilmenin kırılma sınırına oranını gösteriyor (en iyi 5 ayar × 3 tohum, 15 koşunun ortalaması). Sürükleyerek döndürün, tekerlekle yakınlaşın, bir kutunun üstüne gelince değerini ve modelin 30 yıllık M6,8+ kırılma payını görün.</p>
+  <p><strong>Uyarı:</strong> bu model 1912, 1999, 2022 ve 2025 sınavını geçemedi (hiçbir deprem tutmadı, yer sıralaması şansa yakın). Renkler bir tahmin değil, modelin bugünkü iç durumudur.</p>
   <div class="durum" id="durum">Veri yükleniyor…</div>
   <div id="sahne" role="img" aria-label="Marmara fay duvarının döndürülebilir üç boyutlu görünümü"></div>
   <div class="lejant">
     <span><i class="rampa"></i> kilitli kutular: doluluk 0 → 1</span>
     <span><i class="kutu" style="background: var(--krip)"></i> yavaşça kayan (krip)</span>
-    <span><i class="kutu" style="background: var(--sunek)"></i> sünek akan kuşak (20-40 km)</span>
+    <span><i class="kutu" style="background: var(--sunek)"></i> sünek akan kuşak (kırılgan katmanın altı, 40 km'ye kadar)</span>
     <span><i class="kutu" style="background: var(--sea)"></i> kıyı çizgisi</span>
     <span class="mono">derinlik 2 kat abartılı</span>
   </div>
@@ -68,8 +69,9 @@ p { margin: 0; color: var(--ink2); line-height: 1.5; max-width: 75ch; }
       const s = d.sinif[n], f = d.dol[n];
       const r = s === 2 ? sunek : s === 1 ? krip : rampa(f ?? 0);
       FC.push(r, r);
-      const t = `${d.seg[n]}<br>fay boyunca ${d.x_km[n]} km, derinlik ${d.z[n]} km<br>${SINIF[s]}` +
-        (s === 0 && f !== null ? `<br>doluluk %${Math.round(100 * f)}` : "");
+      const t = `${d.seg[n]}<br>kol boyunca ${d.x_km[n]} km, derinlik ${d.z[n]} km<br>${SINIF[s]}` +
+        (s === 0 && f !== null ? `<br>doluluk %${Math.round(100 * f)}` : "") +
+        (s === 0 && d.p30 ? `<br>model, 30 yılda M6,8+ kırılma payı %${Math.round(100 * d.p30[n])}` : "");
       for (let q = 0; q < 4; q++) HT.push(t);
     });
     const izler = [{
