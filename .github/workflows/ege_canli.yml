@@ -9,6 +9,9 @@ on:
   schedule:
     # GitHub zamanlanmış çalışmaları geciktirebilir ya da atlayabilir; betik aynı günü iki kez
     # yazmadığı için yedek saatler zararsızdır. Pencere ertesi gün 00:00-24:00 UTC.
+    - cron: "17 4 * * *"
+    - cron: "17 10 * * *"
+    - cron: "17 16 * * *"
     - cron: "47 19 * * *"
     - cron: "17 21 * * *"
     - cron: "37 22 * * *"
