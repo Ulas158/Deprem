@@ -166,6 +166,30 @@ YEREL_AGLAR = {
     "duzce": (31.293, 40.771, 93.5, 14.0, 14.0, 0.2),
 }
 KABA_PENCERE = {"duzce"}  # GFZ yok: 1998-2026 bütün dönem EMSC (2024 sonrası çapraz denetimli)
+
+
+def _kesim_hizi(kol, lon):
+    """Pencere kayma hızı (m/yıl) ve kırılgan kalınlık (km): kuzey kol Chartier vd. 2021 (MTA kesim
+    boylamlarıyla), orta kol ve yan kollar GEM."""
+    if kol == 0:
+        for l0, l1, v in [(25.0, 28.875, 18.0), (28.875, 29.345, 14.3), (29.345, 30.315, 20.0),
+                          (30.315, 30.665, 18.0), (30.665, 32.0, 15.0)]:
+            if l0 <= lon < l1:
+                return v / 1000.0, (10.0 if v == 14.3 else 15.0)
+    if kol == 1:
+        return (3.0 if lon < 28.03 else 5.3 if lon < 29.24 else 6.4) / 1000.0, 15.0
+    return 0.0008, 15.0
+
+
+# boşlukları dolduran pencereler (scripts/pencere_doldur.py: 14 km'de 1998-2017 en az 30 deprem)
+_EK = Path(__file__).with_name("pencereler_ek.json")
+PENCERE_KESIM = {}
+if _EK.exists():
+    for _ad, _v in json.loads(_EK.read_text()).items():
+        YEREL_AGLAR[_ad] = tuple(_v["v"])
+        PENCERE_KESIM[_ad] = _v["kesim"]
+        if _v["kaba"]:
+            KABA_PENCERE.add(_ad)
 GEOMETRI = "mta"  # "mta" | "gem": yerel ağ klasörü eki ve ana kol x/D90 kaynağı
 # MTA sürümünde yerel pencereler Chartier vd. 2021'e göre: kilitli, kayma hızı (m/yıl) ve kırılgan
 # kalınlık (km) sabit. Silivri-Tekirdağ-Orta Marmara: Kumburgaz/Tekirdağ kesimleri 18 mm/yıl, 15 km;
@@ -236,7 +260,8 @@ def model_kur(ag: Ag, th: dict, seed: int) -> Model:
     c = ag.cells
     lon = c["lon"].to_numpy()
     if ag.yerel is not None and GEOMETRI == "mta":
-        v_y, D_y = YEREL_CHARTIER[ag.ad]
+        v_y, D_y = YEREL_CHARTIER[ag.ad] if ag.ad in YEREL_CHARTIER else _kesim_hizi(ag.yerel.get("kol", 0),
+                                                                                   ag.yerel["lon"])
         D = np.full(len(c), D_y)
         v = np.full(len(c), v_y)
         ek = np.zeros(len(c), bool)
@@ -390,15 +415,16 @@ DIS_DEPREMLER = [
 ETKI_ESIGI = 0.01e6  # Pa (0,1 bar)
 
 
-def dis_kaynak_etkisi(cells: pd.DataFrame, lon0, lat0, lon1, lat1, mw, dip, rake, mu_eff=0.4):
+def dis_kaynak_etkisi(cells: pd.DataFrame, lon0, lat0, lon1, lat1, mw, dip, rake, mu_eff=0.4, W_km=15.0,
+                      z_ust_km=0.0):
     """Dikdörtgen kaynağın her hücrede (τ, σn) değişimi, Pa. Kayma = M0 / (μ L W)."""
     import cutde.halfspace as hs
     from . import geometri
     from ..faults.coulomb import NU, fault_vectors
-    p0 = geometri.to_local_m(np.array([lat0]), np.array([lon0]), np.array([0.0]))[0]
-    p1 = geometri.to_local_m(np.array([lat1]), np.array([lon1]), np.array([0.0]))[0]
+    p0 = geometri.to_local_m(np.array([lat0]), np.array([lon0]), np.array([z_ust_km]))[0]
+    p1 = geometri.to_local_m(np.array([lat1]), np.array([lon1]), np.array([z_ust_km]))[0]
     L = np.linalg.norm(p1 - p0)
-    W = 15e3 / np.sin(np.radians(dip))
+    W = W_km * 1e3 / np.sin(np.radians(dip))
     m0 = 10 ** (1.5 * mw + 9.1)
     slip = m0 / (MU_MATRIS * L * W)
     sv = (p1 - p0) / L
@@ -422,6 +448,62 @@ def dis_kaynak_etkisi(cells: pd.DataFrame, lon0, lat0, lon1, lat1, mw, dip, rake
     dtau, dsn = (t * svv).sum(-1), (t * nv).sum(-1)
     # yaklaşık düzlemin yakın alanı (kaynak modele birkaç km'den yakınsa) çözülemez: ±1 MPa ile sınırla
     return np.clip(dtau, -1e6, 1e6), np.clip(dsn, -1e6, 1e6), float(slip)
+
+
+COULOMB_ESIK = 0.002e6  # Pa (0,02 bar): pencereye bundan küçük en büyük etki ihmal edilir
+COULOMB_R = 60.0  # km: pencere merkezinden uzak olaylar
+
+
+def _dis_coulomb(ag: Ag, s: pd.DataFrame, t0: float, t1: float):
+    """Yerel pencere dışında kalan depremleri ve büyük tarihi kırıkları pencereye dış kaynak (Coulomb)
+    olarak ekle. Küçük deprem: büyüklüğüne göre boy (L_kirilma) ve genişlik, en yakın fayın doğrultusunda,
+    sağ yanal; tarihi büyük deprem: iz üzerindeki kırık, 15 km genişlik."""
+    y = ag.yerel
+    kx = 111.195 * np.cos(np.radians(40.7))
+    ty = Ag._tam_yuzey.cells
+    yuz = ty[(ty.z_ust == 0) & (ty.katman == "kabuk")]
+    out, n_aday = [], 0
+    # ön eleme: pencere çizgisine uzaklık r; nokta kaynağın gerilmesi ~ M0/(4π r³). Eşiği aşabileceği en
+    # büyük uzaklığın 2 katından uzaktakiler hesaplanmaz.
+    phi = np.radians(y["strike"])
+    dx, dy = (s.lon - y["lon"]) * kx, (s.lat - y["lat"]) * 111.195
+    boy = dx * np.sin(phi) + dy * np.cos(phi)
+    dik = -dx * np.cos(phi) + dy * np.sin(phi)
+    r_km = np.hypot(np.maximum(np.abs(boy) - y["L"] / 2, 0.0), dik)
+    m0 = 10 ** (1.5 * s.mw + 9.1)
+    r_max = 2.0 * (m0 / (4 * np.pi * COULOMB_ESIK)) ** (1 / 3) / 1e3 + 0.5 * np.maximum(
+        [L_kirilma(m) for m in s.mw], 0.0)
+    s = s[(r_km <= r_max) & (np.hypot(dx, dy) <= COULOMB_R)]
+    cx, cy = yuz.lon.to_numpy() * kx, yuz.lat.to_numpy() * 111.195
+    for r in s.itertuples():
+        n_aday += 1
+        k = int(np.argmin((cx - r.lon * kx) ** 2 + (cy - r.lat * 111.195) ** 2))
+        st = np.radians(yuz.strike.iat[k])
+        L = max(L_kirilma(r.mw), 0.3)
+        W = min(L, 15.0)
+        dlo, dla = np.sin(st) * L / 2 / kx, np.cos(st) * L / 2 / 111.195
+        z_ust = float(np.clip(r.z - W / 2, 0.0, 20.0))
+        dt_, dn_, _ = dis_kaynak_etkisi(ag.cells, r.lon - dlo, r.lat - dla, r.lon + dlo, r.lat + dla, r.mw, 90.0,
+                                        180.0, W_km=W, z_ust_km=z_ust)
+        if np.abs(dt_ + 0.4 * dn_).max() >= COULOMB_ESIK:
+            out.append(Olay(r.t, "Coulomb: " + r.ad, "dis", r.mw, np.nan, -1, np.nan, np.nan, sinif="modern",
+                            dis={"dtau": dt_.astype(np.float32), "dsn": dn_.astype(np.float32)}, kaynak="dis_" + r.kaynak))
+    # büyük tarihi kırıklar (1999 İzmit, 1999 Düzce gibi) pencere içinde değilse
+    ana = yuz[yuz.kol == 0].sort_values("x_km")
+    for r in tarih.tablo(ana).itertuples():
+        if not (t0 <= r.t <= t1):
+            continue
+        lo0, lo1 = r.lon0, r.lon1
+        la0, la1 = np.interp([lo0, lo1], ana.lon, ana.lat)
+        # pencere bu kırığın üstündeyse (aynı kol ve boylam aralığı) zaten içeride işlenir
+        if y.get("kol", 0) == 0 and lo0 - 0.05 <= y["lon"] <= lo1 + 0.05:
+            continue
+        n_aday += 1
+        dt_, dn_, _ = dis_kaynak_etkisi(ag.cells, lo0, la0, lo1, la1, r.mw, 90.0, 180.0)
+        if np.abs(dt_ + 0.4 * dn_).max() >= COULOMB_ESIK:
+            out.append(Olay(r.t, "Coulomb: " + r.ad, "dis", r.mw, np.nan, -1, np.nan, np.nan, sinif="modern",
+                            dis={"dtau": dt_.astype(np.float32), "dsn": dn_.astype(np.float32)}, kaynak="dis_tarih"))
+    return out, n_aday, len(out)
 
 
 def _ondalik(ts: pd.Timestamp) -> float:
@@ -539,7 +621,24 @@ def cizelge(ag: Ag, root: Path, t0: float, t1: float, ayar_bitis: float, mw_min_
                 Ag._tam_yuzey = _YuzeyAg(pd.read_parquet(
                     Path(root) / "data" / ("mekanik_mta_kaba" if GEOMETRI == "mta" else "mekanik_v2") / "hucreler.parquet"))
             _, d_t, kol_t = izdusum(Ag._tam_yuzey, s.lon, s.lat)
-            s = s[(kol_t == ag.yerel.get("kol", 0))]
+        if ag.yerel is not None and GEOMETRI == "mta":
+            # Ulaş: "pencerelerin Coulomb yüzünden birbirine etkisi var". Pencerede işlenmeyen her deprem
+            # (komşu pencereler, pencere dışı, başka kollar) pencereye Coulomb gerilmesi olarak aktarılır.
+            kol_w = ag.yerel.get("kol", 0)
+            ic = (kol_t == kol_w) & (s.d <= 10.0) & (s.x >= xmin - 1) & (s.x <= xmax + 1)
+            f_c = Path(root) / "data" / f"mekanik_yerel_{ag.ad}_mta" / f"coulomb_{t0:.1f}_{t1:.1f}.pkl"
+            if f_c.exists():
+                dis_ol, say["coulomb_aday"], say["coulomb_eklenen"] = pickle.loads(f_c.read_bytes())
+            else:
+                dis_ol, say["coulomb_aday"], say["coulomb_eklenen"] = _dis_coulomb(ag, s[~ic], t0, t1)
+                tmp = f_c.with_suffix(".tmp")
+                tmp.write_bytes(pickle.dumps((dis_ol, say["coulomb_aday"], say["coulomb_eklenen"])))
+                tmp.replace(f_c)
+            ol += dis_ol
+            s = s[ic]
+        else:
+            if ag.yerel is not None:
+                s = s[(kol_t == ag.yerel.get("kol", 0))]
         uzak = s[s.d > 10.0]
         say["uzak_olay"] = int(len(uzak))
         say["uzak_m0"] = float((10 ** (1.5 * uzak.mw + 9.1)).sum())
