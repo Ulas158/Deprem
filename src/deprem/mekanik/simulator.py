@@ -93,7 +93,8 @@ class Model:
         if K is None:
             K = np.asfortranarray((Kt + np.float32(p.mu_eff) * Kn).astype(np.float32))
         self.K = K
-        self.kself = -np.diag(self.K).astype(float)
+        self.seyrek = hasattr(K, "sutun_carp")  # tek ağın sıkıştırılmış işleci (seyrek.SeyrekK)
+        self.kself = -(K.diagonal() if self.seyrek else np.diag(self.K)).astype(float)
         z = self.c["z_km"].to_numpy()
         q = np.broadcast_to(np.asarray(p.isi_akisi, float), (n,))
         self.T = termal.sicaklik(z, q)
@@ -129,7 +130,7 @@ class Model:
         self.rng = rng
         # sabit yükleme hızı: -K v_pl
         self.r0 = -(self.K @ self.v_pl.astype(np.float32)).astype(np.float64)
-        self.Kc = np.ascontiguousarray(self.K[:, self.ic])
+        self.Kc = self.K[:, self.ic] if self.seyrek else np.ascontiguousarray(self.K[:, self.ic])
         self.v = np.zeros(n)
         self.v[self.ic] = self.v_pl[self.ic]
         self._kararli_baslangic()
@@ -147,9 +148,13 @@ class Model:
         Böylece başlangıçta krip kuşağı yapay biçimde hızlanıp kilitli kısmı aşırı yüklemez.
         """
         ic, iw = self.ic, self.iw
-        Kcc = np.asarray(self.K[np.ix_(ic, ic)], float)
-        rhs = np.asarray(self.K[np.ix_(ic, iw)], float) @ self.v_pl[iw]
-        dv = np.linalg.solve(Kcc, rhs)
+        if self.seyrek and len(ic) > 3000:
+            rhs = self.K.sutun_carp(iw, self.v_pl[iw])[ic].astype(float)
+            dv = _iteratif_coz(lambda x: self.K.sutun_carp(ic, x)[ic].astype(float), rhs, self.kself[ic])
+        else:
+            Kcc = np.asarray(self.K[np.ix_(ic, ic)], float)
+            rhs = np.asarray(self.K[np.ix_(ic, iw)], float) @ self.v_pl[iw]
+            dv = np.linalg.solve(Kcc, rhs)
         vC = np.clip(self.v_pl[ic] + dv, 0.02 * self.v_pl[ic], 20 * self.v_pl[ic])
         vs = self.vs[ic]
         S_ref = np.zeros(len(ic))
@@ -362,8 +367,12 @@ class Model:
                 if len(F) == 0 or cozuldu >= 3:
                     break
                 for _ in range(3):
-                    Kff = np.asarray(self.K[np.ix_(F, F)], dtype=np.float64)
-                    x = np.linalg.solve(Kff, -(self.S[F] - target_all[F]))
+                    if self.seyrek and len(F) > 3000:
+                        x = _iteratif_coz(lambda y, F=F: self.K.sutun_carp(F, y)[F].astype(float),
+                                          -(self.S[F] - target_all[F]), self.kself[F])
+                    else:
+                        Kff = np.asarray(self.K[np.ix_(F, F)], dtype=np.float64)
+                        x = np.linalg.solve(Kff, -(self.S[F] - target_all[F]))
                     neg = x < 0
                     if not neg.any() or neg.all():
                         break
@@ -440,3 +449,13 @@ class Model:
         g = df.groupby("km")
         return pd.DataFrame({"x_km": g.size().index * dx + dx / 2,
                              "doluluk": g.apply(lambda d: np.average(d.f, weights=d.w)).to_numpy()})
+
+
+def _iteratif_coz(carp, b, kself, tol=1e-6, maxiter=400):
+    """Büyük kümelerde K_FF x = b (tek ağ): köşegen önkoşullu GMRES; yoğun çözüm belleğe sığmaz."""
+    from scipy.sparse.linalg import LinearOperator, gmres
+    n = len(b)
+    A = LinearOperator((n, n), matvec=lambda y: carp(np.asarray(y, float)), dtype=float)
+    M = LinearOperator((n, n), matvec=lambda y: -np.asarray(y) / np.maximum(kself, 1e-30), dtype=float)  # K köşegeni = -kself
+    x, _ = gmres(A, b, M=M, rtol=tol, maxiter=maxiter, restart=60)
+    return x

@@ -5,7 +5,7 @@ Hücre boyu kuralı (3 kademe; pencere döşemesindeki 1998-2017 eğitim yoğunl
 
 Etkileşim (Ulaş: "İstanbul sonucuna etkisi az az az olsun", "sıkıştırmayı tam 15 GB olacak şekilde yap"):
   - TAM bölge: kuzey kol + Armutlu kolu, 27,30-29,60°D (Ganos doğu ucu - Hersek; İstanbul hattı ve iki
-    yanı). Bu bölgedeki bütün hücre çiftleri tam (yoğun matris K_tam.npy, ~10,3 GB; bellek 15 GB, pencere
+    yanı). Bu bölgedeki bütün hücre çiftleri tam (yoğun matris K_tam.npy DEVRİK: [kaynak, alıcı]; ~10,3 GB; bellek 15 GB, pencere
     eğitimi ve sistem için ~4 GB pay).
   - Diğer bütün çiftlerde, 2 km'lik kaba hücre merkezleri arası <= R_YAKIN km ise tam (seyrek, yakin_*.npz).
   - Geri kalan uzak çiftler 2 km'lik kaba ağın matrisiyle, kaynak potansiyeli gruplanarak (seyrek.py).
@@ -101,7 +101,9 @@ def _tam_satir(r0):
     r1 = min(r0 + 128, len(I))
     K = np.load(OUT / "K_tam.npy", mmap_mode="r+")
     for s0 in range(0, len(I), 6000):
-        K[r0:r1, s0:s0 + 6000] = g.etkilesim_blok(U, I[r0:r1], I[s0:s0 + 6000], MU_EFF) * _olcek()
+        # DEVRİK saklanır (satır = kaynak, sütun = alıcı): bir kaynağın bütün alıcılara etkisi bitişik
+        # bellekte; depremde kayan hücrelerin etkisi (K[:, idx] @ d) hızlı okunur
+        K[s0:s0 + 6000, r0:r1] = (g.etkilesim_blok(U, I[r0:r1], I[s0:s0 + 6000], MU_EFF) * _olcek()).T
     K.flush()
     return r0
 
