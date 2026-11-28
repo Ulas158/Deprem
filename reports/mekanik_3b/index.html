@@ -1,0 +1,108 @@
+<title>Marmara Fay Duvarı 3B</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>
+/* Düzen: üstte kısa başlık ve açıklama, altında tam genişlik döndürülebilir 3B sahne, en altta lejant */
+:root {
+  --bg: #f4f6f7; --panel: #ffffff; --ink: #18232b; --ink2: #50616d; --line: #d5dde2;
+  --sea: #2f5d80; --krip: #4fa3bf; --sunek: #b9bec4;
+  --f-body: "IBM Plex Sans", system-ui, sans-serif; --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1519; --panel: #161f25; --ink: #e5ecf0; --ink2: #9aabb6; --line: #2a3640;
+  --sea: #7fb0d6; --krip: #5cb6d2; --sunek: #5b636b; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0f1519; --panel: #161f25; --ink: #e5ecf0; --ink2: #9aabb6; --line: #2a3640;
+  --sea: #7fb0d6; --krip: #5cb6d2; --sunek: #5b636b; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 28px; max-width: 1400px; margin: 0 auto; display: grid; gap: 14px; }
+h1 { font-size: 1.35rem; font-weight: 600; margin: 0; text-wrap: balance; }
+p { margin: 0; color: var(--ink2); line-height: 1.5; max-width: 75ch; }
+#sahne { width: 100%; height: min(72vh, 760px); min-height: 380px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 6px; }
+.lejant { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 0.85rem; color: var(--ink2); align-items: center; }
+.lejant span { display: inline-flex; align-items: center; gap: 7px; }
+.kutu { width: 14px; height: 14px; border-radius: 2px; display: inline-block; }
+.rampa { width: 120px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #ffffcc, #fed976, #fd8d3c, #e31a1c, #800026); }
+.mono { font-family: var(--f-mono); font-size: 0.8rem; }
+.durum { font-family: var(--f-mono); font-size: 0.8rem; color: var(--ink2); }
+</style>
+
+<div class="wrap">
+  <h1>Kuzey Anadolu Fayı, Marmara kolu: modelin 3B görünümü</h1>
+  <p>Fay, Saros'tan Düzce'ye 455 km boyunca 2 km × 2 km kutulara bölündü; güney kol, İmralı ve Armutlu kolları da var. Her kutunun rengi ne kadar dolu olduğunu, yani biriken gerilmenin kırılma sınırına oranını gösteriyor (en iyi 5 ayar × 3 tohum, 15 koşunun ortalaması). Sürükleyerek döndürün, tekerlekle yakınlaşın, bir kutunun üstüne gelince değerini ve modelin 30 yıllık M6,8+ kırılma payını görün.</p>
+  <p><strong>Uyarı:</strong> bu model 1912, 1999, 2022 ve 2025 sınavını geçemedi (hiçbir deprem tutmadı, yer sıralaması şansa yakın). Renkler bir tahmin değil, modelin bugünkü iç durumudur.</p>
+  <div class="durum" id="durum">Veri yükleniyor…</div>
+  <div id="sahne" role="img" aria-label="Marmara fay duvarının döndürülebilir üç boyutlu görünümü"></div>
+  <div class="lejant">
+    <span><i class="rampa"></i> kilitli kutular: doluluk 0 → 1</span>
+    <span><i class="kutu" style="background: var(--krip)"></i> yavaşça kayan (krip)</span>
+    <span><i class="kutu" style="background: var(--sunek)"></i> sünek akan kuşak (kırılgan katmanın altı, 40 km'ye kadar)</span>
+    <span><i class="kutu" style="background: var(--sea)"></i> kıyı çizgisi</span>
+    <span class="mono">derinlik 2 kat abartılı</span>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<script>
+(function () {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const RAMPA = [[0, "#ffffcc"], [0.25, "#fed976"], [0.5, "#fd8d3c"], [0.75, "#e31a1c"], [1, "#800026"]];
+  function hex(c) { const n = parseInt(c.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+  function rampa(t) {
+    t = Math.max(0, Math.min(1, t));
+    for (let i = 1; i < RAMPA.length; i++) if (t <= RAMPA[i][0]) {
+      const [a, ca] = RAMPA[i - 1], [b, cb] = RAMPA[i], u = (t - a) / (b - a), A = hex(ca), B = hex(cb);
+      return `rgb(${A.map((v, k) => Math.round(v + u * (B[k] - v))).join(",")})`;
+    }
+    return RAMPA[RAMPA.length - 1][1];
+  }
+  const SINIF = ["kilitli", "yavaşça kayan (krip)", "sünek akan"];
+  function ciz(d) {
+    document.getElementById("durum").textContent = "Gösterilen durum: " + d.durum;
+    const X = [], Y = [], Z = [], I = [], J = [], K = [], FC = [], HT = [];
+    const krip = css("--krip"), sunek = css("--sunek");
+    d.kose.forEach((k, n) => {
+      const b = X.length;
+      for (let q = 0; q < 4; q++) { X.push(k[3 * q]); Y.push(k[3 * q + 1]); Z.push(k[3 * q + 2]); }
+      I.push(b, b); J.push(b + 1, b + 2); K.push(b + 2, b + 3);
+      const s = d.sinif[n], f = d.dol[n];
+      const r = s === 2 ? sunek : s === 1 ? krip : rampa(f ?? 0);
+      FC.push(r, r);
+      const t = `${d.seg[n]}<br>kol boyunca ${d.x_km[n]} km, derinlik ${d.z[n]} km<br>${SINIF[s]}` +
+        (s === 0 && f !== null ? `<br>doluluk %${Math.round(100 * f)}` : "") +
+        (s === 0 && d.p30 ? `<br>model, 30 yılda M6,8+ kırılma payı %${Math.round(100 * d.p30[n])}` : "");
+      for (let q = 0; q < 4; q++) HT.push(t);
+    });
+    const izler = [{
+      type: "mesh3d", x: X, y: Y, z: Z, i: I, j: J, k: K, facecolor: FC, flatshading: true,
+      hovertext: HT, hoverinfo: "text", lighting: { ambient: 0.85, diffuse: 0.3 }, name: "fay"
+    }];
+    const sea = css("--sea"), ink = css("--ink"), ink2 = css("--ink2");
+    d.kiyi_x.forEach((kx, n) => izler.push({ type: "scatter3d", mode: "lines", x: kx, y: d.kiyi_y[n],
+      z: kx.map(() => 0), line: { color: sea, width: 2 }, hoverinfo: "skip", showlegend: false }));
+    izler.push({ type: "scatter3d", mode: "text", x: d.etiket.map(e => e.x), y: d.etiket.map(e => e.y),
+      z: d.etiket.map(() => 6), text: d.etiket.map(e => e.ad), textfont: { color: ink, size: 12 },
+      hoverinfo: "skip", showlegend: false });
+    izler.push({ type: "scatter3d", mode: "markers+text", x: d.sehir.map(e => e.x), y: d.sehir.map(e => e.y),
+      z: d.sehir.map(() => 0), text: d.sehir.map(e => e.ad), textposition: "top center",
+      marker: { size: 3, color: ink2 }, textfont: { color: ink2, size: 10 }, hoverinfo: "skip", showlegend: false });
+    const xs = X.concat(...d.kiyi_x), ys = Y.concat(...d.kiyi_y);
+    const xr = Math.max(...xs) - Math.min(...xs), yr = Math.max(...ys) - Math.min(...ys);
+    const eks = { showgrid: false, zeroline: false, showticklabels: false, title: "", showbackground: false };
+    Plotly.newPlot("sahne", izler, {
+      margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "rgba(0,0,0,0)", showlegend: false,
+      scene: {
+        xaxis: eks, yaxis: eks,
+        zaxis: { ...eks, showticklabels: true, tickvals: [0, -20, -40, -60, -80], ticktext: ["0", "10", "20", "30", "40 km"],
+          tickfont: { color: ink2, size: 10 } },
+        aspectmode: "manual", aspectratio: { x: 2.6, y: 2.6 * yr / xr, z: 0.55 },
+        camera: { eye: { x: -0.6, y: -1.7, z: 0.9 } }
+      }
+    }, { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["toImage"] });
+  }
+  fetch("veri.json").then(r => r.json()).then(ciz).catch(e => {
+    document.getElementById("durum").textContent = "Veri yüklenemedi: " + e.message;
+  });
+})();
+</script>
