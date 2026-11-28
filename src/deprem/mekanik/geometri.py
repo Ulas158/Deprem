@@ -262,3 +262,93 @@ def yerel_ag(lon_c: float, lat_c: float, strike: float, L_km: float, z_max: floa
         d = ix - ix[i] + (nx - 1)
         K[i] = Kcol[iz[i], d, iz]
     return cells, K
+
+
+def hucreler_kademeli(izler: list[dict], h_fonk, z_ince=16.0, z_kirilgan=20.0, z_sunek=40.0,
+                      ds_derin=4.0) -> pd.DataFrame:
+    """Tek ağ, kademeli kare hücreler (Ulaş: yoğun yerde 200 m, seyrek yerde 1 km'ye kadar).
+
+    ``h_fonk(kol, x_km) -> h_km``: geçmiş deprem yoğunluğuna göre hücre boyu (bir kez belirlenir, sabit).
+    0-z_ince km: h×h kare hücre; z_ince-z_kirilgan: 1 km (küçük depremler bu derinlikte yok denecek kadar
+    az); z_kirilgan-z_sunek: sünek kuşak ds_derin. İz boyunca h değişirken hücre sınırları kesintisiz.
+    """
+    rows = []
+    x_off = 0.0
+    for si, iz in enumerate(izler):
+        if iz.get("x_bas") is not None:
+            x_off = float(iz["x_bas"])
+        kol = iz.get("kol", 0)
+        lon_i, lat_i, L = _yeniden_ornekle(iz["coords"], 0.05)
+        s_i = np.linspace(0, L, len(lon_i))
+        # iz boyunca kenarlar: her adımda yerel h kadar ilerle
+        kenar = [0.0]
+        while kenar[-1] < L - 1e-6:
+            h = float(h_fonk(kol, x_off + kenar[-1]))
+            kenar.append(min(kenar[-1] + h, L))
+        if len(kenar) > 2 and kenar[-1] - kenar[-2] < 0.5 * (kenar[-2] - kenar[-3]):
+            kenar.pop(-2)
+        kenar = np.array(kenar)
+
+        def nokta(s):
+            return np.interp(s, s_i, lon_i), np.interp(s, s_i, lat_i)
+
+        def ekle(e, z0, z1, dz, kat, ds_kat=None):
+            for k in range(len(e) - 1):
+                a, b = e[k], e[k + 1]
+                lo0, la0 = nokta(a)
+                lo1, la1 = nokta(b)
+                strike = (np.degrees(np.arctan2((lo1 - lo0) * np.cos(np.radians(la0)), la1 - la0)) + 360) % 360
+                d = dz if dz is not None else (b - a)
+                for z in np.arange(z0, z1 - 1e-9, d):
+                    rows.append({"seg": si, "seg_ad": iz["ad"], "kol": kol, "katman": kat,
+                                 "lon": (lo0 + lo1) / 2, "lat": (la0 + la1) / 2, "x_km": x_off + (a + b) / 2,
+                                 "z_ust": z, "z_km": z + d / 2, "L_km": b - a, "W_km": d, "strike": strike})
+
+        # ince kabuk: kare hücre (W = L = h), z_ince'ye tam bölünecek h
+        for k in range(len(kenar) - 1):
+            a, b = kenar[k], kenar[k + 1]
+            h = b - a
+            nz = max(int(round(z_ince / h)), 1)
+            ekle(np.array([a, b]), 0.0, z_ince, z_ince / nz, "kabuk")
+        e1 = np.linspace(0, L, max(int(round(L / 1.0)), 1) + 1)
+        ekle(e1, z_ince, z_kirilgan, 1.0, "kabuk")
+        e4 = np.linspace(0, L, max(int(round(L / ds_derin)), 1) + 1)
+        ekle(e4, z_kirilgan, z_sunek, ds_derin, "sunek")
+        x_off += L
+    df = pd.DataFrame(rows)
+    df["alan_m2"] = df["L_km"] * df["W_km"] * 1e6
+    return df
+
+
+def ucgen_hazirla(cells: pd.DataFrame):
+    """Etkileşim blokları için hücre üçgenleri, kayma vektörleri ve fay yönleri (bir kez)."""
+    tris, coefs = _ucgenler(cells)
+    n = len(cells)
+    slip_vec = np.zeros((n, 2, 3))
+    slip_vec[:, :, 0] = coefs[:, None, 0]
+    slip_vec[:, :, 1] = coefs[:, None, 1]
+    nvec, svec, _ = fault_vectors(cells["strike"].to_numpy(), np.full(n, 90.0), np.full(n, 180.0))
+    return {"tris": tris, "slip": slip_vec, "obs": tris.mean(axis=2), "nvec": nvec, "svec": svec}
+
+
+def etkilesim_blok(U: dict, rec: np.ndarray, src: np.ndarray, mu_eff: float, blok: int = 64) -> np.ndarray:
+    """K = K_tau + mu_eff K_sn, alıcı ``rec`` × kaynak ``src`` (Pa/m, float32); etkilesim_matrisi ile aynı."""
+    import cutde.halfspace as hs
+    ns = len(src)
+    srct = U["tris"][src].reshape(-1, 3, 3)
+    sv_ = U["slip"][src].reshape(-1, 3)
+    out = np.zeros((len(rec), ns), np.float32)
+    for i0 in range(0, len(rec), blok):
+        r = rec[i0:i0 + blok]
+        o = np.ascontiguousarray(U["obs"][r].reshape(-1, 3))
+        M = hs.strain_matrix(o, srct, NU)
+        E = np.einsum("aitk,tk->ait", M, sv_).reshape(len(o), 6, ns, 2).sum(-1)
+        E = E.reshape(len(r), 2, 6, ns).mean(1)
+        S = hs.strain_to_stress(np.moveaxis(E, 1, -1).reshape(-1, 6), MU_SHEAR, NU).reshape(len(r), ns, 6)
+        xx, yy, zz, xy, xz, yz = np.moveaxis(S, -1, 0)
+        nv, sv = U["nvec"][r][:, None, :], U["svec"][r][:, None, :]
+        t = np.stack([xx * nv[..., 0] + xy * nv[..., 1] + xz * nv[..., 2],
+                      xy * nv[..., 0] + yy * nv[..., 1] + yz * nv[..., 2],
+                      xz * nv[..., 0] + yz * nv[..., 1] + zz * nv[..., 2]], -1)
+        out[i0:i0 + len(r)] = ((t * sv).sum(-1) + mu_eff * (t * nv).sum(-1)).astype(np.float32)
+    return out

@@ -147,6 +147,8 @@ def ozet(args):
 
 
 def main():
+    if (oz.KALICI / "dur_buyuk").exists():  # tek ağa geçildi: 1 km'lik büyük aşama kuyruktan koşmasın
+        print("dur_buyuk var, atlanıyor"); return
     ap = argparse.ArgumentParser()
     ap.add_argument("asama", choices=["kos", "ozet"])
     ap.add_argument("--varsayim", default="kilitli")
