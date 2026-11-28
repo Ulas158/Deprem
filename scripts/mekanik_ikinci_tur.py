@@ -243,6 +243,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("asama", choices=["kucuk", "buyuk", "sinav", "dene"])
     ap.add_argument("--ag", default="silivri")
+    ap.add_argument("--n-tur", type=int, default=50, help="daralma turu başına deneme")
     ap.add_argument("--is", dest="n_is", type=int, default=4)
     ap.add_argument("--n-lhs", type=int, default=200)
     ap.add_argument("--en-iyi", type=int, default=5)
@@ -273,7 +274,7 @@ def main():
         sinav(args)
         return
     if args.asama == "kucuk":
-        ara("kucuk", args.ag, kucuk_par(args.ek), args.n_is, n_lhs=args.n_lhs, ad_ek=args.ek)
+        ara("kucuk", args.ag, kucuk_par(args.ek), args.n_is, n_lhs=args.n_lhs, n_tur=args.n_tur, ad_ek=args.ek)
     elif args.asama == "buyuk":
         ara("buyuk", oz.BUYUK_AG, buyuk_par(args.ek), args.n_is, sabit=kucuk_en_iyiler(args.ek), n_lhs=args.n_lhs,
             ad_ek=args.ek)
